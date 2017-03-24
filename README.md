@@ -25,6 +25,12 @@ local stage1 box in the stage2 Vagrantfile.
 * Adding switch to run a non-containerized broker on the vm via shared
 directory for easy broker development workflow + scripts to reset catalog.
 
+**TODO:**
+Broker route is not going to work from the service catalog, since the route
+resolves to `127.0.0.1`. Probably want to configure the router to use
+a public ip of the vagrant machine or the internal service address of
+the running ASB.
+
 ### Stage1
 
 #### Binaries
