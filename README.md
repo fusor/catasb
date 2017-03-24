@@ -10,7 +10,9 @@ Ansible Service Broker: https://github.com/fusor/ansible-service-broker
 
 Broken into two stages, stage1 box installs and configures a basic static
 environment with required packages and one-off binaries, as well as setting
-up and enabling a docker daemon.
+up and enabling a docker daemon. stage2 brings up a cluster, installs the
+catalog, brings up a broker, and configures `catctl` to point directly
+at the catalog for using new resources like brokers and serviceclasses.
 
 ### Roadmap
 
