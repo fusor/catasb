@@ -84,7 +84,7 @@ inventory. The `DOCKERHUB_USER` and `DOCKERHUB_PASS` env vars are required.
 
 ## Networking Defaults
 
-Default vagrant machine: `192.168.67.2` - MACHINE_IP stage{1,2) Vagrantfile
+Default vagrant machine: `192.168.67.2` - MACHINE_IP stage{1,2} Vagrantfile
 
 Docker bridge: `172.22.0.1/16` - DOCKER_BRIDGE stage1 Vagrantfile, requires
 box rebuild.
