@@ -69,7 +69,7 @@ tar -xzf /tmp/oc.tar.gz -C /tmp
 mv /tmp/openshift-origin-client-tools-v1.5.0-alpha.3-cf7e336-linux-64bit/oc /usr/local/bin/
 
 MAC_ADDRESS=$(ifconfig eth0 | grep ether | awk '{print $2}')
-CLUSTER_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/network/interfaces/macs/$MAC_ADDRESS/public-hostname)
+PUBLIC_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/network/interfaces/macs/$MAC_ADDRESS/public-hostname)
 
-/usr/local/bin/oc cluster up --routing-suffix=ocp.ec2.dog8code.com --public-hostname=ocp.ec2.dog8code.com
-/shared/provision.sh $CLUSTER_HOSTNAME dymurray qci-test
+/usr/local/bin/oc cluster up --routing-suffix=$CLUSTER_HOSTNAME --public-hostname=$CLUSTER_HOSTNAME
+/shared/provision.sh $PUBLIC_HOSTNAME $DOCKERHUB_USER $DOCKERHUB_PASS
