@@ -1,0 +1,68 @@
+MACHINE_IP="192.168.155.2"
+CLUSTER_USER="admin"
+BASE_BOX="http://ernelsondt.usersys.redhat.com:11080/catasb/stage1/box"
+
+if !ENV['DOCKERHUB_USER'] || !ENV['DOCKERHUB_PASS'] || !ENV['AWS_SECRET_ACCESS_KEY'] || !ENV['AWS_ACCESS_KEY_ID']
+  puts "ERROR: Missing dockerhub credentials env vars:"
+  puts "-> DOCKERHUB_USER"
+  puts "-> DOCKERHUB_PASS"
+  puts "-> AWS_ACCESS_KEY_ID"
+  puts "-> AWS_SECRET_ACCESS_KEY"
+  exit 1
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.box = BASE_BOX
+  config.vm.hostname = "catasb"
+
+  config.vm.provider :aws do |aws, override|
+    override.vm.box = "dummy"
+    override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
+    override.vm.synced_folder ".", "/shared", :type => "rsync"
+    override.nfs.functional = false
+    override.ssh.username = "ec2-user"
+    override.ssh.private_key_path = "./splice_rsa"
+    aws.keypair_name = "splice"
+    aws.associate_public_ip = true
+
+    aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
+    aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+    aws.region = "us-east-1"
+    aws.instance_type = "c4.2xlarge"
+    aws.ami = "ami-b63769a1"
+#    aws.private_ip_address = "192.168.155.2"
+    aws.security_groups= ["sg-0cff9e73"]
+    aws.subnet_id = "subnet-a9faec84"
+    aws.tags = {
+      'Name' => "#{ENV['USER']} APB OcpVagrant #{Time.now.getutc}",
+    }
+    aws.block_device_mapping = [
+      # Storage for /tmp
+      {
+        'DeviceName' => "/dev/sdb",
+        'VirtualName' => "root",
+        'Ebs.VolumeSize' => 100,
+        'Ebs.DeleteOnTermination' => true
+      },
+      # Storage for /var/lib/docker
+      {
+        'DeviceName' => "/dev/sdc",
+        'VirtualName' => "root",
+        'Ebs.VolumeSize' => 100,
+        'Ebs.DeleteOnTermination' => true
+      },
+    ]
+
+    override.vm.provision :shell, :path => "setup_aws.sh"
+    override.vm.provision :shell, :path => "setup.sh"
+  end
+
+  prov_env = {
+    DOCKERHUB_USER: ENV['DOCKERHUB_USER'],
+    DOCKERHUB_PASS: ENV['DOCKERHUB_PASS']
+  }
+
+  if ENV['BUILD_CATALOG']
+    prov_env['BUILD_CATALOG'] = 1
+  end
+end
