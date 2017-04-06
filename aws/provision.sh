@@ -6,8 +6,8 @@ GOPATH=/home/ec2-user
 KUBE_INCUBATOR_DIR=$GOPATH/src/github.com/kubernetes-incubator
 SERVICE_CAT_REPO=https://www.github.com/kubernetes-incubator/service-catalog.git
 SERVICE_CAT_DIR=$KUBE_INCUBATOR_DIR/service-catalog
-APISERVER_IMG="eriknelson/apiserver:canary"
-CONTROLLER_MANAGER_IMG="eriknelson/controller-manager:canary"
+APISERVER_IMG="quay.io/kubernetes-service-catalog/apiserver:canary"
+CONTROLLER_MANAGER_IMG="quay.io/kubernetes-service-catalog/controller-manager:canary"
 
 # Launch oc cluster up create user with cluster root
 /shared/create_cluster_user.sh $CLUSTER_USER
@@ -71,6 +71,12 @@ echo "Successfully bootstrapped broker!"
 echo "export ASB_ROUTE=$ASB_ROUTE" >> /etc/profile
 cat /shared/broker.templ.yaml | sed "s|{{ASB_ROUTE}}|$ASB_ROUTE|" \
   > /home/ec2-user/broker.yaml
+
+cd /home/ec2-user
+# Download kubectl 1.6 and move to bin
+curl -o kubectl https://storage.googleapis.com/kubernetes-release/release/v1.6.0-beta.3/bin/linux/amd64/kubectl
+chmod +x kubectl
+mv kubectl /usr/bin/
 
 echo "============================================================"
 echo "Cluster: $CLUSTER_IP:8443"
