@@ -40,8 +40,8 @@ objects:
           - "10"
           - --cors-allowed-origins
           - ${CORS_ALLOWED_ORIGIN}
-          image: apiserver:canary
-          imagePullPolicy: Never
+          image: quay.io/kubernetes-service-catalog/apiserver:canary
+          imagePullPolicy: Always
           name: apiserver
           ports:
           - containerPort: 6443
@@ -127,8 +127,8 @@ objects:
           - "5"
           - --service-catalog-api-server-url
           - http://$(APISERVER_SERVICE_HOST):$(APISERVER_SERVICE_PORT)
-          image: controller-manager:canary
-          imagePullPolicy: Never
+          image: quay.io/kubernetes-service-catalog/controller-manager:canary
+          imagePullPolicy: Always
           name: controller-manager
           ports:
           - containerPort: 8080
@@ -183,4 +183,4 @@ parameters:
   displayName: CORS Allowed Origin
   name: CORS_ALLOWED_ORIGIN
   required: true
-  value: localhost:9000
+  value: localhost
