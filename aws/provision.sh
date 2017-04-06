@@ -52,6 +52,7 @@ mkdir -p $GOPATH/src/github.com/fusor
 cd $GOPATH/src/github.com/fusor
 git clone https://github.com/fusor/ansible-service-broker.git
 cd ansible-service-broker/scripts/asbcli
+git checkout forced-async-prov
 pip install -r ./requirements.txt
 ./asbcli up $CLUSTER_IP:8443 \
   --cluster-user=admin --cluster-pass=admin \

@@ -63,13 +63,13 @@ ifup eth1
 systemctl enable docker; systemctl start docker
 
 
-wget https://github.com/openshift/origin/releases/download/v1.5.0-alpha.3/openshift-origin-client-tools-v1.5.0-alpha.3-cf7e336-linux-64bit.tar.gz -O /tmp/oc.tar.gz
+wget https://github.com/openshift/origin/releases/download/v3.6.0-alpha.0/openshift-origin-client-tools-v3.6.0-alpha.0-0343989-linux-64bit.tar.gz -O /tmp/oc.tar.gz
 
 tar -xzf /tmp/oc.tar.gz -C /tmp
-mv /tmp/openshift-origin-client-tools-v1.5.0-alpha.3-cf7e336-linux-64bit/oc /usr/local/bin/
+mv /tmp/openshift-origin-client-tools-v3.6.0-alpha.0-0343989-linux-64bit/oc /usr/local/bin/
 
 MAC_ADDRESS=$(ifconfig eth0 | grep ether | awk '{print $2}')
 PUBLIC_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/network/interfaces/macs/$MAC_ADDRESS/public-hostname)
 
-/usr/local/bin/oc cluster up --routing-suffix=$CLUSTER_HOSTNAME --public-hostname=$CLUSTER_HOSTNAME
+/usr/local/bin/oc cluster up --routing-suffix=$CLUSTER_HOSTNAME --public-hostname=$CLUSTER_HOSTNAME --version=v3.6.0-alpha.0
 /shared/provision.sh $PUBLIC_HOSTNAME $DOCKERHUB_USER $DOCKERHUB_PASS
