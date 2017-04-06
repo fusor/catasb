@@ -12,6 +12,13 @@ if !ENV['DOCKERHUB_USER'] || !ENV['DOCKERHUB_PASS'] || !ENV['AWS_SECRET_ACCESS_K
   exit 1
 end
 
+if ENV['ELASTIC_IP']
+  puts "Will associate this instance to elastic_ip:  #{ENV['ELASTIC_IP']}"
+  elastic_ip = ENV['ELASTIC_IP']
+else
+  elastic_ip = false
+end
+
 Vagrant.configure("2") do |config|
   config.vm.box = BASE_BOX
   config.vm.hostname = "catasb"
@@ -32,6 +39,7 @@ Vagrant.configure("2") do |config|
     aws.instance_type = "c4.2xlarge"
     aws.ami = "ami-b63769a1"
     aws.security_groups= ["sg-0cff9e73"]
+    aws.elastic_ip = elastic_ip
     aws.subnet_id = "subnet-a9faec84"
     aws.tags = {
       'Name' => "#{ENV['USER']} APB OcpVagrant #{Time.now.getutc}",
