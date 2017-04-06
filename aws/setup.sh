@@ -49,7 +49,7 @@ yum clean all
 yum -y update
 yum -y install deltarpm
 
-yum -y install wget git net-tools bind-utils bridge-utils gcc docker vim ansible atomic-openshift golang
+yum -y install wget git net-tools bind-utils bridge-utils gcc docker vim ansible atomic-openshift golang nodejs
 
 /bin/easy_install pip
 
