@@ -1,12 +1,15 @@
 CLUSTER_IP=$1
+ROUTING_SUFFIX=$CLUSTER_IP.nip.io
 CLUSTER_USER=admin
 KUBE_INCUBATOR_DIR=$GOPATH/src/github.com/kubernetes-incubator
 SERVICE_CAT_REPO=https://www.github.com/kubernetes-incubator/service-catalog.git
 SERVICE_CAT_DIR=$KUBE_INCUBATOR_DIR/service-catalog
-APISERVER_IMG="eriknelson/apiserver:canary"
-CONTROLLER_MANAGER_IMG="eriknelson/controller-manager:canary"
+APISERVER_IMG="quay.io/kubernetes-service-catalog/apiserver:canary"
+CONTROLLER_MANAGER_IMG="quay.io/kubernetes-service-catalog/controller-manager:canary"
+TARGET_PROJECT=foo
+ASB_BRANCH=forced-async-prov
 
-oc cluster up
+oc cluster up --routing-suffix=$ROUTING_SUFFIX
 
 # Launch oc cluster up create user with cluster root
 /shared/create_cluster_user.sh $CLUSTER_USER
@@ -50,6 +53,7 @@ chown -R vagrant:vagrant /home/vagrant/.kube
 mkdir -p $GOPATH/src/github.com/fusor
 cd $GOPATH/src/github.com/fusor
 git clone https://github.com/fusor/ansible-service-broker.git
+pushd ansible-service-broker && git checkout $ASB_BRANCH && popd
 cd ansible-service-broker/scripts/asbcli
 pip install -r ./requirements.txt
 ./asbcli up $CLUSTER_IP:8443 \
@@ -62,13 +66,19 @@ until oc get pods | grep -iEm1 "etcd.*?running" | grep -v deploy; do : ; done
 sleep 20
 
 ASB_ROUTE=$(oc get routes | grep ansible-service-broker | awk '{print $2}')
+echo "export ASB_ROUTE=$ASB_ROUTE" >> /etc/profile
 echo "Ansible Service Broker Route: $ASB_ROUTE"
 echo "Bootstrapping broker..."
 curl -X POST $ASB_ROUTE/v2/bootstrap
 echo "Successfully bootstrapped broker!"
-echo "export ASB_ROUTE=$ASB_ROUTE" >> /etc/profile
+
+# Resource defs
 cat /shared/broker.templ.yaml | sed "s|{{ASB_ROUTE}}|$ASB_ROUTE|" \
   > /home/vagrant/broker.yaml
+oc new-project $TARGET_PROJECT
+cp /shared/binding.yaml /home/vagrant
+cp /shared/instance.yaml /home/vagrant
+chown vagrant:vagrant /home/vagrant/{binding,instance,broker}.yaml
 
 echo "============================================================"
 echo "Cluster: $CLUSTER_IP:8443"

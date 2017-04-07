@@ -1,0 +1,10 @@
+apiVersion: servicecatalog.k8s.io/v1alpha1
+kind: Instance
+metadata:
+  name: foo
+  namespace: foo
+spec:
+  serviceClassName: curlcreds-apb
+  planName: default
+  parameters:
+    url: ernelsondt.usersys.redhat.com:11080/kd/creds.json
