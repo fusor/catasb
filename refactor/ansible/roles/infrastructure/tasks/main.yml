@@ -141,6 +141,16 @@
       overwrite=yes
       value="{{ my_eip.public_ip }}"
 
+  - name: Set DNS Record '*.{{ target_subdomain }}.{{ target_dns_zone }}' to Elastic IP {{ my_eip.public_ip }}
+    route53: >
+      command=create
+      zone="{{ target_dns_zone }}"
+      record="*.{{ target_subdomain }}.{{ target_dns_zone }}"
+      type=A
+      ttl=60
+      overwrite=yes
+      value="{{ my_eip.public_ip }}"
+
   - name: Wait for SSH to come up on {{ my_eip.public_ip }}
     wait_for:
       host: "{{ my_eip.public_ip }}"

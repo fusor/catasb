@@ -5,6 +5,8 @@ target_subdomain: ""
 instance_name: ""
 instance_lookup_value: ""
 
+openshift_hostname: "{{target_subdomain}}.{{target_dns_zone}}"
+
 var_lib_docker_ebs_device_name: "sdc"
 var_lib_docker_block_device: "/dev/xvdc"
 var_lib_docker_mount_point: "/var/lib/docker"

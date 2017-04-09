@@ -1,0 +1,21 @@
+---
+  - name: Download OpenShift Client Tools "{{ oc_client_url }}"
+    get_url:
+      url: "{{ oc_client_url }}"
+      dest: /tmp/{{ oc_client_file }}
+      mode: 0440
+    register: get_oc_client_tools
+
+  - name: Untar oc client tools
+    shell: tar -xzf /tmp/{{ oc_client_file }} -C /tmp
+    when: get_oc_client_tools.changed
+    register: untar_oc_client_tools
+
+  - name: Install oc to /usr/local/bin
+    shell: mv /tmp/{{ oc_client_ver }}/oc /usr/local/bin/
+    when: untar_oc_client_tools.changed
+    register: install_oc_client_tools
+
+  - name: Run oc cluster up
+    shell: /usr/local/bin/oc cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=v3.6.0-alpha.0
+    when: install_oc_client_tools.changed

@@ -6,7 +6,7 @@
     - aws_repo_setup
     - packages
     - docker_setup
-    #- ocp_setup
+    - openshift_setup
     #- cluster_users
     #- service_catalog_setup
     #- ansible_service_broker_setup
