@@ -1,0 +1,22 @@
+---
+ssh_key_name: ""
+target_dns_zone: ""
+target_subdomain: ""
+instance_name: ""
+instance_lookup_value: ""
+
+var_lib_docker_ebs_device_name: "sdc"
+var_lib_docker_block_device: "/dev/xvdc"
+var_lib_docker_mount_point: "/var/lib/docker"
+
+docker_vg_ebs_device_name: "sdd"
+docker_vg_block_device: "/dev/xvdd"
+docker_vg_name: "docker_vg"
+
+persistedvol_ebs_device_name: "sde"
+persistedvol_block_device: "/dev/xvde"
+persistedvol_mount_point: "/persistedvolumes"
+
+tmp_ebs_device_name: "sdf"
+tmp_block_device: "/dev/xvdf"
+tmp_mount_point: "/tmp"

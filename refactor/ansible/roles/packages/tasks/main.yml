@@ -1,0 +1,24 @@
+---
+  - name: install packages
+    yum:
+      name: "{{ item }}"
+      state: installed
+    with_items:
+      - "deltarpm"
+      - "wget"
+      - "git"
+      - "net-tools"
+      - "bind-utils"
+      - "bridge-utils"
+      - "gcc"
+      - "docker"
+      - "vim"
+      - "vim-enhanced"
+      - "golang"
+      - "nodejs"
+      - "ansible"
+
+  - name: Installp pip
+    easy_install:
+      name: pip
+      state: latest

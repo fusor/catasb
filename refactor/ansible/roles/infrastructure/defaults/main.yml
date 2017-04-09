@@ -1,0 +1,15 @@
+---
+#aws_tag_prefix is used to name the various VPC resources so they are only created once per account
+#even if shared with multiple IAM users
+aws_tag_prefix: "test_awsdemo"
+aws_region: us-east-1
+aws_ami_id: ami-b63769a1
+#instance_type: t2.micro
+instance_type: c4.2xlarge
+
+aws_sec_group_name: "{{ aws_tag_prefix }}_security_group"
+vpc_name: "{{ aws_tag_prefix }}_vpc"
+vpc_cidr_block: "10.0.0.0/16"
+vpc_subnet_cidr: "10.0.0.0/24"
+vpc_subnet_name: "{{ aws_tag_prefix }}_subnet"
+vpc_route_table_name: "{{ aws_tag_prefix }}_route_table"

@@ -1,0 +1,21 @@
+export AWS_SSH_KEY_NAME="splice"
+export TARGET_DNS_ZONE="ec2.dog8code.com"
+
+export OWNERS_NAME=`whoami`
+export TARGET_SUBDOMAIN="${OWNERS_NAME}"
+
+#####
+# We will tag the created ec2 instance with 'INSTANCE_NAME'
+# A dynamic inventory script will rely on the tag name for finding the instance.
+# The inventory script converts '-' and '.' and transforms them to '_'
+# We are introducing TAG_NAME to do this transform so we can
+# use TAG_NAME as a variable for the group lookup
+#####
+export INSTANCE_NAME="${OWNERS_NAME}-${TARGET_SUBDOMAIN}.${TARGET_DNS_ZONE}"
+export INSTANCE_LOOKUP_VALUE=`echo ${INSTANCE_NAME//./_}`
+export INSTANCE_LOOKUP_VALUE=`echo ${INSTANCE_LOOKUP_VALUE//-/_}`
+
+
+export EC2_USER="ec2-user"
+export EXTRA_VARS="{\"ssh_key_name\":\"${AWS_SSH_KEY_NAME}\", \"target_dns_zone\":\"${TARGET_DNS_ZONE}\", \"target_subdomain\":\"${TARGET_SUBDOMAIN}\", \"instance_name\":\"${INSTANCE_NAME}\", \"instance_lookup_value\":\"${INSTANCE_LOOKUP_VALUE}\"}"
+export ANSIBLE_HOST_KEY_CHECKING=False
