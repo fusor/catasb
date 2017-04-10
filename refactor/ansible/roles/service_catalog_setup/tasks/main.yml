@@ -37,14 +37,10 @@
     shell: "{{ oc_cmd }} process -f /tmp/service-catalog.templ.yaml | {{ oc_cmd }} create -f -"
     when: copy_svc_catalog_tmp.changed
 
-# TODO: This is bad. HACK: Wait until apiserver is up
-# Tap into cluster events somehow?
-#until oc get pods | grep -qiEm1 "apiserver.*?running"; do : ; done
-# Get apiserver ip address
-#API_SRV_IP=$(/shared/get_apiserver_ip.sh)
-#SERVICE_CAT_ENDPOINT="$API_SRV_IP:8081"
-#echo "Service Catalog Endpoint: $SERVICE_CAT_ENDPOINT"
-#mkdir /home/vagrant/.kube
-#cat /shared/kubeconfig.templ.yaml | sed "s|{{SERVICE_CATALOG_ENDPOINT}}|$SERVICE_CAT_ENDPOINT|" \
-#  > /home/vagrant/.kube/service-catalog.config
-#chown -R vagrant:vagrant /home/vagrant/.kube
+  - name: Waiting 10 minutes for API server pod to come up
+    action:
+      shell "{{ oc_cmd }}" get pods | grep -qiEm1 "apiserver.*?running"
+    register: wait_for_api_server_running
+    until: wait_for_api_server_running.rc == 0
+    retries: 60
+    delay: 10
