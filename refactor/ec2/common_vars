@@ -1,7 +1,8 @@
 export AWS_SSH_KEY_NAME="splice"
 export TARGET_DNS_ZONE="ec2.dog8code.com"
 
-export OWNERS_NAME=`whoami`
+#export OWNERS_NAME=`whoami`
+export OWNERS_NAME="demo"
 export TARGET_SUBDOMAIN="${OWNERS_NAME}"
 
 #####

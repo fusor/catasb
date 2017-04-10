@@ -1,5 +1,10 @@
 - hosts: localhost
   gather_facts: True
+  pre_tasks:
+    - name: Check target_subdomain is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'target_subdomain'"
+      when: ( (target_subdomain is undefined) or (target_subdomain is none) or (target_subdomain | trim == '') )
   roles:
     - infrastructure
   tasks:
