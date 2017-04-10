@@ -13,12 +13,12 @@
 
   - name: Install oc to /usr/local/bin
     shell: cp /tmp/{{ openshift_server_release_ver }}/oc {{ oc_client_install_path }}
-    #when: untar_openshift_release.changed
+    when: untar_openshift_release.changed
     register: install_oc_client_tools
 
   - name: Install oadm to /usr/local/bin
     shell: cp /tmp/{{ openshift_server_release_ver }}/oadm {{ oc_client_install_path }}
-    #when: untar_openshift_release.changed
+    when: untar_openshift_release.changed
     register: install_oadm_client_tools
 
   - name: Wait, up to 20 minutes, till we can SSH into the host with the DNS name '{{ openshift_hostname }}'

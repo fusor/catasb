@@ -1,14 +1,41 @@
---
-#  APISERVER_IMG="quay.io/kubernetes-service-catalog/apiserver:canary"
-#  CONTROLLER_MANAGER_IMG="quay.io/kubernetes-service-catalog/controller-manager:canary"
+---
+  - name: Install docker-py through pip as it's a requirement of ansible dockcer module
+    pip:
+      name: docker-py
 
-#    docker pull $APISERVER_IMG
-#    docker pull $CONTROLLER_MANAGER_IMG
-#    docker tag $APISERVER_IMG apiserver:canary
-#    docker tag $CONTROLLER_MANAGER_IMG controller-manager:canary
-    # Deploy service-catalog
-#    oc new-project service-catalog
-#    oc process -f /shared/service-catalog.templ.yaml | oc create -f -
+  - name: Docker pull {{ svc_cat_apiserver_img }}
+    docker_image:
+      name: "{{ svc_cat_apiserver_img }}"
+    register: docker_pull_svc_cat_apiserver
+
+  - name: Docker tag apiserver
+    shell: docker tag {{ svc_cat_apiserver_img }} {{ svc_cat_apiserver_tag }}
+    when: docker_pull_svc_cat_apiserver.changed
+
+  - name: Docker pull {{ svc_cat_controller_mgr_img }}
+    docker_image:
+      name: "{{ svc_cat_controller_mgr_img }}"
+      tag: "{{ svc_cat_controller_mgr_tag }}"
+    register: docker_pull_svc_cat
+
+  - name: Docker tag service catalog controller
+    shell: docker tag {{ svc_cat_controller_mgr_img }} {{ svc_cat_controller_mgr_tag }}
+    when: docker_pull_svc_cat.changed
+
+  - name: Create a new project for the service-catalog
+    shell: "{{ oc_cmd }} new-project service-catalog"
+    when: docker_pull_svc_cat.changed
+    register: new_svc_cat_project
+
+  - name: Copy service-catalog.templ.yaml
+    copy:
+      src: service-catalog.templ.yaml
+      dest: /tmp/service-catalog.templ.yaml
+    register: copy_svc_catalog_tmp
+
+  - name: Install Service Catalog through OC Template
+    shell: "{{ oc_cmd }} process -f /tmp/service-catalog.templ.yaml | {{ oc_cmd }} create -f -"
+    when: copy_svc_catalog_tmp.changed
 
 # TODO: This is bad. HACK: Wait until apiserver is up
 # Tap into cluster events somehow?

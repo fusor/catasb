@@ -1,12 +1,3 @@
 openshift_server_release_ver: openshift-origin-server-v3.6.0-alpha.0-0343989-linux-64bit
 openshift_server_release_file: "{{ openshift_server_release_ver}}.tar.gz"
 openshift_server_release_url: https://github.com/openshift/origin/releases/download/v3.6.0-alpha.0/{{ openshift_server_release_file }}
-
-cluster_user: admin
-cluster_user_password: admin
-cluster_system_admin: "system:admin"
-service_catalog_user: "system:serviceaccount:service-catalog:default"
-
-oc_client_install_path: "/usr/local/bin"
-oc_cmd: "{{ oc_client_install_path }}/oc"
-oadm_cmd: "{{ oc_client_install_path }}/oadm"

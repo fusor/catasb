@@ -18,7 +18,7 @@
       - "nodejs"
       - "ansible"
 
-  - name: Installp pip
+  - name: Install pip
     easy_install:
       name: pip
       state: latest

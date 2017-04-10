@@ -8,10 +8,10 @@ instance_lookup_value: ""
 #aws_tag_prefix is used to name the various VPC resources so they are only created once per account
 #even if shared with multiple IAM users
 aws_tag_prefix: "test_awsdemo"
-#aws_region: us-east-1
-#aws_ami_id: ami-b63769a1
-aws_region: us-east-2
-aws_ami_id: ami-0932686c
+aws_region: us-east-1
+aws_ami_id: ami-b63769a1
+#aws_region: us-east-2
+#aws_ami_id: ami-0932686c
 
 instance_type: c4.2xlarge
 
@@ -33,3 +33,13 @@ persistedvol_mount_point: "/persistedvolumes"
 tmp_ebs_device_name: "sdf"
 tmp_block_device: "/dev/xvdf"
 tmp_mount_point: "/tmp"
+
+
+cluster_user: admin
+cluster_user_password: admin
+cluster_system_admin: "system:admin"
+service_catalog_user: "system:serviceaccount:service-catalog:default"
+
+oc_client_install_path: "/usr/local/bin"
+oc_cmd: "{{ oc_client_install_path }}/oc"
+oadm_cmd: "{{ oc_client_install_path }}/oadm"

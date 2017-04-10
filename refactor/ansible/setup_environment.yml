@@ -7,5 +7,5 @@
     - packages
     - docker_setup
     - openshift_setup
-    #- service_catalog_setup
+    - service_catalog_setup
     #- ansible_service_broker_setup
