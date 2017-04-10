@@ -5,7 +5,18 @@ target_subdomain: ""
 instance_name: ""
 instance_lookup_value: ""
 
+#aws_tag_prefix is used to name the various VPC resources so they are only created once per account
+#even if shared with multiple IAM users
+aws_tag_prefix: "test_awsdemo"
+#aws_region: us-east-1
+#aws_ami_id: ami-b63769a1
+aws_region: us-east-2
+aws_ami_id: ami-0932686c
+
+instance_type: c4.2xlarge
+
 openshift_hostname: "{{target_subdomain}}.{{target_dns_zone}}"
+openshift_url: "{{ openshift_hostname }}:8443"
 
 var_lib_docker_ebs_device_name: "sdc"
 var_lib_docker_block_device: "/dev/xvdc"

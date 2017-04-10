@@ -1,20 +1,25 @@
 ---
-  - name: Download OpenShift Client Tools "{{ oc_client_url }}"
+  - name: Download OpenShift Server Build to get oc and oadam "{{ openshift_server_release_url }}"
     get_url:
-      url: "{{ oc_client_url }}"
-      dest: /tmp/{{ oc_client_file }}
+      url: "{{ openshift_server_release_url }}"
+      dest: /tmp/{{ openshift_server_release_file }}
       mode: 0440
-    register: get_oc_client_tools
+    register: get_openshift_release
 
-  - name: Untar oc client tools
-    shell: tar -xzf /tmp/{{ oc_client_file }} -C /tmp
-    when: get_oc_client_tools.changed
-    register: untar_oc_client_tools
+  - name: Untar {{ openshift_server_release_file }}
+    shell: tar -xzf /tmp/{{ openshift_server_release_file }} -C /tmp
+    when: get_openshift_release.changed
+    register: untar_openshift_release
 
   - name: Install oc to /usr/local/bin
-    shell: mv /tmp/{{ oc_client_ver }}/oc /usr/local/bin/
-    when: untar_oc_client_tools.changed
+    shell: cp /tmp/{{ openshift_server_release_ver }}/oc {{ oc_client_install_path }}
+    #when: untar_openshift_release.changed
     register: install_oc_client_tools
+
+  - name: Install oadm to /usr/local/bin
+    shell: cp /tmp/{{ openshift_server_release_ver }}/oadm {{ oc_client_install_path }}
+    #when: untar_openshift_release.changed
+    register: install_oadm_client_tools
 
   - name: Wait, up to 20 minutes, till we can SSH into the host with the DNS name '{{ openshift_hostname }}'
     wait_for:
@@ -25,5 +30,39 @@
       state: started
 
   - name: Run oc cluster up
-    shell: /usr/local/bin/oc cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=v3.6.0-alpha.0
+    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=v3.6.0-alpha.0"
     when: install_oc_client_tools.changed
+    register: oc_cluster_up
+
+  #
+  # Add permissions to desired openshift user
+  # Would be nice if we looked at existing users and permissions and made decisions of what to run
+  # for now, will only run these if we've run oc cluster up
+  #
+  - name: Login as {{ cluster_system_admin }}
+    shell: "{{ oc_cmd }} login -u {{ cluster_system_admin }}"
+    when: oc_cluster_up.changed
+
+  - name: Create user {{ cluster_user }}
+    shell: "{{ oc_cmd }} create user {{ cluster_user }}"
+    when: oc_cluster_up.changed
+
+  - name: Add cluster-admin role to {{ cluster_user }}
+    shell: "{{ oadm_cmd }} policy add-cluster-role-to-user cluster-admin {{ cluster_user }}"
+    when: oc_cluster_up.changed
+
+  - name: Add cluster-admin role to {{ service_catalog_user }}
+    shell: "{{ oadm_cmd }} policy add-cluster-role-to-user cluster-admin {{ service_catalog_user }}"
+    when: oc_cluster_up.changed
+
+  - name: Add privileged scc to {{ cluster_user }}
+    shell: "{{ oadm_cmd }} policy add-scc-to-user privileged {{ cluster_user }}"
+    when: oc_cluster_up.changed
+
+  - name: Add anyuid scc to system:authenticated
+    shell: "{{ oadm_cmd }} policy add-scc-to-group anyuid system:authenticated"
+    when: oc_cluster_up.changed
+
+  - name: Login as {{ cluster_user }}
+    shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }}"
+    when: oc_cluster_up.changed

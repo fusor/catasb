@@ -4,7 +4,6 @@
 aws_tag_prefix: "test_awsdemo"
 aws_region: us-east-1
 aws_ami_id: ami-b63769a1
-#instance_type: t2.micro
 instance_type: c4.2xlarge
 
 aws_sec_group_name: "{{ aws_tag_prefix }}_security_group"

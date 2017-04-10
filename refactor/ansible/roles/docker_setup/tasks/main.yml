@@ -16,6 +16,7 @@
       owner: root
       group: root
       mode: 0644
+    register: sysconfig_docker
 
   - name: Copy /etc/sysconfig/docker-network
     copy:
@@ -44,3 +45,4 @@
       name: docker
       enabled: yes
       state: restarted
+    when: sysconfig_docker.changed
