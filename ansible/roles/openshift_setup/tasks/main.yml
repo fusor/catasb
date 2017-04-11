@@ -57,6 +57,12 @@
       timeout: 1200
       state: started
 
+  - name: Run oc cluster up
+    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/dymurray/origin"
+
+  - name: Run oc cluster down
+    shell: "{{ oc_cmd }} cluster down"
+
   - name: Add extension script to oc config to talk to svc catalog
     template:
       src: extension.j2
