@@ -57,11 +57,27 @@
       timeout: 1200
       state: started
 
+  - name: Running oc cluster status
+    shell: "{{ oc_cmd }} cluster status"
+    register: oc_cluster_status
+    ignore_errors: yes
+
+  - name: Set a fact to track the first run of oc cluster up
+    set_fact:
+      oc_cluster_up_first_run: False
+
+  - name: This is the first run so set to True
+    set_fact:
+      oc_cluster_up_first_run: True
+    when: "not 'cluster was started' in oc_cluster_status.stdout"
+
   - name: Run oc cluster up
     shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/dymurray/origin"
+    when: oc_cluster_up_first_run
 
   - name: Run oc cluster down
     shell: "{{ oc_cmd }} cluster down"
+    when: oc_cluster_up_first_run
 
   - name: Add extension script to oc config to talk to svc catalog
     template:
@@ -73,25 +89,20 @@
     register: extension_script_result
 
   - name: Edit master-config to allow extension scripts
-    replace:
+    lineinfile:
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      regexp: "extensionDevelopment: false"
-      replace: "extensionDevelopment: true"
+      regexp: 'extensionDevelopment:'
+      line: '  extensionDevelopment: true'
 
   - name: Add extension script to assetConfig
-    replace:
+    lineinfile:
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      regexp: "extensionScripts: null"
-      replace: "extensionScripts: /var/lib/origin/openshift.local.config/extension.js"
-
-  - name: Running oc cluster status
-    shell: "{{ oc_cmd }} cluster status"
-    register: oc_cluster_status
-    ignore_errors: yes
+      regexp: "extensionScripts:"
+      line: "  extensionScripts: /var/lib/origin/openshift.local.config/extension.js"
 
   - name: Run oc cluster up
     shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/dymurray/origin"
-    when: "not 'cluster was started' in oc_cluster_status.stdout"
+    when: oc_cluster_up_first_run
     register: oc_cluster_up
 
   #
