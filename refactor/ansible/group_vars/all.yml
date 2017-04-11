@@ -8,8 +8,16 @@ instance_lookup_value: ""
 #aws_tag_prefix is used to name the various VPC resources so they are only created once per account
 #even if shared with multiple IAM users
 aws_tag_prefix: "test_awsdemo"
+
+##
+# us-east-1
+##
 aws_region: us-east-1
 aws_ami_id: ami-b63769a1
+
+##
+# us-east-2
+##
 #aws_region: us-east-2
 #aws_ami_id: ami-0932686c
 

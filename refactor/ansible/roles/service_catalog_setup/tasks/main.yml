@@ -1,5 +1,5 @@
 ---
-  - name: Install docker-py through pip as it's a requirement of ansible dockcer module
+  - name: Install docker-py through pip as it's a requirement of ansible docker module
     pip:
       name: docker-py
 
@@ -44,3 +44,26 @@
     until: wait_for_api_server_running.rc == 0
     retries: 60
     delay: 10
+
+  - name: Get route for apiserver
+    shell: "'{{ oc_cmd }}' get routes | grep apiserver | awk '{print $2}'"
+    register: result_get_route_apiserver
+    retries: 6
+    delay: 10
+
+  - set_fact:
+      service_catalog_endpoint:  "{{ result_get_route_apiserver.stdout }}"
+
+  - name: Creating .kube/service-catalog.config from kubeconfig.templ.yaml.j2
+    template:
+      src: kubeconfig.templ.yaml.j2
+      dest: /root/.kube/service-catalog.config
+      owner: root
+      group: root
+      mode: 0644
+
+  - lineinfile: dest=/root/.bashrc line="{{ item }}" create=yes
+    with_items:
+      - alias catctl="kubectl --kubeconfig=/root/.kube/service-catalog.config"
+
+  

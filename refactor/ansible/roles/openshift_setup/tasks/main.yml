@@ -11,15 +11,32 @@
     when: get_openshift_release.changed
     register: untar_openshift_release
 
-  - name: Install oc to /usr/local/bin
-    shell: cp /tmp/{{ openshift_server_release_ver }}/oc {{ oc_client_install_path }}
-    when: untar_openshift_release.changed
-    register: install_oc_client_tools
+  - name: Install oc
+    copy:
+      remote_src: True
+      src: /tmp/{{ openshift_server_release_ver }}/oc
+      dest: /usr/local/bin/oc
+      owner: root
+      group: root
+      mode: 0755
 
-  - name: Install oadm to /usr/local/bin
-    shell: cp /tmp/{{ openshift_server_release_ver }}/oadm {{ oc_client_install_path }}
-    when: untar_openshift_release.changed
-    register: install_oadm_client_tools
+  - name: Install oadm
+    copy:
+      remote_src: True
+      src: /tmp/{{ openshift_server_release_ver }}/oadm
+      dest: /usr/local/bin/oadm
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Install kubectl
+    copy:
+      remote_src: True
+      src: /tmp/{{ openshift_server_release_ver }}/kubectl
+      dest: /usr/local/bin/kubectl
+      owner: root
+      group: root
+      mode: 0755
 
   - name: Wait, up to 20 minutes, till we can SSH into the host with the DNS name '{{ openshift_hostname }}'
     wait_for:
@@ -29,9 +46,13 @@
       timeout: 1200
       state: started
 
+  - name: Run oc cluster status
+    shell: "{{ oc_cmd }} cluster status"
+    register: oc_cluster_status
+
   - name: Run oc cluster up
     shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=v3.6.0-alpha.0"
-    when: install_oc_client_tools.changed
+    when: "not 'cluster was started' in oc_cluster_status.stdout"
     register: oc_cluster_up
 
   #
