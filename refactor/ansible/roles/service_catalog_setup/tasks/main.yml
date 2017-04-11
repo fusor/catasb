@@ -27,6 +27,9 @@
     when: docker_pull_svc_cat.changed
     register: new_svc_cat_project
 
+  - name: Ensuring service-catalog project is selected for those cases of being re-run and skipping the new-project creation
+    shell: "{{ oc_cmd }} project service-catalog"
+
   - name: Copy service-catalog.templ.yaml
     copy:
       src: service-catalog.templ.yaml
@@ -65,5 +68,3 @@
   - lineinfile: dest=/root/.bashrc line="{{ item }}" create=yes
     with_items:
       - alias catctl="kubectl --kubeconfig=/root/.kube/service-catalog.config"
-
-  

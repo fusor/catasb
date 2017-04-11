@@ -46,9 +46,10 @@
       timeout: 1200
       state: started
 
-  - name: Run oc cluster status
+  - name: Running oc cluster status
     shell: "{{ oc_cmd }} cluster status"
     register: oc_cluster_status
+    ignore_errors: yes
 
   - name: Run oc cluster up
     shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=v3.6.0-alpha.0"

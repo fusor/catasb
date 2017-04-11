@@ -51,3 +51,6 @@ service_catalog_user: "system:serviceaccount:service-catalog:default"
 oc_client_install_path: "/usr/local/bin"
 oc_cmd: "{{ oc_client_install_path }}/oc"
 oadm_cmd: "{{ oc_client_install_path }}/oadm"
+
+dockerhub_user_name: "foo"
+dockerhub_user_password: "foo"
