@@ -1,5 +1,5 @@
 ---
-  - name: Download OpenShift Server Build to get oc and oadam "{{ openshift_server_release_url }}"
+  - name: Download OpenShift Server Build to get oc and oadm "{{ openshift_server_release_url }}"
     get_url:
       url: "{{ openshift_server_release_url }}"
       dest: /tmp/{{ openshift_server_release_file }}
@@ -74,13 +74,13 @@
 
   - name: Edit master-config to allow extension scripts
     replace:
-      path: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
       regexp: "extensionDevelopment: false"
       replace: "extensionDevelopment: true"
 
   - name: Add extension script to assetConfig
     replace:
-      path: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
       regexp: "extensionScripts: null"
       replace: "extensionScripts: /var/lib/origin/openshift.local.config/extension.js"
 
