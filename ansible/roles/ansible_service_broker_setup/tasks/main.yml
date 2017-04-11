@@ -73,3 +73,16 @@
   - name: Bootstrap Ansible Service Broker
     shell: curl -X POST {{ ansible_service_broker_route }}/v2/bootstrap
     when: asbcli_up.changed
+
+  - name: Creating /tmp/ansible_service_broker.yaml
+    template:
+      src: ansible_service_broker.yaml.j2
+      dest: /tmp/ansible_service_broker.yaml
+      owner: root
+      group: root
+      mode: 0644
+    register: ansible_service_broker_template
+
+  - name: Create Broker resource in Service Catalog
+    shell: "{{ kubectl_cmd }} --kubeconfig=/root/.kube/service-catalog.config create -f /tmp/ansible_service_broker.yaml"
+    when: ansible_service_broker_template.changed
