@@ -48,6 +48,12 @@
     retries: 60
     delay: 10
 
+  # We would like to use the route, but had problems with integration
+  # Keeping the route information here so we can revisit
+  # Issues:
+  # - We need to login, unsure what user/project to authenticate as
+  # - SSL certs complained they didn't match the route name
+  #
   - name: Get route for apiserver
     shell: "'{{ oc_cmd }}' get routes | grep apiserver | awk '{print $2}'"
     register: result_get_route_apiserver
@@ -56,6 +62,16 @@
 
   - set_fact:
       service_catalog_endpoint:  "{{ result_get_route_apiserver.stdout }}"
+
+  # Falling back to using the unauthenticated IP of the Pod/Port for now
+  - name: Get IP of APIServer
+    shell: "{{ oc_cmd }} describe pod `{{ oc_cmd }} get pods | grep apiserver | awk '{print $1}'` | grep IP | awk '{print $2}'"
+    register: result_apiserver_ip
+    retries: 6
+    delay: 10
+
+  - set_fact:
+      service_catalog_api_server_ip:  "{{ result_apiserver_ip.stdout }}"
 
   - name: Creating .kube/service-catalog.config from kubeconfig.templ.yaml.j2
     template:

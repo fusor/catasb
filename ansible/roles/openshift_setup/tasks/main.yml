@@ -29,10 +29,21 @@
       group: root
       mode: 0755
 
+  - name: Download Kubernetes client tools to get latest kubectl, "{{ kubernetes_client_url }}"
+    get_url:
+      url: "{{ kubernetes_client_url }}"
+      dest: /tmp/{{ kubernetes_client_file }}
+      mode: 0440
+    register: get_kubernetes_client_release
+
+  - name: Untar {{ kubernetes_client_file }}
+    shell: tar -xzf /tmp/{{ kubernetes_client_file }} -C /tmp
+    when: get_kubernetes_client_release.changed
+
   - name: Install kubectl
     copy:
       remote_src: True
-      src: /tmp/{{ openshift_server_release_ver }}/kubectl
+      src:  /tmp/kubernetes/client/bin/kubectl
       dest: /usr/local/bin/kubectl
       owner: root
       group: root
