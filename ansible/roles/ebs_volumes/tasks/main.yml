@@ -1,0 +1,47 @@
+---
+  - name: Create filesystem for /var/lib/docker
+    filesystem:
+      fstype: ext3
+      dev: "{{ var_lib_docker_block_device }}"
+
+  - name: Mount /var/lib/docker
+    mount:
+      name: "{{ var_lib_docker_mount_point }}"
+      src:  "{{ var_lib_docker_block_device }}"
+      fstype: ext3
+      state: mounted
+
+  - name: Create filesystem for /tmp
+    filesystem:
+      fstype: ext3
+      dev: "{{ tmp_block_device }}"
+
+  - name: Mount /tmp filesystem
+    mount:
+      name: "{{ tmp_mount_point }}"
+      src:  "{{ tmp_block_device }}"
+      fstype: ext3
+      state: mounted
+
+  - name: Adjust permissions of /tmp
+    file:
+      path: /tmp
+      owner: root
+      group: root
+      mode: 01777
+      state: directory
+
+  - name: Restorecon /tmp
+    shell: restorecon -R /tmp
+
+  - name: Create filesystem for persistedvolumes
+    filesystem:
+      fstype: ext3
+      dev: "{{ persistedvol_block_device }}"
+
+  - name: Mount persistedvolumes filesystem
+    mount:
+      name: "{{ persistedvol_mount_point }}"
+      src:  "{{ persistedvol_block_device }}"
+      fstype: ext3
+      state: mounted

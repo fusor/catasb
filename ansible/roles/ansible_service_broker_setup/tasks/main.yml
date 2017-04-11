@@ -1,0 +1,75 @@
+---
+  # GOPATH is setup incase we want to complile things later
+  # Current approach is not building any go code.
+  - name: Setup GOPATH in /root/.bashrc
+    lineinfile: dest=/root/.bashrc line="{{ item }}" create=yes
+    with_items:
+      - export GOPATH="{{ go_path }}"
+      - export PATH=$GOPATH/bin:$PATH
+
+  - name:
+    file:
+      path: "{{ go_path }}/src/github.com/fusor"
+      state: directory
+      mode: 0755
+
+  - name: git clone ansible-service-broker
+    git:
+      repo: https://github.com/fusor/ansible-service-broker.git
+      dest: "{{ go_path }}/src/github.com/fusor/ansible-service-broker"
+      version: "forced-async-prov"
+    register: git_clone_asb
+
+  - name: Install asbcli requirements
+    pip:
+      requirements: "{{ go_path }}/src/github.com/fusor/ansible-service-broker/scripts/asbcli/requirements.txt"
+    when: git_clone_asb.changed
+
+  - name: Docker pull ansibleplaybookbundle/ansible-service-broker-apb:latest
+    docker_image:
+      name: ansibleplaybookbundle/ansible-service-broker-apb:latest
+
+  - name: Check if ansible-service-broker project already exists from a prior run
+    shell: "{{ oc_cmd }} get projects | grep ansible-service-broker"
+    register: oc_get_projects_asb
+    ignore_errors: yes
+
+  - name: Use asbcli up to install Ansible Service Broker
+    shell: "./asbcli up {{ openshift_url }} --cluster-user={{ cluster_user }} --cluster-pass={{ cluster_user_password }} --dockerhub-user={{ dockerhub_user_name }} --dockerhub-pass={{ dockerhub_user_password }}"
+    args:
+      chdir: "{{ go_path }}/src/github.com/fusor/ansible-service-broker/scripts/asbcli"
+    retries: 2
+    register: asbcli_up
+    when: oc_get_projects_asb.rc != 0
+
+  - name: Switch project to ansible-service-broker
+    shell: "{{ oc_cmd }} project ansible-service-broker"
+
+  - name: Waiting 10 minutes for ASB pod
+    action:
+      shell "{{ oc_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy
+    register: wait_for_asb_pod
+    until: wait_for_asb_pod.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Waiting 10 minutes for ASB etcd pod
+    action:
+      shell "{{ oc_cmd }}" get pods | grep -iEm1 "etcd.*?running" | grep -v deploy
+    register: wait_for_asb_etcd_pod
+    until: wait_for_asb_etcd_pod.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Get route for ansible-service-broker
+    shell: "'{{ oc_cmd }}' get routes | grep ansible-service-broker | awk '{print $2}'"
+    register: result_get_route_asb
+    retries: 6
+    delay: 10
+
+  - set_fact:
+      ansible_service_broker_route:  "{{ result_get_route_asb.stdout }}"
+
+  - name: Bootstrap Ansible Service Broker
+    shell: curl -X POST {{ ansible_service_broker_route }}/v2/bootstrap
+    when: asbcli_up.changed

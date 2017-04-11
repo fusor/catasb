@@ -1,0 +1,11 @@
+- hosts: tag_Name_{{ instance_lookup_value }}
+  gather_facts: True
+  become: True
+  roles:
+    - ebs_volumes
+    - aws_repo_setup
+    - packages
+    - docker_setup
+    - openshift_setup
+    - service_catalog_setup
+    - ansible_service_broker_setup

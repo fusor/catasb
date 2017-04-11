@@ -1,93 +1,53 @@
-# Service Catalog x Ansible Service Broker
+# Playbooks to create an OpenShift environmnt with a Service Catalog & Ansible Service Broker in EC-2
 
-libvirt vagrant environment for working with a service-catalog/broker.
+### Overview
+Playbooks will:
+  * Create a public VPC if it does not exist
+  * Create a security group if it does not exist
+  * Create an instance with a specific Name if does not exist
+  * Associate an elastic ip to the instance
+  * Configure a hostname with the elastic ip through Route53
+  * Setup Origin through `oc cluster up`
+  * <WIP> Install Service Catalog on Origin
+  * <WIP> Install Ansible Service Broker on Origin
 
-Service Catalog: https://github.com/kubernetes-incubator/service-catalog
+### Pre-Reqs
+  * Ansible needs to be installed so it's source code is available to Python.
+    * Check to see if Ansible modules are available to Python
+            $ python -c "import ansible;print(ansible.__version__)"
+            2.2.2.0
+    * MacOS requires Ansible to be installed from `pip` and not `brew`
+          $ python -c "import ansible;print(ansible.__version__)"
+          Traceback (most recent call last):
+          File "<string>", line 1, in <module>
+          ImportError: No module named ansible
 
-Ansible Service Broker: https://github.com/fusor/ansible-service-broker
+          brew uninstall ansible
+          pip install ansible
 
-## About
+          $ python -c "import ansible;print(ansible.__version__)"
+          2.2.2.0
+  * Install python dependencies
+     * `pip install boto boto3 six`
+  * Configure a SSH Key in your AWS EC-2 account for the given region
+  * Create a hosted zone in Route53
+  * Set these environment variables:
+    * AWS_ACCESS_KEY_ID
+    * AWS_SECRET_ACCESS_KEY
+    * AWS_SSH_PRIV_KEY_PATH  - Path to your private ssh key to use for the ec2 instances
 
-Broken into two stages, stage1 box installs and configures a basic static
-environment with required packages and one-off binaries, as well as setting
-up and enabling a docker daemon. stage2 brings up a cluster, installs the
-catalog, brings up a broker, and configures `catctl` to point directly
-at the catalog for using new resources like brokers and serviceclasses.
+### Execute
+  * `cd ec2`
+  * Edit the variables file `ec2/common_vars`
+    * Update:
+      * AWS_SSH_KEY_NAME="splice"
+      * TARGET_DNS_ZONE="ec2.dog8code.com"
+        * Needs to match a hosted zone entry in your Route53 account, we will create a subdomain under it for the ec2 instance
+  * `./run_create_infrastructure.sh`
+    * Creates our infrastructure in ec2 if it doesn't exist
+  * `./run_setup_environment.sh`
+    * Sets up OpenShift
 
-### Roadmap
-
-Expecting to add the following:
-
-* Making assets like binaries and the stage1 box available
-from a centralized location. Optionally, you can build, install, and set a
-local stage1 box in the stage2 Vagrantfile.
-
-* Adding switch to run a non-containerized broker on the vm via shared
-directory for easy broker development workflow + scripts to reset catalog.
-
-**TODO:**
-Broker route is not going to work from the service catalog, since the route
-resolves to `127.0.0.1`. Probably want to configure the router to use
-a public ip of the vagrant machine or the internal service address of
-the running ASB.
-
-### Stage1
-
-#### Binaries
-
-* `kubectl v1.6.0-beta.4`, must be > 1.5.3
-* `oc v3.6.0-alpha.0+0343989`
-* `oadm v3.6.0-alpha.0+0343989`
-* `glide v0.12.3`
-
-By default these will be downloaded, but if `bin/` on the level of the
-Vagrantfile, it will attempt to copy these binaries from the `/shared` mount.
-
-#### Building/using stage1 box
-
-**NOTE:** By default, this is not required. A first vagrant up of the stage2
-vm will pull a remote stage1 and cache it for subsequent ups. If anything
-is customized in the stage1 box however, a stage1 rebuild/`vagrant box add` is
-required.
-
-Building:
-
-```
-cd stage1 && vagrant up
-vagrant halt
-sudo chmod a+r /var/lib/libvirt/images/stage1_default.img # Whatever img was created
-vagrant package --output catasb.stage1.box
-vagrant box add ./catasb.stage1.box --name catasb.stage1
-```
-
-To use this box, update the base box in stage2 Vagrantfile to be whatever name
-was used in the above `vagrant box add` cmd.
-
-### Stage2
-
-* Launches openshift cluster via `oc cluster up`
-* Adds user with required permissions for the ASB to operate (default: admin/admin)
-* Deploys the service catalogs apiserver/controller-manager service-catalog project.
-By default, pre-built canary images will be pulled. Alternatively, they can be
-built from master with `BUILD_CATALOG=1` env var.
-* `catctl` is setup as an alias for controlling the service-catalog. It's
-`kubectl` with a `kubeconfig` setup to point to the apiserver directly.
-* ASB is launched in the `ansible-service-broker` project and
-[bootstrapped](https://github.com/fusor/ansible-service-broker/blob/master/docs/design.md).
-
-#### Running
-
-The Ansible Service Broker requires a dockerhub user/pass to discover the apb
-inventory. The `DOCKERHUB_USER` and `DOCKERHUB_PASS` env vars are required.
-
-`cd stage2 && vagrant up`
-
-## Networking Defaults
-
-Default vagrant machine: `192.168.67.2` - MACHINE_IP stage{1,2} Vagrantfile
-
-Docker bridge: `172.22.0.1/16` - DOCKER_BRIDGE stage1 Vagrantfile, requires
-box rebuild.
-
-Cluster overlay: `172.30.0.0/16`, currently no easy override, if changed
-changed, requires stage1 provision.sh update to insecure registry and box rebuild.
+### Tested with
+  * ansible 2.2.2.0
+    * Problems were seen using ansible 2.0

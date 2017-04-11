@@ -1,0 +1,70 @@
+---
+  - name: Install docker-py through pip as it's a requirement of ansible docker module
+    pip:
+      name: docker-py
+
+  - name: Docker pull {{ svc_cat_apiserver_img }}
+    docker_image:
+      name: "{{ svc_cat_apiserver_img }}"
+    register: docker_pull_svc_cat_apiserver
+
+  - name: Docker tag apiserver
+    shell: docker tag {{ svc_cat_apiserver_img }} {{ svc_cat_apiserver_tag }}
+    when: docker_pull_svc_cat_apiserver.changed
+
+  - name: Docker pull {{ svc_cat_controller_mgr_img }}
+    docker_image:
+      name: "{{ svc_cat_controller_mgr_img }}"
+      tag: "{{ svc_cat_controller_mgr_tag }}"
+    register: docker_pull_svc_cat
+
+  - name: Docker tag service catalog controller
+    shell: docker tag {{ svc_cat_controller_mgr_img }} {{ svc_cat_controller_mgr_tag }}
+    when: docker_pull_svc_cat.changed
+
+  - name: Create a new project for the service-catalog
+    shell: "{{ oc_cmd }} new-project service-catalog"
+    when: docker_pull_svc_cat.changed
+    register: new_svc_cat_project
+
+  - name: Ensuring service-catalog project is selected for those cases of being re-run and skipping the new-project creation
+    shell: "{{ oc_cmd }} project service-catalog"
+
+  - name: Copy service-catalog.templ.yaml
+    copy:
+      src: service-catalog.templ.yaml
+      dest: /tmp/service-catalog.templ.yaml
+    register: copy_svc_catalog_tmp
+
+  - name: Install Service Catalog through OC Template
+    shell: "{{ oc_cmd }} process -f /tmp/service-catalog.templ.yaml | {{ oc_cmd }} create -f -"
+    when: copy_svc_catalog_tmp.changed
+
+  - name: Waiting 10 minutes for API server pod to come up
+    action:
+      shell "{{ oc_cmd }}" get pods | grep -qiEm1 "apiserver.*?running"
+    register: wait_for_api_server_running
+    until: wait_for_api_server_running.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Get route for apiserver
+    shell: "'{{ oc_cmd }}' get routes | grep apiserver | awk '{print $2}'"
+    register: result_get_route_apiserver
+    retries: 6
+    delay: 10
+
+  - set_fact:
+      service_catalog_endpoint:  "{{ result_get_route_apiserver.stdout }}"
+
+  - name: Creating .kube/service-catalog.config from kubeconfig.templ.yaml.j2
+    template:
+      src: kubeconfig.templ.yaml.j2
+      dest: /root/.kube/service-catalog.config
+      owner: root
+      group: root
+      mode: 0644
+
+  - lineinfile: dest=/root/.bashrc line="{{ item }}" create=yes
+    with_items:
+      - alias catctl="kubectl --kubeconfig=/root/.kube/service-catalog.config"

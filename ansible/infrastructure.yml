@@ -1,0 +1,20 @@
+- hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - name: Check target_subdomain is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'target_subdomain'"
+      when: ( (target_subdomain is undefined) or (target_subdomain is none) or (target_subdomain | trim == '') )
+  roles:
+    - infrastructure
+  tasks:
+    - set_fact:
+        msg: |
+            EC-2 Instance Tags:        Name={{ instance_name }}
+            EC-2 Instance ID:          {{ ec2_instances.tagged_instances[0].id }}
+            Associated to Elastic IP:  {{ elastic_ip.public_ip }}
+            Hostname:                  {{ target_subdomain }}.{{ target_dns_zone }}
+            SSH Key Name:              {{ ssh_key_name }}
+            Region:                    {{ aws_region }}
+    - debug:
+        msg: "{{ msg.split('\n') }}"
