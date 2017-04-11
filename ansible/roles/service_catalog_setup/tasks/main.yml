@@ -26,7 +26,8 @@
     shell: "{{ oc_cmd }} new-project service-catalog"
     when: docker_pull_svc_cat.changed
     register: new_svc_cat_project
-
+    ignore_errors: yes
+    
   - name: Ensuring service-catalog project is selected for those cases of being re-run and skipping the new-project creation
     shell: "{{ oc_cmd }} project service-catalog"
 
