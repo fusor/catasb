@@ -57,13 +57,34 @@
       timeout: 1200
       state: started
 
+  - name: Add extension script to oc config to talk to svc catalog
+    template:
+      src: extension.j2
+      dest: /var/lib/origin/openshift.local.config/extension.js
+      owner: root
+      group: root
+      mode: 0644
+    register: extension_script_result
+
+  - name: Edit master-config to allow extension scripts
+    replace:
+      path: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      regexp: "extensionDevelopment: false"
+      replace: "extensionDevelopment: true"
+
+  - name: Add extension script to assetConfig
+    replace:
+      path: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      regexp: "extensionScripts: null"
+      replace: "extensionScripts: /var/lib/origin/openshift.local.config/extension.js"
+
   - name: Running oc cluster status
     shell: "{{ oc_cmd }} cluster status"
     register: oc_cluster_status
     ignore_errors: yes
 
   - name: Run oc cluster up
-    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=v3.6.0-alpha.0"
+    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/dymurray/origin"
     when: "not 'cluster was started' in oc_cluster_status.stdout"
     register: oc_cluster_up
 

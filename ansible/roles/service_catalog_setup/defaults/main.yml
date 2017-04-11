@@ -1,5 +1,6 @@
 service_catalog_tag: "0.0.2"
 svc_cat_apiserver_img: "quay.io/kubernetes-service-catalog/apiserver:{{ service_catalog_tag }}"
 svc_cat_apiserver_tag: "apiserver:{{ service_catalog_tag }}"
-svc_cat_controller_mgr_img: "quay.io/kubernetes-service-catalog/controller-manager:{{ service_catalog_tag }}"
+#svc_cat_controller_mgr_img: "quay.io/kubernetes-service-catalog/controller-manager:{{ service_catalog_tag }}"
+svc_cat_controller_mgr_img: "docker.io/pmorie/controller-manager:0.0.2-hack"
 svc_cat_controller_mgr_tag: "controller-manager:{{ service_catalog_tag }}"
