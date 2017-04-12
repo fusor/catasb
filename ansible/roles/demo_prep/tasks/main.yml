@@ -1,4 +1,12 @@
 ---
+  - debug:
+      msg: "{{ hostvars.localhost.my_ec2_facts }}"
+
+  # my_ec2_facts is registered as a fact on the localhost host from an earlier play 
+  - name: Setting fact of security group id
+    set_fact:
+      my_security_group_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].groups[0].id }}"
+
   - name: Template secret file to be created
     template:
       src: demo-secret.j2
@@ -8,58 +16,15 @@
       mode: 0644
     register: demo_secret_result
 
-  - name: Edit master-config to allow extension scripts
-    lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      regexp: "extensionDevelopment:"
-      line: "  extensionDevelopment: true"
+  #- name: Login as {{ cluster_user }}
+  #  shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }}"
+  #  when: oc_cluster_up.changed
 
-  - name: Add extension script to assetConfig
-    lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      insertafter: "extensionScripts: null"
-      line: "    - /var/lib/origin/openshift.local.config/extension.js"
+  #- name: Create a new project for the demo
+  #  shell: "{{ oc_cmd }} new-project demo"
+  #  register: new_demo_project
+  #  ignore_errors: yes
 
-  - name: Edit master-config to add extension script
-    lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      regexp: "extensionScripts: null"
-      line: "  extensionScripts:"
-
-  - name: Run oc cluster up
-    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/dymurray/origin --host-config-dir=/var/lib/origin/openshift.local.config --use-existing-config"
-    when: oc_cluster_up_first_run
-    register: oc_cluster_up
-
-  #
-  # Add permissions to desired openshift user
-  # Would be nice if we looked at existing users and permissions and made decisions of what to run
-  # for now, will only run these if we've run oc cluster up
-  #
-  - name: Login as {{ cluster_system_admin }}
-    shell: "{{ oc_cmd }} login -u {{ cluster_system_admin }}"
-    when: oc_cluster_up.changed
-
-  - name: Create user {{ cluster_user }}
-    shell: "{{ oc_cmd }} create user {{ cluster_user }}"
-    when: oc_cluster_up.changed
-
-  - name: Add cluster-admin role to {{ cluster_user }}
-    shell: "{{ oadm_cmd }} policy add-cluster-role-to-user cluster-admin {{ cluster_user }}"
-    when: oc_cluster_up.changed
-
-  - name: Add cluster-admin role to {{ service_catalog_user }}
-    shell: "{{ oadm_cmd }} policy add-cluster-role-to-user cluster-admin {{ service_catalog_user }}"
-    when: oc_cluster_up.changed
-
-  - name: Add privileged scc to {{ cluster_user }}
-    shell: "{{ oadm_cmd }} policy add-scc-to-user privileged {{ cluster_user }}"
-    when: oc_cluster_up.changed
-
-  - name: Add anyuid scc to system:authenticated
-    shell: "{{ oadm_cmd }} policy add-scc-to-group anyuid system:authenticated"
-    when: oc_cluster_up.changed
-
-  - name: Login as {{ cluster_user }}
-    shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }}"
-    when: oc_cluster_up.changed
+  #- name: Creating secret in project
+  #  shell: "{{ oc_cmd }} create -f /tmp/demo-secret.yml"
+  #  when: new_demo_project|succeeded
