@@ -91,8 +91,8 @@
   - name: Edit master-config to allow extension scripts
     lineinfile:
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      regexp: 'extensionDevelopment:'
-      line: '  extensionDevelopment: true'
+      regexp: "extensionDevelopment:"
+      line: "  extensionDevelopment: true"
 
   - name: Add extension script to assetConfig
     lineinfile:
@@ -101,7 +101,8 @@
       line: "  extensionScripts: /var/lib/origin/openshift.local.config/extension.js"
 
   - name: Run oc cluster up
-    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/dymurray/origin"
+    #shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/dymurray/origin --host-config-dir=/var/lib/origin/openshift.local.config --use-existing-config"
+    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest"
     when: oc_cluster_up_first_run
     register: oc_cluster_up
 
