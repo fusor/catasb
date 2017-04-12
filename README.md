@@ -47,7 +47,16 @@ Playbooks will:
     * Creates our infrastructure in ec2 if it doesn't exist
   * `./run_setup_environment.sh`
     * Sets up OpenShift
+  * In Web Browser
+    * Visit: `https://apiserver-service-catalog.USERNAME.ec2.dog8code.com`
+      * Accept the certificate
+      * You will see some text on the screen, ignore this and proceed to the main openshift URL next
+       * Point of this step is just to accept the SSL cert for the apiserver-service-catalog endpoint
+    * Visit: `https://USERNAME.ec2.dog8code.com:8443`
+      * Where username is the value of `whoami` when you launched `run_setup_environment.sh`
+
+
 
 ### Tested with
-  * ansible 2.2.2.0
+  * ansible 2.2.2.0 & 2.3.0.0
     * Problems were seen using ansible 2.0
