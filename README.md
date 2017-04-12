@@ -1,7 +1,9 @@
-# Playbooks to create an OpenShift environmnt with a Service Catalog & Ansible Service Broker in EC-2
+# CATalogASB
+
+catasb is a collection of playbooks to create an OpenShift environment with a Service Catalog & Ansible Service Broker in EC-2.
 
 ### Overview
-Playbooks will:
+These playbooks will:
   * Create a public VPC if it does not exist
   * Create a security group if it does not exist
   * Create an instance with a specific Name if does not exist
