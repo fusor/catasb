@@ -17,11 +17,11 @@
       set_fact:
         my_vpc_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].vpc_id }}"
 
-    - name: Get EC2 VPC Subnet Info
+    - name: Get EC2 VPC Subnet A Info
       ec2_vpc_subnet_facts:
         filters:
           vpc-id: "{{ my_vpc_id }}"
-          "tag:Name": "{{ vpc_subnet_name }}"
+          "tag:Name": "{{ vpc_subnet_a_name }}"
         region: "{{ aws_region }}"
       register: my_subnet_info
 

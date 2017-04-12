@@ -55,6 +55,11 @@ Playbooks will:
     * Visit: `https://USERNAME.ec2.dog8code.com:8443`
       * Where username is the value of `whoami` when you launched `run_setup_environment.sh`
 
+### Cleanup
+
+To terminate the ec2 instance and cleanup the associated EBS volumes run the below
+  * `cd ec2`
+  * `./terminate_instance.sh`
 
 
 ### Tested with

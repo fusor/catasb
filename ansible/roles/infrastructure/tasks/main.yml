@@ -14,19 +14,33 @@
   - set_fact:
       vpc_id:           "{{ my_vpc.vpc.id }}"
 
-  - name:               Create Public Subnet
+  - name:               Create Public Subnet A
     ec2_vpc_subnet:
       state:            "present"
       vpc_id:           "{{ vpc_id }}"
-      cidr:             "{{ vpc_subnet_cidr }}"
+      cidr:             "{{ vpc_subnet_a_cidr }}"
       az:               "{{ aws_region }}a"
       region:           "{{ aws_region }}"
       resource_tags:
-        Name:           "{{ vpc_subnet_name }}"
-    register: my_public_subnet
+        Name:           "{{ vpc_subnet_a_name }}"
+    register: my_public_subnet_a
 
   - set_fact:
-      public_subnet_id: "{{ my_public_subnet.subnet.id }}"
+      public_subnet_a_id: "{{ my_public_subnet_a.subnet.id }}"
+
+  - name:               Create Public Subnet B
+    ec2_vpc_subnet:
+      state:            "present"
+      vpc_id:           "{{ vpc_id }}"
+      cidr:             "{{ vpc_subnet_b_cidr }}"
+      az:               "{{ aws_region }}b"
+      region:           "{{ aws_region }}"
+      resource_tags:
+        Name:           "{{ vpc_subnet_b_name }}"
+    register: my_public_subnet_b
+
+  - set_fact:
+      public_subnet_b_id: "{{ my_public_subnet_b.subnet.id }}"
 
   - name:               Create Internet Gateway for VPC
     ec2_vpc_igw:
@@ -44,7 +58,8 @@
       tags:
         Name:           "{{ vpc_route_table_name }}"
       subnets:
-        - "{{ public_subnet_id }}"
+        - "{{ public_subnet_a_id }}"
+        - "{{ public_subnet_b_id }}"
       routes:
         - dest:         "0.0.0.0/0"
           gateway_id:   "{{ igw_id }}"
@@ -72,6 +87,10 @@
           from_port:    "8443"
           to_port:      "8443"
           cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "5432"
+          to_port:      "5432"
+          cidr_ip:      "0.0.0.0/0"
     register: my_sec_group
 
   - name:  Create EC-2 Instance
@@ -86,7 +105,7 @@
       count_tag:
         Name: "{{ instance_name }}"
       group_id: "{{ my_sec_group.group_id }}"
-      vpc_subnet_id: "{{ public_subnet_id }}"
+      vpc_subnet_id: "{{ public_subnet_a_id }}"
       assign_public_ip: yes
       region: "{{ aws_region }}"
     register: my_ec2_instances
@@ -150,6 +169,16 @@
       ttl=60
       overwrite=yes
       value="{{ my_eip.public_ip }}"
+
+  - name: Create RDS Subnet Group with {{ vpc_subnet_a_name }} and {{ vpc_subnet_b_name }}
+    rds_subnet_group:
+      state: present
+      name: "{{ rds_subnet_group_name }}"
+      region: "{{ aws_region }}"
+      description: RDS Subnet Group for {{ aws_tag_prefix }}
+      subnets:
+        - "{{ public_subnet_a_id }}"
+        - "{{ public_subnet_b_id }}"
 
   - name: Wait for SSH to come up on {{ my_eip.public_ip }}
     wait_for:
