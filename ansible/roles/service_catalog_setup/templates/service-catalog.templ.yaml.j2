@@ -40,7 +40,7 @@ objects:
           - "10"
           - --cors-allowed-origins
           - ${CORS_ALLOWED_ORIGIN}
-          image: apiserver:canary
+          image: {{ svc_cat_apiserver_tag }}
           imagePullPolicy: Never
           name: apiserver
           ports:
@@ -127,7 +127,7 @@ objects:
           - "5"
           - --service-catalog-api-server-url
           - http://$(APISERVER_SERVICE_HOST):$(APISERVER_SERVICE_PORT)
-          image: controller-manager:canary
+          image: {{ svc_cat_controller_mgr_tag }}
           imagePullPolicy: Never
           name: controller-manager
           ports:
