@@ -1,8 +1,15 @@
-export AWS_SSH_KEY_NAME="splice"
-export TARGET_DNS_ZONE="ec2.dog8code.com"
 
-export OWNERS_NAME=`whoami`
-export TARGET_SUBDOMAIN="${OWNERS_NAME}"
+AWS_SSH_KEY_NAME="${AWS_SSH_KEY_NAME:-splice}"
+export AWS_SSH_KEY_NAME
+
+TARGET_DNS_ZONE="${TARGET_DNS_ZONE:-ec2.dog8code.com}"
+export TARGET_DNS_ZONE
+
+OWNERS_NAME="${OWNERS_NAME:-`whoami`}"
+export OWNERS_NAME
+
+TARGET_SUBDOMAIN="${TARGET_SUBDOMAIN:-$OWNERS_NAME}"
+export TARGET_SUBDOMAIN
 
 #####
 # We will tag the created ec2 instance with 'INSTANCE_NAME'
