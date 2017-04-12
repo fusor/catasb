@@ -1,0 +1,6 @@
+openshift_server_release_ver: openshift-origin-server-v3.6.0-alpha.0-0343989-linux-64bit
+openshift_server_release_file: "{{ openshift_server_release_ver}}.tar.gz"
+openshift_server_release_url: https://github.com/openshift/origin/releases/download/v3.6.0-alpha.0/{{ openshift_server_release_file }}
+
+kubernetes_client_file: kubernetes-client-linux-amd64.tar.gz
+kubernetes_client_url: "https://storage.googleapis.com/kubernetes-release/release/v1.6.0/{{ kubernetes_client_file }}"
