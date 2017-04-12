@@ -2,10 +2,14 @@
   - debug:
       msg: "{{ hostvars.localhost.my_ec2_facts }}"
 
-  # my_ec2_facts is registered as a fact on the localhost host from an earlier play 
+  # my_ec2_facts is registered as a fact on the localhost host from an earlier play
   - name: Setting fact of security group id
     set_fact:
       my_security_group_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].groups[0].id }}"
+
+  - name: Setting fact of my_subnet_id
+    set_fact:
+      my_subnet_id: "{{ hostvars.localhost.my_subnet_id }}"
 
   - name: Template secret file to be created
     template:
@@ -16,15 +20,14 @@
       mode: 0644
     register: demo_secret_result
 
-  #- name: Login as {{ cluster_user }}
-  #  shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }}"
-  #  when: oc_cluster_up.changed
+  - name: Login as {{ cluster_user }}
+    shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }}"
 
-  #- name: Create a new project for the demo
-  #  shell: "{{ oc_cmd }} new-project demo"
-  #  register: new_demo_project
-  #  ignore_errors: yes
+  - name: Create a new project for the demo '{{ demo_project_name }}'
+    shell: "{{ oc_cmd }} new-project {{ demo_project_name }}"
+    register: new_demo_project
+    ignore_errors: yes
 
-  #- name: Creating secret in project
-  #  shell: "{{ oc_cmd }} create -f /tmp/demo-secret.yml"
-  #  when: new_demo_project|succeeded
+  - name: Creating secret in project
+    shell: "{{ oc_cmd }} create -f /tmp/demo-secret.yml"
+    when: new_demo_project|succeeded
