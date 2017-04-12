@@ -1,0 +1,37 @@
+- hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - name: Check that instance_name is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'instance_name'"
+      when: ( (instance_name is undefined) or (instance_name is none) or (instance_name | trim == '') )
+
+  tasks:
+    - name: EC2 Remote Facts
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "{{ instance_name }}"
+        region: "{{ aws_region }}"
+      register: my_ec2_facts
+
+    - name:  Delete EC-2 Instance {{ my_ec2_facts.instances[0].id }}
+      ec2:
+        state: absent
+        wait: yes
+        instance_ids:
+          - "{{ my_ec2_facts.instances[0].id }}"
+        region: "{{ aws_region }}"
+      when: my_ec2_facts.instances
+
+    - set_fact:
+        msg: |
+            Deleted Instance.
+            EC-2 Instance Tags:        Name={{ instance_name }}
+            EC-2 Instance ID:          {{ my_ec2_facts.instances[0].id }}
+            Region:                    {{ aws_region }}
+      when: my_ec2_facts.instances
+
+    - debug:
+        msg: "{{ msg.split('\n') }}"
+      when: my_ec2_facts.instances
