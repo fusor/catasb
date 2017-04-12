@@ -25,7 +25,7 @@
         region: "{{ aws_region }}"
       register: my_subnet_info
 
-    - name: Setting fact of my_subnet_id on localhost
+    - name: Setting fact of my_subnet_id for localhost
       set_fact:
         my_subnet_id: "{{ hostvars.localhost.my_subnet_info.subnets[0].id }}"
 
