@@ -1,16 +1,4 @@
 ---
-  - debug:
-      msg: "{{ hostvars.localhost.my_ec2_facts }}"
-
-  # my_ec2_facts is registered as a fact on the localhost host from an earlier play
-  - name: Setting fact of security group id
-    set_fact:
-      my_security_group_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].groups[0].id }}"
-
-  - name: Setting fact of my_subnet_id
-    set_fact:
-      my_subnet_id: "{{ hostvars.localhost.my_subnet_id }}"
-
   - name: Template secret file to be created
     template:
       src: demo-secret.j2

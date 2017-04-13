@@ -13,25 +13,13 @@
         region: "{{ aws_region }}"
       register: my_ec2_facts
 
-    - name: Setting fact of my_vpc_id on localhost
-      set_fact:
-        my_vpc_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].vpc_id }}"
-
-    - name: Get EC2 VPC Subnet A Info
-      ec2_vpc_subnet_facts:
-        filters:
-          vpc-id: "{{ my_vpc_id }}"
-          "tag:Name": "{{ vpc_subnet_a_name }}"
-        region: "{{ aws_region }}"
-      register: my_subnet_info
-
-    - name: Setting fact of my_subnet_id for localhost
-      set_fact:
-        my_subnet_id: "{{ hostvars.localhost.my_subnet_info.subnets[0].id }}"
-
 - hosts: tag_Name_{{ instance_lookup_value }}
   gather_facts: True
   become: True
+  pre_tasks:
+    - name: Setting fact of security group id
+      set_fact:
+        my_security_group_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].groups[0].id }}"
   roles:
     - ebs_volumes
     - aws_repo_setup
@@ -41,3 +29,23 @@
     - service_catalog_setup
     - ansible_service_broker_setup
     - demo_prep
+  post_tasks:
+    - set_fact:
+        msg: |
+            EC-2 Instance Tags:        Name={{ instance_name }}
+            Hostname:                  {{ openshift_hostname }}
+            SSH Key Name:              {{ ssh_key_name }}
+            Region:                    {{ aws_region }}
+            Next steps:
+            1) Visit https://apiserver-service-catalog.{{ openshift_hostname }}
+            2) Accept the certificate
+            3) Visit https://{{ openshift_hostname }}:8443 for the console
+            4) Provision a RDS APB into awsdemo project
+            5) Add to the aws-demo project a Python 3.5 project based off of https://github.com/thesteve0/awsdemo.git
+            6) Click on the python project and select creating binding to the RDS APB
+            7) Redeploy the python project
+            OR
+            For CLI access:
+            oc login --insecure-skip-tls-verify {{ openshift_hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+    - debug:
+        msg: "{{ msg.split('\n') }}"
