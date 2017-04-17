@@ -67,9 +67,6 @@
       path: /var/lib/origin/openshift.local.config/master/master-config.yaml
     register: master_config_stat
 
-  - debug:
-      msg: "{{ master_config_stat }}"
-
   - name: Running oc cluster status
     shell: "{{ oc_cmd }} cluster status"
     register: oc_cluster_status
@@ -87,7 +84,7 @@
   # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
   - name: Run oc cluster up
     shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/ansibleplaybookbundle/origin"
-    when: oc_cluster_up_first_run
+    when: oc_cluster_up_first_run and not master_config_stat.stat.exists
 
   - name: Run oc cluster down
     shell: "{{ oc_cmd }} cluster down"
