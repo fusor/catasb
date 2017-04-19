@@ -46,3 +46,11 @@
       enabled: yes
       state: restarted
     when: sysconfig_docker.changed
+
+  - name: Pull images for demo
+    shell: docker pull {{ item }}
+    with_items:
+     - ansibleplaybookbundle/rds-postgres-apb
+     - centos/python-35-centos7
+     - centos/python-34-centos7
+     - centos/python-27-centos7
