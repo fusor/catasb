@@ -5,7 +5,7 @@ KUBE_INCUBATOR_DIR=$GOPATH/src/github.com/kubernetes-incubator
 SERVICE_CAT_REPO=https://www.github.com/kubernetes-incubator/service-catalog.git
 SERVICE_CAT_DIR=$KUBE_INCUBATOR_DIR/service-catalog
 APISERVER_IMG="quay.io/kubernetes-service-catalog/apiserver:canary"
-CONTROLLER_MANAGER_IMG="quay.io/kubernetes-service-catalog/controller-manager:canary"
+CONTROLLER_MANAGER_IMG="docker.io/pmorie/controller-manager:0.0.2-hack"
 TARGET_PROJECT=foo
 ASB_BRANCH=forced-async-prov
 
