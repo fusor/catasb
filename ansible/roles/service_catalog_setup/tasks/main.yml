@@ -22,33 +22,40 @@
     shell: docker tag {{ svc_cat_controller_mgr_img }} {{ svc_cat_controller_mgr_tag }}
     when: docker_pull_svc_cat.changed
 
+  - name: check if the service-catalog project exists
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^service-catalog( |$)' | cat"
+    register: project
+
   - name: Create a new project for the service-catalog
     shell: "{{ oc_cmd }} new-project service-catalog"
     register: new_svc_cat_project
-    ignore_errors: yes
+    when: project.stdout.find( "service-catalog" ) == -1
 
   #- name: Ensuring service-catalog project is selected for those cases of being re-run and skipping the new-project creation
   #  shell: "{{ oc_cmd }} project service-catalog"
+
+  - name: check if the apiserver deployment exists
+    shell: "{{ oc_cmd }} get deployment -n service-catalog --no-headers=true | awk '{ print $1}' | grep -E '^apiserver( |$)' | cat"
+    register: deployment
 
   - name: Creating service-catalog.templ.yaml
     template:
       src: service-catalog.templ.yaml.j2
       dest: /tmp/service-catalog.templ.yaml
     register: copy_svc_catalog_tmp
-    when: new_svc_cat_project|succeeded
+    when: deployment.stdout.find( "apiserver" ) == -1
 
   - name: Install Service Catalog through OC Template
     shell: "{{ oc_cmd }} process -f /tmp/service-catalog.templ.yaml | {{ oc_cmd }} create -f -"
-    when: new_svc_cat_project|succeeded
+    when: deployment.stdout.find( "apiserver" ) == -1
 
   - name: Waiting 10 minutes for API server pod to come up
     action:
-      shell "{{ oc_cmd }}" get pods | grep -qiEm1 "apiserver.*?running"
+      shell "{{ oc_cmd }}" get pods -n service-catalog | grep -qiEm1 "apiserver.*?running"
     register: wait_for_api_server_running
     until: wait_for_api_server_running.rc == 0
     retries: 60
     delay: 10
-    when: new_svc_cat_project|succeeded
 
   # We would like to use the route, but had problems with integration
   # Keeping the route information here so we can revisit
@@ -56,28 +63,25 @@
   # - We need to login, unsure what user/project to authenticate as
   # - SSL certs complained they didn't match the route name
   #
+
   - name: Get route for apiserver
-    shell: "'{{ oc_cmd }}' get routes | grep apiserver | awk '{print $2}'"
+    shell: "'{{ oc_cmd }}' get route -n service-catalog --no-headers=true | grep -E '^apiserver( |$)' | cat"
     register: result_get_route_apiserver
     retries: 6
     delay: 10
-    when: new_svc_cat_project|succeeded
 
   - set_fact:
       service_catalog_endpoint:  "{{ result_get_route_apiserver.stdout }}"
-    when: new_svc_cat_project|succeeded
 
   # Falling back to using the unauthenticated IP of the Pod/Port for now
   - name: Get IP of APIServer
-    shell: "{{ oc_cmd }} describe pod `{{ oc_cmd }} get pods | grep apiserver | awk '{print $1}'` | grep IP | awk '{print $2}'"
+    shell: "{{ oc_cmd }} -n service-catalog describe pod `{{ oc_cmd }} get pods | grep apiserver | awk '{print $1}'` | grep IP | awk '{print $2}'"
     register: result_apiserver_ip
     retries: 6
     delay: 10
-    when: new_svc_cat_project|succeeded
 
   - set_fact:
       service_catalog_api_server_ip:  "{{ result_apiserver_ip.stdout }}"
-    when: new_svc_cat_project|succeeded
 
   - name: Creating .kube/service-catalog.config from kubeconfig.templ.yaml.j2
     template:
@@ -86,9 +90,7 @@
       owner: root
       group: root
       mode: 0644
-    when: new_svc_cat_project|succeeded
 
   - lineinfile: dest=/root/.bashrc line="{{ item }}" create=yes
     with_items:
       - alias catctl="kubectl --kubeconfig=/root/.kube/service-catalog.config"
-    when: new_svc_cat_project|succeeded
