@@ -30,3 +30,23 @@
   - name: Creating secret in project
     shell: "{{ oc_cmd }} create -f /tmp/demo-secret.yml"
     when: secret.stdout.find( secret_name ) == -1
+
+  - name: initiate a build
+    shell: "{{ oc_cmd }} new-app -n {{ demo_project_name }} centos/python-35-centos7~https://github.com/thesteve0/awsdemo/ --name=demoprep"
+
+  - name: wait for deployment to complete
+    shell: "{{ oc_cmd }} get -n {{ demo_project_name }} pod --no-headers=true -l 'app=demoprep' | awk '{ print $3 }'"
+    register: demoprep_status
+    until: "'Running' in demoprep_status.stdout"
+    retries: 60
+    delay: 5
+
+  - name: delete deployment items
+    shell: "{{ oc_cmd }} delete -n {{ demo_project_name }} {{ item }} demoprep"
+    with_items:
+      - svc
+      - dc
+      - bc
+
+  - name: delete imagestreams
+    shell: "{{ oc_cmd }} delete -n {{ demo_project_name }} is demoprep python-35-centos7"
