@@ -30,9 +30,8 @@
       name: ansibleplaybookbundle/ansible-service-broker-apb:latest
 
   - name: Check if ansible-service-broker project already exists from a prior run
-    shell: "{{ oc_cmd }} get projects | grep ansible-service-broker"
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^ansible-service-broker( |$)' | cat"
     register: oc_get_projects_asb
-    ignore_errors: yes
 
   - name: Use asbcli up to install Ansible Service Broker
     shell: "./asbcli up {{ openshift_url }} --cluster-user={{ cluster_user }} --cluster-pass={{ cluster_user_password }} --dockerhub-user={{ dockerhub_user_name }} --dockerhub-pass={{ dockerhub_user_password }}"
@@ -40,7 +39,7 @@
       chdir: "{{ go_path }}/src/github.com/fusor/ansible-service-broker/scripts/asbcli"
     retries: 2
     register: asbcli_up
-    when: oc_get_projects_asb.rc != 0
+    when: oc_get_projects_asb.stdout.find( "ansible-service-broker" ) == -1
 
   - name: Switch project to ansible-service-broker
     shell: "{{ oc_cmd }} project ansible-service-broker"

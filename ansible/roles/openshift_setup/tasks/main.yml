@@ -68,9 +68,8 @@
     register: master_config_stat
 
   - name: Running oc cluster status
-    shell: "{{ oc_cmd }} cluster status"
+    shell: "{{ oc_cmd }} cluster status | cat"
     register: oc_cluster_status
-    ignore_errors: yes
 
   - name: Set a fact to track the first run of oc cluster up
     set_fact:
