@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
     libvirt.cpus = 2
   end
 
-  config.vm.synced_folder ".", "/shared", :type => "nfs"
+  config.vm.synced_folder ".", "/shared", :type => "nfs", :nfs_udp => false
 
   prov_env = {
     DOCKERHUB_USER: ENV['DOCKERHUB_USER'],
