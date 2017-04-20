@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
     libvirt.cpus = 2
   end
 
-  config.vm.synced_folder ".", "/shared", :type => "nfs"
+  config.vm.synced_folder ".", "/shared", :type => "nfs", :nfs_udp => false
   config.vm.provision :shell, :path => "provision.sh",
     :args => [DOCKER_BRIDGE]
 end
