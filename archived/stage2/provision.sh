@@ -4,8 +4,8 @@ CLUSTER_USER=admin
 KUBE_INCUBATOR_DIR=$GOPATH/src/github.com/kubernetes-incubator
 SERVICE_CAT_REPO=https://www.github.com/kubernetes-incubator/service-catalog.git
 SERVICE_CAT_DIR=$KUBE_INCUBATOR_DIR/service-catalog
-APISERVER_IMG="docker.io/ansibleplaybookbundle/apiserver:0.0.3-summit-patch"
-CONTROLLER_MANAGER_IMG="docker.io/ansibleplaybookbundle/controller-manager:0.0.3-summit-patch"
+APISERVER_IMG="docker.io/ansibleplaybookbundle/apiserver:latest"
+CONTROLLER_MANAGER_IMG="docker.io/ansibleplaybookbundle/controller-manager:latest"
 TARGET_PROJECT=foo
 ASB_BRANCH=master
 
