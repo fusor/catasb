@@ -17,7 +17,7 @@
     git:
       repo: https://github.com/fusor/ansible-service-broker.git
       dest: "{{ go_path }}/src/github.com/fusor/ansible-service-broker"
-      version: "forced-async-prov"
+      version: "master"
     register: git_clone_asb
 
   - name: Install asbcli requirements

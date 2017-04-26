@@ -4,10 +4,10 @@ CLUSTER_USER=admin
 KUBE_INCUBATOR_DIR=$GOPATH/src/github.com/kubernetes-incubator
 SERVICE_CAT_REPO=https://www.github.com/kubernetes-incubator/service-catalog.git
 SERVICE_CAT_DIR=$KUBE_INCUBATOR_DIR/service-catalog
-APISERVER_IMG="quay.io/kubernetes-service-catalog/apiserver:canary"
-CONTROLLER_MANAGER_IMG="docker.io/pmorie/controller-manager:0.0.2-hack"
+APISERVER_IMG="docker.io/ansibleplaybookbundle/apiserver:0.0.3-summit-patch"
+CONTROLLER_MANAGER_IMG="docker.io/ansibleplaybookbundle/controller-manager:0.0.3-summit-patch"
 TARGET_PROJECT=foo
-ASB_BRANCH=forced-async-prov
+ASB_BRANCH=master
 
 oc cluster up --routing-suffix=$ROUTING_SUFFIX
 
