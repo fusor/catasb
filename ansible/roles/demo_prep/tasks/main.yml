@@ -65,4 +65,4 @@
 
   - name: create rds postgres demo instance
     shell: "{{ kubectl_cmd }} --kubeconfig=/root/.kube/service-catalog.config create -f /tmp/rds-instance.yml"
-    when: rds_demo_deployment.stdout.find( "rds-postgres" ) == -1
+    when: deploy_rds_demo_instance and rds_demo_deployment.stdout.find( "rds-postgres" ) == -1

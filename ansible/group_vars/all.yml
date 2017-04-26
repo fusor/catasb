@@ -61,6 +61,7 @@ kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 dockerhub_user_name: "foo"
 dockerhub_user_password: "foo"
 
+deploy_rds_demo_instance: false
 
 aws_sec_group_name: "{{ aws_tag_prefix }}_security_group"
 vpc_name: "{{ aws_tag_prefix }}_vpc"
