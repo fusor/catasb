@@ -1,0 +1,27 @@
+apiVersion: servicecatalog.k8s.io/v1alpha1
+kind: Instance
+metadata:
+  name: rds-postgres
+  namespace: "{{ demo_project_name }}"
+spec:
+  serviceClassName: rds-postgres-apb
+  planName: default
+  parameters:
+    aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+    namespace: "{{ demo_project_name }}"
+    openshift_target: "https://{{ openshift_hostname }}:8443"
+    subnet: "{{ rds_subnet_group_name }}"
+    vpc_security_groups: "{{ my_security_group_id }}"
+    backup_retention: 0
+    db_engine: "postgres"
+    db_name: "testdb"
+    db_password: "{{ default_db_password }}"
+    db_size: 15
+    db_username: "{{ default_db_username }}"
+    engine_version: "9.6.1"
+    instance_type: "db.m3.medium"
+    openshift_user: "{{ cluster_user }}"
+    openshift_pass: "{{ cluster_user_password }}"
+    port: 5432
+    region: "{{ aws_region }}"

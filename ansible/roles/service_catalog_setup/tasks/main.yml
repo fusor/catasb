@@ -110,7 +110,7 @@
 
   # Falling back to using the unauthenticated IP of the Pod/Port for now
   - name: Get IP of APIServer
-    shell: "{{ oc_cmd }} -n service-catalog describe pod `{{ oc_cmd }} get pods | grep apiserver | awk '{print $1}'` | grep IP | awk '{print $2}'"
+    shell: "{{ oc_cmd }} -n service-catalog describe pod `{{ oc_cmd }} get pods -n service-catalog | grep apiserver | awk '{print $1}'` | grep IP | awk '{print $2}'"
     register: result_apiserver_ip
     retries: 6
     delay: 10

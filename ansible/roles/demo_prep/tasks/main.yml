@@ -50,3 +50,19 @@
 
   - name: delete imagestreams
     shell: "{{ oc_cmd }} delete -n {{ demo_project_name }} is demoprep python-35-centos7"
+
+  - name: check if the rds postgres demo instance exists
+    shell: "{{ kubectl_cmd }} --kubeconfig=/root/.kube/service-catalog.config get instance -n {{ demo_project_name }} --no-headers=true | awk '{ print $1}' | grep -E '^rds-postgres( |$)' | cat"
+    register: rds_demo_deployment
+
+  - name: create rds apb resource file
+    template:
+      src: rds-instance.yml.j2
+      dest: /tmp/rds-instance.yml
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: create rds postgres demo instance
+    shell: "{{ kubectl_cmd }} --kubeconfig=/root/.kube/service-catalog.config create -f /tmp/rds-instance.yml"
+    when: rds_demo_deployment.stdout.find( "rds-postgres" ) == -1
