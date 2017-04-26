@@ -14,7 +14,7 @@ These playbooks will:
   * <WIP> Install Ansible Service Broker on Origin
 
 ### Pre-Reqs
-  * Ansible needs to be installed so it's source code is available to Python.
+  * Ansible needs to be installed so its source code is available to Python.
     * Check to see if Ansible modules are available to Python
             $ python -c "import ansible;print(ansible.__version__)"
             2.2.2.0
