@@ -26,6 +26,9 @@ instance_type: c4.2xlarge
 openshift_hostname: "{{target_subdomain}}.{{target_dns_zone}}"
 openshift_url: "{{ openshift_hostname }}:8443"
 
+use_ssl: True
+email_address: "foo@bar.com"
+
 var_lib_docker_ebs_device_name: "sdc"
 var_lib_docker_block_device: "/dev/xvdc"
 var_lib_docker_mount_point: "/var/lib/docker"

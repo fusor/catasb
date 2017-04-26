@@ -85,8 +85,8 @@ objects:
   kind: Service
   metadata:
     name: apiserver
-    annotations:
-      service.alpha.openshift.io/serving-cert-secret-name: 'apiserver-ssl'
+    {{ "annotations:" if use_ssl == False else "" }}
+      {{ "service.alpha.openshift.io/serving-cert-secret-name: 'apiserver-ssl'" if use_ssl == False else "" }}
   spec:
     ports:
     - name: insecure

@@ -67,6 +67,15 @@
       path: /var/lib/origin/openshift.local.config/master/master-config.yaml
     register: master_config_stat
 
+  - stat:
+      path: /var/lib/origin/openshift.local.config/console-fullchain.pem
+    register: console_ssl_stat
+
+  - name: Set a fact to tell if SSL was previously configured and now disabled
+    set_fact:
+      ssl_changed: True
+    when: console_ssl_stat.stat.exists and use_ssl == False
+
   - name: Running oc cluster status
     shell: "{{ oc_cmd }} cluster status | cat"
     register: oc_cluster_status
@@ -80,14 +89,122 @@
       oc_cluster_up_first_run: True
     when: "not 'cluster was started' in oc_cluster_status.stdout"
 
-  # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
   - name: Run oc cluster up
     shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/ansibleplaybookbundle/origin"
-    when: oc_cluster_up_first_run and not master_config_stat.stat.exists
+    when: (oc_cluster_up_first_run and not master_config_stat.stat.exists) or ssl_changed is defined
 
   - name: Run oc cluster down
     shell: "{{ oc_cmd }} cluster down"
-    when: oc_cluster_up_first_run and not master_config_stat.stat.exists
+    when: (oc_cluster_up_first_run and not master_config_stat.stat.exists) or ssl_changed is defined
+
+  - name: Copy credentials into host dir
+    copy:
+      remote_src: True
+      src: /tmp/console-fullchain.pem
+      dest: /var/lib/origin/openshift.local.config/console-fullchain.pem
+      owner: root
+      group: root
+      mode: 0644
+    when: use_ssl == True
+
+  - name: Copy credentials into host dir
+    copy:
+      remote_src: True
+      src: /tmp/console-privkey.pem
+      dest: /var/lib/origin/openshift.local.config/console-privkey.pem
+      owner: root
+      group: root
+      mode: 0644
+    when: use_ssl == True
+
+  - name: Copy credentials into host dir
+    copy:
+      remote_src: True
+      src: /tmp/apiserver-fullchain.pem
+      dest: /var/lib/origin/openshift.local.config/apiserver-fullchain.pem
+      owner: root
+      group: root
+      mode: 0644
+    when: use_ssl == True
+
+  - name: Copy credentials into host dir
+    copy:
+      remote_src: True
+      src: /tmp/apiserver-privkey.pem
+      dest: /var/lib/origin/openshift.local.config/apiserver-privkey.pem
+      owner: root
+      group: root
+      mode: 0644
+    when: use_ssl == True
+
+  - name: Add extension script to oc config to talk to svc catalog
+    template:
+      src: extension.j2
+      dest: /var/lib/origin/openshift.local.config/extension.js
+      owner: root
+      group: root
+      mode: 0644
+    register: extension_script_result
+
+  - name: Edit master-config to allow extension scripts
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      regexp: "extensionDevelopment:"
+      line: "  extensionDevelopment: true"
+
+  - name: Add extension script to assetConfig
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      insertafter: "extensionScripts: null"
+      line: "    - /var/lib/origin/openshift.local.config/extension.js"
+
+  - name: Edit master-config to add extension script
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      regexp: "extensionScripts: null"
+      line: "  extensionScripts:"
+
+  - name: Add SSL cert to namedCertificates
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      insertafter: "namedCertificates: null"
+      line: "    - certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem"
+    when: use_ssl == True
+
+  - name: Add SSL cert to namedCertificates
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      insertafter: "certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem"
+      line: "      keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem"
+    when: use_ssl == True
+
+  - name: Add SSL cert to namedCertificates
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      insertafter: "keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem"
+      line: "      names:"
+    when: use_ssl == True
+
+  - name: Add SSL cert to namedCertificates
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      insertafter: "names:"
+      line: "      - \"apiserver-service-catalog.{{ openshift_hostname }}\""
+    when: use_ssl == True
+
+  - name: Add SSL cert to namedCertificates
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      insertafter: "names:"
+      line: "      - \"{{ openshift_hostname }}\""
+    when: use_ssl == True
+
+  - name: Edit master-config to allow SSL cert
+    lineinfile:
+      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      regexp: "namedCertificates: null"
+      line: "  namedCertificates:"
+    when: use_ssl == True
 
   - name: Add extension script to oc config to talk to svc catalog
     template:

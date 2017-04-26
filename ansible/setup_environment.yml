@@ -25,6 +25,7 @@
     - aws_repo_setup
     - packages
     - docker_setup
+    - { role: ssl_setup, when: use_ssl == True }
     - openshift_setup
     - service_catalog_setup
     - ansible_service_broker_setup
