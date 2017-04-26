@@ -1,29 +1,17 @@
 ---
-  # GOPATH is setup incase we want to complile things later
-  # Current approach is not building any go code.
-  - name: Setup GOPATH in /root/.bashrc
-    lineinfile: dest=/root/.bashrc line="{{ item }}" create=yes
-    with_items:
-      - export GOPATH="{{ go_path }}"
-      - export PATH=$GOPATH/bin:$PATH
-
-  - name:
-    file:
-      path: "{{ go_path }}/src/github.com/fusor"
-      state: directory
-      mode: 0755
 
   - name: git clone ansible-service-broker
     git:
       repo: https://github.com/fusor/ansible-service-broker.git
-      dest: "{{ go_path }}/src/github.com/fusor/ansible-service-broker"
+      dest: "{{ asb_src_dir }}"
       version: "master"
     register: git_clone_asb
 
   - name: Install asbcli requirements
     pip:
-      requirements: "{{ go_path }}/src/github.com/fusor/ansible-service-broker/scripts/asbcli/requirements.txt"
+      requirements: "{{ asb_src_dir }}/scripts/asbcli/requirements.txt"
     when: git_clone_asb.changed
+    become: 'true'
 
   - name: Docker pull ansibleplaybookbundle/ansible-service-broker-apb:latest
     docker_image:
@@ -36,7 +24,7 @@
   - name: Use asbcli up to install Ansible Service Broker
     shell: "./asbcli up {{ openshift_url }} --cluster-user={{ cluster_user }} --cluster-pass={{ cluster_user_password }} --dockerhub-user={{ dockerhub_user_name }} --dockerhub-pass={{ dockerhub_user_password }}"
     args:
-      chdir: "{{ go_path }}/src/github.com/fusor/ansible-service-broker/scripts/asbcli"
+      chdir: "{{ asb_src_dir }}/scripts/asbcli"
     retries: 2
     register: asbcli_up
     when: oc_get_projects_asb.stdout.find( "ansible-service-broker" ) == -1
@@ -77,11 +65,11 @@
     template:
       src: ansible_service_broker.yaml.j2
       dest: /tmp/ansible_service_broker.yaml
-      owner: root
-      group: root
+      owner: "{{ ansible_env.USER }}"
+      group: "{{ ansible_env.USER }}"
       mode: 0644
     register: ansible_service_broker_template
 
   - name: Create Broker resource in Service Catalog
-    shell: "{{ kubectl_cmd }} --kubeconfig=/root/.kube/service-catalog.config create -f /tmp/ansible_service_broker.yaml"
+    shell: "{{ kubectl_cmd }} --kubeconfig={{ ansible_env.HOME }}/.kube/service-catalog.config create -f /tmp/ansible_service_broker.yaml"
     when: asbcli_up.changed

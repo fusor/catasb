@@ -1,53 +1,85 @@
 ---
-  - name: Download OpenShift Server Build to get oc and oadm "{{ openshift_server_release_url }}"
+  - set_fact:
+      openshift_build_type: "mac"
+      kube_build_type: "darwin"
+      openshift_release_ext: "zip"
+    when: ansible_os_family == "Darwin"
+
+  - set_fact:
+      openshift_build_type: "linux-64bit"
+      kube_build_type: "linux"
+      openshift_release_ext: "tar.gz"
+    when: ansible_os_family == "RedHat"
+
+  - set_fact:
+      oc_tools_dir: /usr/local/bin
+    when: ec2_install
+
+  - set_fact:
+      oc_tools_dir: "{{ ansible_env.HOME }}/bin"
+    when: not ec2_install
+
+  - set_fact:
+      oc_cmd: "{{ oc_tools_dir }}/oc"
+
+  - set_fact:
+      oadm_cmd: "{{ oc_tools_dir }}/oc adm"
+
+  - set_fact:
+      kubectl_cmd: "{{ oc_tools_dir }}/kubectl"
+
+  - set_fact:
+      openshift_client_release: "{{ openshift_client_release_ver}}-{{ openshift_build_type }}"
+
+  - set_fact:
+      openshift_client_release_file: "{{ openshift_client_release }}.{{ openshift_release_ext }}"
+
+  - set_fact:
+      openshift_client_release_url: https://github.com/openshift/origin/releases/download/v3.6.0-alpha.1/{{ openshift_client_release_file }}
+      kube_ctl_url: "https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/{{ kube_build_type }}/amd64/kubectl"
+
+  - file:
+      path: "{{ oc_tools_dir }}"
+      state: directory
+      mode: 0755
+
+  - name: Download oc binary "{{ openshift_client_release_url }}"
     get_url:
-      url: "{{ openshift_server_release_url }}"
-      dest: /tmp/{{ openshift_server_release_file }}
+      url: "{{ openshift_client_release_url }}"
+      dest: /tmp/{{ openshift_client_release_file }}
       mode: 0440
     register: get_openshift_release
 
-  - name: Untar {{ openshift_server_release_file }}
-    shell: tar -xzf /tmp/{{ openshift_server_release_file }} -C /tmp
-    when: get_openshift_release.changed
-    register: untar_openshift_release
+  - name: extract archive
+    unarchive: src=/tmp/{{ openshift_client_release_file }} dest=/tmp copy=no
+    when: openshift_release_ext == "zip"
+
+  - name: Untar {{ openshift_client_release_file }}
+    shell: tar -xzf /tmp/{{ openshift_client_release_file }} -C /tmp
+    when: get_openshift_release.changed and openshift_release_ext == "tar.gz"
 
   - name: Install oc
     copy:
       remote_src: True
-      src: /tmp/{{ openshift_server_release_ver }}/oc
-      dest: /usr/local/bin/oc
-      owner: root
-      group: root
+      src: /tmp/oc
+      dest: "{{ oc_tools_dir }}/oc"
       mode: 0755
+    when: openshift_release_ext == "zip"
 
-  - name: Install oadm
+  - name: Install oc
     copy:
       remote_src: True
-      src: /tmp/{{ openshift_server_release_ver }}/oadm
-      dest: /usr/local/bin/oadm
-      owner: root
-      group: root
+      src: /tmp/{{ openshift_client_release }}/oc
+      dest: "{{ oc_tools_dir }}/oc"
       mode: 0755
+    when: openshift_release_ext == "tar.gz"
 
-  - name: Download Kubernetes client tools to get latest kubectl, "{{ kubernetes_client_url }}"
+  - name: Download kube_ctl, "{{ kube_ctl_url }}"
     get_url:
-      url: "{{ kubernetes_client_url }}"
-      dest: /tmp/{{ kubernetes_client_file }}
-      mode: 0440
-    register: get_kubernetes_client_release
-
-  - name: Untar {{ kubernetes_client_file }}
-    shell: tar -xzf /tmp/{{ kubernetes_client_file }} -C /tmp
-    when: get_kubernetes_client_release.changed
-
-  - name: Install kubectl
-    copy:
-      remote_src: True
-      src:  /tmp/kubernetes/client/bin/kubectl
-      dest: /usr/local/bin/kubectl
-      owner: root
-      group: root
+      url: "{{ kube_ctl_url }}"
+      dest: "{{ oc_tools_dir }}/kubectl"
       mode: 0755
+    register: get_kubernetes_client_release
 
   - name: Wait, up to 20 minutes, till we can SSH into the host with the DNS name '{{ openshift_hostname }}'
     wait_for:
@@ -56,9 +88,17 @@
       delay: 0
       timeout: 1200
       state: started
+    when: ec2_install
 
   - name: Resetting cluster, {{ reset_cluster }}
     shell: "{{ oc_cmd }} cluster down"
+    when: reset_cluster
+
+  - name: Remove /var/lib/origin/openshift.local.config/master/master-config.yaml when resetting cluster
+    file:
+      path: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      state: absent
+    become: true
     when: reset_cluster
 
   # When reset_cluster is True we do not want to have to wait for the extra oc cluster up/down if it's not required
@@ -92,6 +132,30 @@
   - name: Run oc cluster up
     shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/ansibleplaybookbundle/origin"
     when: (oc_cluster_up_first_run and not master_config_stat.stat.exists) or ssl_changed is defined
+
+  - debug:
+      msg: "oc_cluster_up_first_run = {{ oc_cluster_up_first_run }}, oc_cluster_status.stdout = '{{ oc_cluster_status.stdout }}'"
+
+  # ec2 install will mount a ebs volume, for local we just need to create a directory
+  - name: Ensure {{ persistedvol_mount_point }} directory exists if running in local mode
+    file:
+      path: "{{ persistedvol_mount_point }}"
+      state: directory
+      mode: 0755
+    become: 'true'
+    when: not ec2_install
+
+  # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
+  - set_fact:
+      base_oc_cluster_cmd_line: "--routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/ansibleplaybookbundle/origin"
+
+  - set_fact:
+      oc_cluster_cmd_line: "{{ base_oc_cluster_cmd_line }} --create-machine"
+    when: ansible_os_family == "Darwin"
+
+  - set_fact:
+      oc_cluster_cmd_line: "{{ base_oc_cluster_cmd_line }}"
+    when: ansible_os_family == "RedHat"
 
   - name: Run oc cluster down
     shell: "{{ oc_cmd }} cluster down"
@@ -151,18 +215,21 @@
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
       regexp: "extensionDevelopment:"
       line: "  extensionDevelopment: true"
+    become: 'true'
 
   - name: Add extension script to assetConfig
     lineinfile:
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
       insertafter: "extensionScripts: null"
       line: "    - /var/lib/origin/openshift.local.config/extension.js"
+    become: 'true'
 
   - name: Edit master-config to add extension script
     lineinfile:
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
       regexp: "extensionScripts: null"
       line: "  extensionScripts:"
+    become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
@@ -170,6 +237,7 @@
       insertafter: "namedCertificates: null"
       line: "    - certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem"
     when: use_ssl == True
+    become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
@@ -177,6 +245,7 @@
       insertafter: "certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem"
       line: "      keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem"
     when: use_ssl == True
+    become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
@@ -184,6 +253,7 @@
       insertafter: "keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem"
       line: "      names:"
     when: use_ssl == True
+    become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
@@ -191,6 +261,7 @@
       insertafter: "names:"
       line: "      - \"apiserver-service-catalog.{{ openshift_hostname }}\""
     when: use_ssl == True
+    become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
@@ -198,6 +269,7 @@
       insertafter: "names:"
       line: "      - \"{{ openshift_hostname }}\""
     when: use_ssl == True
+    become: 'true'
 
   - name: Edit master-config to allow SSL cert
     lineinfile:
@@ -205,6 +277,7 @@
       regexp: "namedCertificates: null"
       line: "  namedCertificates:"
     when: use_ssl == True
+    become: 'true'
 
   - name: Add extension script to oc config to talk to svc catalog
     template:
@@ -213,6 +286,7 @@
       owner: root
       group: root
       mode: 0644
+    become: 'true'
     register: extension_script_result
 
   - name: Edit master-config to allow extension scripts
@@ -220,24 +294,26 @@
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
       regexp: "extensionDevelopment:"
       line: "  extensionDevelopment: true"
+    become: 'true'
 
   - name: Add extension script to assetConfig
     lineinfile:
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
       insertafter: "extensionScripts: null"
       line: "    - /var/lib/origin/openshift.local.config/extension.js"
+    become: 'true'
 
   - name: Edit master-config to add extension script
     lineinfile:
       dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
       regexp: "extensionScripts: null"
       line: "  extensionScripts:"
+    become: 'true'
 
   - name: Run oc cluster up
     shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/ansibleplaybookbundle/origin --host-config-dir=/var/lib/origin/openshift.local.config --use-existing-config"
     when: oc_cluster_up_first_run
     register: oc_cluster_up
-
   #
   # Add permissions to desired openshift user
   # Would be nice if we looked at existing users and permissions and made decisions of what to run
@@ -252,19 +328,19 @@
     when: oc_cluster_up.changed
 
   - name: Add cluster-admin role to {{ cluster_user }}
-    shell: "{{ oadm_cmd }} policy add-cluster-role-to-user cluster-admin {{ cluster_user }}"
+    shell: "{{ oc_cmd }} adm policy add-cluster-role-to-user cluster-admin {{ cluster_user }}"
     when: oc_cluster_up.changed
 
   - name: Add cluster-admin role to {{ service_catalog_user }}
-    shell: "{{ oadm_cmd }} policy add-cluster-role-to-user cluster-admin {{ service_catalog_user }}"
+    shell: "{{ oc_cmd }} adm policy add-cluster-role-to-user cluster-admin {{ service_catalog_user }}"
     when: oc_cluster_up.changed
 
   - name: Add privileged scc to {{ cluster_user }}
-    shell: "{{ oadm_cmd }} policy add-scc-to-user privileged {{ cluster_user }}"
+    shell: "{{ oc_cmd }} adm policy add-scc-to-user privileged {{ cluster_user }}"
     when: oc_cluster_up.changed
 
   - name: Add anyuid scc to system:authenticated
-    shell: "{{ oadm_cmd }} policy add-scc-to-group anyuid system:authenticated"
+    shell: "{{ oc_cmd }} adm policy add-scc-to-group anyuid system:authenticated"
     when: oc_cluster_up.changed
 
   - name: Login as {{ cluster_user }}

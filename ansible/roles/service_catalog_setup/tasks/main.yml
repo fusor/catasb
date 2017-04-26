@@ -2,6 +2,8 @@
   - name: Install docker-py through pip as it's a requirement of ansible docker module
     pip:
       name: docker-py
+      version: 1.10.6
+    become: 'true'
 
   - name: Docker pull {{ svc_cat_apiserver_img }}
     docker_image:
@@ -121,11 +123,11 @@
   - name: Creating .kube/service-catalog.config from kubeconfig.templ.yaml.j2
     template:
       src: kubeconfig.templ.yaml.j2
-      dest: /root/.kube/service-catalog.config
-      owner: root
-      group: root
+      dest: "{{ ansible_env.HOME }}/.kube/service-catalog.config"
+      owner: "{{ ansible_env.USER }}"
+      group: "{{ ansible_env.USER }}"
       mode: 0644
 
-  - lineinfile: dest=/root/.bashrc line="{{ item }}" create=yes
+  - lineinfile: dest={{ ansible_env.HOME }}/.bashrc line="{{ item }}" create=yes
     with_items:
-      - alias catctl="kubectl --kubeconfig=/root/.kube/service-catalog.config"
+      - alias catctl="kubectl --kubeconfig={{ ansible_env.HOME }}/.kube/service-catalog.config"

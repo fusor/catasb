@@ -1,0 +1,20 @@
+- hosts: localhost
+  gather_facts: True
+  roles:
+    - openshift_setup
+    - service_catalog_setup
+    - ansible_service_broker_setup
+    #- demo_prep
+  post_tasks:
+    - set_fact:
+        msg: |
+            Hostname:                  {{ openshift_hostname }}
+            Next steps:
+            1) Visit https://apiserver-service-catalog.{{ openshift_hostname }}
+            2) Accept the certificate
+            3) Visit https://{{ openshift_hostname }}:8443 for the console
+            OR
+            For CLI access:
+            oc login --insecure-skip-tls-verify {{ openshift_hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+    - debug:
+        msg: "{{ msg.split('\n') }}"

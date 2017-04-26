@@ -4,6 +4,7 @@ target_dns_zone: ""
 target_subdomain: ""
 instance_name: ""
 instance_lookup_value: ""
+ec2_install: true
 
 #aws_tag_prefix is used to name the various VPC resources so they are only created once per account
 #even if shared with multiple IAM users
