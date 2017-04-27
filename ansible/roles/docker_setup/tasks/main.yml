@@ -50,7 +50,11 @@
   - name: Pull images for demo
     shell: docker pull {{ item }}
     with_items:
+     - ansibleplaybookbundle/postgres-demo-apb
      - ansibleplaybookbundle/rds-postgres-apb
      - centos/python-35-centos7
      - centos/python-34-centos7
      - centos/python-27-centos7
+     - manageiq/manageiq-pods:app-latest
+     - manageiq/manageiq-pods:memcached-latest
+     - manageiq/manageiq-pods:postgresql-latest
