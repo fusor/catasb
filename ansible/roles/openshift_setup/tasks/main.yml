@@ -241,6 +241,7 @@
       group: root
       mode: 0644
     register: extension_script_result
+    become: 'true'
 
   - name: Edit master-config to allow extension scripts
     lineinfile:
