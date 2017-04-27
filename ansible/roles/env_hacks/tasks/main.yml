@@ -1,0 +1,15 @@
+---
+  # We want this to run sometime after oc cluster up has come up, since we want
+  # it to alter the permssions of the pv* directories it creates sometime after
+  # startup.
+  #
+  # We've seen some permission errors testing certain containers with PVs
+  # May be related to this issue:
+  #   https://github.com/openshift/origin/issues/13496https://github.com/openshift/origin/issues/13496
+  # Putting in a workaround for manually opening up the permissions
+  - name: Adjust persistent volume permissions to be 777 to make testing easier
+    file:
+      path: "{{ persistedvol_mount_point }}"
+      mode: 0777
+      recurse: true
+    become: true
