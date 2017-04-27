@@ -7,9 +7,17 @@
   # May be related to this issue:
   #   https://github.com/openshift/origin/issues/13496https://github.com/openshift/origin/issues/13496
   # Putting in a workaround for manually opening up the permissions
+
+  - name: clear out persistent volumes
+    shell: |
+      for dir in `ls {{ persistedvol_mount_point }}/ | grep pv`; do
+        rm -rf {{ persistedvol_mount_point}}/$dir/* ; done
+    when: '{{ persistedvol_mount_point != "/" }}'
+
   - name: Adjust persistent volume permissions to be 777 to make testing easier
     file:
       path: "{{ persistedvol_mount_point }}"
       mode: 0777
       recurse: true
     become: true
+
