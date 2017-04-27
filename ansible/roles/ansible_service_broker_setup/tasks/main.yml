@@ -57,9 +57,12 @@
   - set_fact:
       ansible_service_broker_route:  "{{ result_get_route_asb.stdout }}"
 
-  - name: Bootstrap Ansible Service Broker
-    shell: curl -X POST {{ ansible_service_broker_route }}/v2/bootstrap
+  - uri:
+      url: http://{{ ansible_service_broker_route }}/v2/bootstrap
+      method: POST
     when: asbcli_up.changed
+    register: response
+    failed_when: "not response.json or not response.json.SpecCount or response.json.SpecCount == 0"
 
   - name: Creating /tmp/ansible_service_broker.yaml
     template:
