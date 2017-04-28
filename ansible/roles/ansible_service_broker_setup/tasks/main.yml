@@ -4,7 +4,7 @@
     git:
       repo: https://github.com/fusor/ansible-service-broker.git
       dest: "{{ asb_src_dir }}"
-      version: "master"
+      version: "demo"
     register: git_clone_asb
 
   - name: Install asbcli requirements
