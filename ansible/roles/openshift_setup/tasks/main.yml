@@ -94,37 +94,23 @@
     shell: "{{ oc_cmd }} cluster down"
     when: reset_cluster
 
-  - name: Removing stale docker images when reset_cluster is selected
+  - name: Removing certain docker images if they exist so we are sure we are pulling latest
     docker_image:
-      name: docker.io/ansibleplaybookbundle/ansible-service-broker-apb
+      name: "{{ item.img }}"
       state: absent
-      tag: latest
+      tag: "{{ item.tag }}"
       force: true
-    when: reset_cluster
+    with_items:
+      - "{{ docker_images_group1 }}"
 
-  - name: Removing stale docker images when reset_cluster is selected
+  - name: Pulling all docker images we require
     docker_image:
-      name: docker.io/ansibleplaybookbundle/ansible-service-broker-asb
-      state: absent
-      tag: latest
-      force: true
-    when: reset_cluster
-
-  - name: Removing stale docker images when reset_cluster is selected
-    docker_image:
-      name: docker.io/ansibleplaybookbundle/ansible-service-broker-etcd
-      state: absent
-      tag: latest
-      force: true
-    when: reset_cluster
-
-  - name: Removing stale docker images when reset_cluster is selected
-    docker_image:
-      name: docker.io/ansibleplaybookbundle/origin
-      state: absent
-      tag: latest
-      force: true
-    when: reset_cluster
+      name: "{{ item.img }}"
+      state: present
+      tag: "{{ item.tag }}"
+    with_items:
+      - "{{ docker_images_group1 }}"
+      - "{{ docker_images_group2 }}"
 
   - name: Remove /var/lib/origin/openshift.local.config/master/master-config.yaml when resetting cluster
     file:
