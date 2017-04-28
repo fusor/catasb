@@ -8,11 +8,18 @@
   #   https://github.com/openshift/origin/issues/13496https://github.com/openshift/origin/issues/13496
   # Putting in a workaround for manually opening up the permissions
 
+  - name: wait for persistent volumes to be created
+    wait_for:
+      path: '{{ persistedvol_mount_point }}/pv{{ item }}'
+      timeout: 300
+    with_sequence: count=100 format="%004d"
+    become: true
+
   - name: clear out persistent volumes
     shell: |
       for dir in `ls {{ persistedvol_mount_point }}/ | grep pv`; do
         rm -rf {{ persistedvol_mount_point}}/$dir/* ; done
-    when: '{{ persistedvol_mount_point != "/" }}'
+    when: persistedvol_mount_point != "/"
     become: true
 
   - name: Adjust persistent volume permissions to be 777 to make testing easier
