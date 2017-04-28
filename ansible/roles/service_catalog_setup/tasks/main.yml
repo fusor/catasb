@@ -6,7 +6,6 @@
 
   - name: Docker tag apiserver
     shell: docker tag {{ svc_cat_apiserver_img }} {{ svc_cat_apiserver_tag }}
-    when: docker_pull_svc_cat_apiserver.changed
 
   - name: Docker pull {{ svc_cat_controller_mgr_img }}
     docker_image:
@@ -16,7 +15,6 @@
 
   - name: Docker tag service catalog controller
     shell: docker tag {{ svc_cat_controller_mgr_img }} {{ svc_cat_controller_mgr_tag }}
-    when: docker_pull_svc_cat.changed
 
   - name: check if the service-catalog project exists
     shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^service-catalog( |$)' | cat"
