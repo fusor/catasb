@@ -1,10 +1,4 @@
 ---
-  - name: Install docker-py through pip as it's a requirement of ansible docker module
-    pip:
-      name: docker-py
-      version: 1.10.6
-    become: 'true'
-
   - name: Docker pull {{ svc_cat_apiserver_img }}
     docker_image:
       name: "{{ svc_cat_apiserver_img }}"
