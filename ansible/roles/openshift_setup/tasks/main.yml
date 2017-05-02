@@ -108,6 +108,7 @@
       force: true
     with_items:
       - "{{ docker_images_group1 }}"
+    when: remove_docker_images
 
   - name: Pulling all docker images we require
     docker_image:

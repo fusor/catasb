@@ -34,8 +34,13 @@ aws_ami_id: ami-b63769a1
 #aws_region: us-west-2
 #aws_ami_id: ami-6f68cf0f
 
+##
+# Canada
+##
+#aws_region: ca-central-1
+#aws_ami_id: ami-9062d0f4
 
-instance_type: c4.2xlarge
+instance_type: c4.4xlarge
 
 openshift_hostname: "{{target_subdomain}}.{{target_dns_zone}}"
 openshift_url: "{{ openshift_hostname }}:8443"
@@ -61,7 +66,7 @@ tmp_mount_point: "/tmp"
 
 
 cluster_user: admin
-cluster_user_password: dog8code
+cluster_user_password: admin
 cluster_system_admin: "system:admin"
 service_catalog_user: "system:serviceaccount:service-catalog:default"
 
@@ -85,6 +90,9 @@ vpc_subnet_b_cidr: "10.0.1.0/24"
 vpc_subnet_b_name: "{{ aws_tag_prefix }}_subnet_b"
 vpc_route_table_name: "{{ aws_tag_prefix }}_route_table"
 rds_subnet_group_name: "{{ aws_tag_prefix }}_rds_group"
+
+# If true, will remove all docker images from 'docker_images_group1'
+remove_docker_images: false
 
 # These docker images we want to remove and fetch on each setup
 docker_images_group1:
