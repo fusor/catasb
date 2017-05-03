@@ -1,0 +1,35 @@
+---
+  - name: Login as {{ cluster_user }}
+    shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }}"
+
+  - name: check if project exists
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ local_demo_project_name }}( |$)' | cat"
+    register: project
+
+  - name: Create a new project for the demo '{{ local_demo_project_name }}'
+    shell: "{{ oc_cmd }} new-project {{ local_demo_project_name }}"
+    register: new_demo_project
+    when: project.stdout.find( local_demo_project_name ) == -1
+
+  - name: initiate a build
+    shell: "{{ oc_cmd }} new-app -n {{ local_demo_project_name }} centos/python-35-centos7~https://github.com/thesteve0/awsdemo/ --name=demoprep"
+
+  - name: wait for deployment to complete
+    shell: "{{ oc_cmd }} get -n {{ local_demo_project_name }} pod --no-headers=true -l 'app=demoprep' | awk '{ print $3 }'"
+    register: demoprep_status
+    until: "'Running' in demoprep_status.stdout"
+    retries: 60
+    delay: 5
+
+  - name: delete deployment items
+    shell: "{{ oc_cmd }} delete -n {{ local_demo_project_name }} {{ item }} demoprep"
+    with_items:
+      - svc
+      - dc
+      - bc
+
+  - name: delete imagestreams
+    shell: "{{ oc_cmd }} delete -n {{ local_demo_project_name }} is demoprep python-35-centos7"
+
+  - name: delete {{ local_demo_project_name }}
+    shell: "{{ oc_cmd }} delete project {{ local_demo_project_name }}"
