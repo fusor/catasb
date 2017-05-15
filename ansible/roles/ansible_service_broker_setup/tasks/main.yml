@@ -4,7 +4,7 @@
     git:
       repo: https://github.com/fusor/ansible-service-broker.git
       dest: "{{ asb_src_dir }}"
-      version: "demo"
+      version: "master"
     register: git_clone_asb
 
   - name: Install asbcli requirements
@@ -22,7 +22,13 @@
     register: oc_get_projects_asb
 
   - name: Use asbcli up to install Ansible Service Broker
-    shell: "./asbcli up {{ openshift_url }} --cluster-user={{ cluster_user }} --cluster-pass={{ cluster_user_password }} --dockerhub-user={{ dockerhub_user_name }} --dockerhub-pass={{ dockerhub_user_password }}"
+    shell: >
+      ./asbcli up {{ openshift_url }}
+      --cluster-user={{ cluster_user }}
+      --cluster-pass={{ cluster_user_password }}
+      --dockerhub-user={{ dockerhub_user_name }}
+      --dockerhub-pass={{ dockerhub_user_password }}
+      --dockerhub-org={{ dockerhub_org_name }}
     args:
       chdir: "{{ asb_src_dir }}/scripts/asbcli"
     retries: 2

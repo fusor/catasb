@@ -2,4 +2,4 @@ export CLUSTER_IP="$(ifconfig docker0 | grep inet | awk '{print $2}' | head -1)"
 
 export OPENSHIFT_HOSTNAME="${CLUSTER_IP}.nip.io"
 
-export EXTRA_VARS="{\"ec2_install\":False, \"use_ssl\":False, \"openshift_hostname\":\"${OPENSHIFT_HOSTNAME}\"}"
+export EXTRA_VARS="{\"remove_docker_images\":${RESET_ENV}, \"ec2_install\":False, \"use_ssl\":False, \"openshift_hostname\":\"${OPENSHIFT_HOSTNAME}\", \"dockerhub_user_name\":\"${DOCKERHUB_USER_NAME}\", \"dockerhub_user_password\":\"${DOCKERHUB_USER_PASSWORD}\", \"dockerhub_org_name\":\"${DOCKERHUB_ORG_NAME}\"}"
