@@ -5,7 +5,6 @@
     - { role: openshift_setup, reset_cluster: True }
     - service_catalog_setup
     - ansible_service_broker_setup
-    - local_demo_prep
     - env_hacks
   post_tasks:
     - set_fact:
