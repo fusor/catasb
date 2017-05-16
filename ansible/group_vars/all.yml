@@ -96,11 +96,11 @@ remove_docker_images: false
 
 # These docker images we want to remove and fetch on each setup
 docker_images_group1:
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-apb", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-asb", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-etcd", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/postgresql-demo-apb", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/rds-postgres-apb", tag: "latest" }
+  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-apb", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-asb", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-etcd", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/postgresql-demo-apb", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/rds-postgres-apb", tag: "summit" }
   - { img: "manageiq/manageiq-pods", tag: "app-latest" }
   - { img: "manageiq/manageiq-pods", tag: "memcached-latest" }
   - { img: "manageiq/manageiq-pods", tag: "postgresql-latest" }
@@ -108,13 +108,13 @@ docker_images_group1:
 
 # These docker images change less frequently, we are OK pulling them once and reusing
 docker_images_group2:
-  - { img: "docker.io/ansibleplaybookbundle/controller-manager", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/apiserver", tag: "latest" }
+  - { img: "docker.io/ansibleplaybookbundle/controller-manager", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/apiserver", tag: "summit" }
   - { img: "docker.io/centos/python-35-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-34-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-27-centos7", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-sti-builder", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-deployer", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-docker-registry", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-haproxy-router", tag: "latest" }
+  - { img: "docker.io/ansibleplaybookbundle/origin", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/origin-sti-builder", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/origin-deployer", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/origin-docker-registry", tag: "summit" }
+  - { img: "docker.io/ansibleplaybookbundle/origin-haproxy-router", tag: "summit" }

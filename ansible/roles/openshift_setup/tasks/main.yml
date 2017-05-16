@@ -155,7 +155,7 @@
     when: "not 'cluster was started' in oc_cluster_status.stdout"
 
   - name: Run oc cluster up
-    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/ansibleplaybookbundle/origin"
+    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit --image=docker.io/ansibleplaybookbundle/origin"
     when: (oc_cluster_up_first_run and not master_config_stat.stat.exists) or ssl_changed is defined
 
   - debug:
@@ -172,7 +172,7 @@
 
   # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
   - set_fact:
-      base_oc_cluster_cmd_line: "--routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/ansibleplaybookbundle/origin"
+      base_oc_cluster_cmd_line: "--routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit --image=docker.io/ansibleplaybookbundle/origin"
 
   - set_fact:
       oc_cluster_cmd_line: "{{ base_oc_cluster_cmd_line }} --create-machine"
@@ -337,7 +337,7 @@
     become: 'true'
 
   - name: Run oc cluster up
-    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=latest --image=docker.io/ansibleplaybookbundle/origin --host-config-dir=/var/lib/origin/openshift.local.config --use-existing-config"
+    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit --image=docker.io/ansibleplaybookbundle/origin --host-config-dir=/var/lib/origin/openshift.local.config --use-existing-config"
     when: oc_cluster_up_first_run
     register: oc_cluster_up
   #
