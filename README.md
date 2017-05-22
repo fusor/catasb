@@ -13,7 +13,7 @@ These playbooks will:
 
 
 ### Local and EC-2 deployment options
-  * To view individual Readme documents for these two options click below
+  * To view individual Readme documents for these options click below
   * [Local Linux deployment](local/linux/README.md)
   * [Local macOS deployment](local/mac/README.md)
   * [EC-2 deployment](ec2/README.md)
