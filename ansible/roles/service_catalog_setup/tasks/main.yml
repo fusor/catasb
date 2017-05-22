@@ -29,20 +29,17 @@
     register: new_svc_cat_project
     when: project.stdout.find( "service-catalog" ) == -1
 
-  #- name: Ensuring service-catalog project is selected for those cases of being re-run and skipping the new-project creation
-  #  shell: "{{ oc_cmd }} project service-catalog"
-
   - name: check if the apiserver deployment exists
     shell: "{{ oc_cmd }} get deployment -n service-catalog --no-headers=true | awk '{ print $1}' | grep -E '^apiserver( |$)' | cat"
     register: deployment
 
   - name: Get SSL credentials
-    shell: "cat /var/lib/origin/openshift.local.config/apiserver-fullchain.pem"
+    shell: "cat {{ oc_host_config_dir }}/apiserver-fullchain.pem"
     register: apiserver_crt_plain
     when: use_ssl == True
 
   - name: Get SSL credentials
-    shell: "cat /var/lib/origin/openshift.local.config/apiserver-privkey.pem"
+    shell: "cat {{ oc_host_config_dir }}/apiserver-privkey.pem"
     register: apiserver_key_plain
     when: use_ssl == True
 
@@ -86,40 +83,41 @@
     retries: 60
     delay: 10
 
-  # We would like to use the route, but had problems with integration
-  # Keeping the route information here so we can revisit
-  # Issues:
-  # - We need to login, unsure what user/project to authenticate as
-  # - SSL certs complained they didn't match the route name
-  #
-
-  - name: Get route for apiserver
+  - name: Wait for route for apiserver to be available
     shell: "'{{ oc_cmd }}' get route -n service-catalog --no-headers=true | grep -E '^apiserver( |$)' | cat"
     register: result_get_route_apiserver
     retries: 6
     delay: 10
 
-  - set_fact:
-      service_catalog_endpoint:  "{{ result_get_route_apiserver.stdout }}"
-
-  # Falling back to using the unauthenticated IP of the Pod/Port for now
-  - name: Get IP of APIServer
-    shell: "{{ oc_cmd }} -n service-catalog describe pod `{{ oc_cmd }} get pods -n service-catalog | grep apiserver | awk '{print $1}'` | grep IP | awk '{print $2}'"
-    register: result_apiserver_ip
-    retries: 6
-    delay: 10
+  - name: Save route of apiserver
+    shell: "{{ oc_cmd}} get route -n service-catalog --no-headers=true | awk '{print $2}'"
+    register: result_service_catalog_endpoint
 
   - set_fact:
-      service_catalog_api_server_ip:  "{{ result_apiserver_ip.stdout }}"
+      service_catalog_endpoint:  "{{ result_service_catalog_endpoint.stdout }}"
 
-  - name: Creating .kube/service-catalog.config from kubeconfig.templ.yaml.j2
-    template:
-      src: kubeconfig.templ.yaml.j2
-      dest: "{{ ansible_env.HOME }}/.kube/service-catalog.config"
-      owner: "{{ ansible_env.USER }}"
-      group: "{{ ansible_env.USER }}"
-      mode: 0644
+  - set_fact:
+      svc_cat_kube_config: "{{ ansible_env.HOME }}/.kube/service-catalog.config"
+
+  - name: Remove {{ svc_cat_kube_config }} if present
+    file:
+      path: "{{ svc_cat_kube_config }}"
+      state: absent
+    become: true
+
+  # Below setups a kube config using the authenticated route for the apiserver from service catalog
+  - name: Create cluster entry in kube config for apiserver of service catalog
+    shell: "{{ kubectl_cmd }} config set-cluster service-catalog-cluster --insecure-skip-tls-verify=true --server=https://{{ service_catalog_endpoint }} --kubeconfig={{ svc_cat_kube_config }}"
+
+  - name: Create user credentials entry in kube config for apiserver of service catalog
+    shell: "{{ kubectl_cmd }} config set-credentials admin/service-catalog-cluster --username=admin --password=admin --kubeconfig={{ svc_cat_kube_config }}"
+
+  - name: Create context entry in kube config for apiserver of service catalog
+    shell: "{{ kubectl_cmd }} config set-context default/service-catalog-cluster/admin --cluster service-catalog-cluster --user=admin/service-catalog-cluster --kubeconfig={{ svc_cat_kube_config }}"
+
+  - name: Create context entry in kube config for apiserver of service catalog
+    shell: "{{ kubectl_cmd }} config use-context default/service-catalog-cluster/admin --kubeconfig={{ svc_cat_kube_config }}"
 
   - lineinfile: dest={{ ansible_env.HOME }}/.bashrc line="{{ item }}" create=yes
     with_items:
-      - alias catctl="kubectl --kubeconfig={{ ansible_env.HOME }}/.kube/service-catalog.config"
+      - alias catctl="kubectl --kubeconfig={{ svc_cat_kube_config }}"

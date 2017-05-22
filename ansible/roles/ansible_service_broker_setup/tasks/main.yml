@@ -11,7 +11,7 @@
     pip:
       requirements: "{{ asb_src_dir }}/scripts/asbcli/requirements.txt"
     when: git_clone_asb.changed
-    become: 'true'
+    become: true
 
   - name: Docker pull ansibleplaybookbundle/ansible-service-broker-apb:summit
     docker_image:
@@ -22,7 +22,13 @@
     register: oc_get_projects_asb
 
   - name: Use asbcli up to install Ansible Service Broker
-    shell: "./asbcli up {{ openshift_url }} --cluster-user={{ cluster_user }} --cluster-pass={{ cluster_user_password }} --dockerhub-user={{ dockerhub_user_name }} --dockerhub-pass={{ dockerhub_user_password }}"
+    shell: >
+      ./asbcli up {{ openshift_url }}
+      --cluster-user={{ cluster_user }}
+      --cluster-pass={{ cluster_user_password }}
+      --dockerhub-user={{ dockerhub_user_name }}
+      --dockerhub-pass={{ dockerhub_user_password }}
+
     args:
       chdir: "{{ asb_src_dir }}/scripts/asbcli"
     retries: 2
@@ -69,7 +75,6 @@
       src: ansible_service_broker.yaml.j2
       dest: /tmp/ansible_service_broker.yaml
       owner: "{{ ansible_env.USER }}"
-      group: "{{ ansible_env.USER }}"
       mode: 0644
     register: ansible_service_broker_template
 

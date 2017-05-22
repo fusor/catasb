@@ -39,7 +39,7 @@
             SSH Key Name:              {{ ssh_key_name }}
             Region:                    {{ aws_region }}
             Next steps:
-            1) Visit https://apiserver-service-catalog.{{ openshift_hostname }}
+            1) Visit https://apiserver-service-catalog.{{ openshift_routing_suffix }}
             2) Accept the certificate
             3) Visit https://{{ openshift_hostname }}:8443 for the console
             4) Provision a RDS APB into awsdemo project

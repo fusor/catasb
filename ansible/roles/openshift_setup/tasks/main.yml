@@ -119,9 +119,9 @@
       - "{{ docker_images_group1 }}"
       - "{{ docker_images_group2 }}"
 
-  - name: Remove /var/lib/origin/openshift.local.config/master/master-config.yaml when resetting cluster
+  - name: Remove {{ oc_host_config_dir }}/master/master-config.yaml when resetting cluster
     file:
-      path: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      path: "{{ oc_host_config_dir }}/master/master-config.yaml"
       state: absent
     become: true
     when: reset_cluster
@@ -129,11 +129,11 @@
   # When reset_cluster is True we do not want to have to wait for the extra oc cluster up/down if it's not required
   # so we are checking to see if the master-config.yaml exists, if it's there we will skip the extra oc cluster up/down
   - stat:
-      path: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      path: "{{ oc_host_config_dir }}/master/master-config.yaml"
     register: master_config_stat
 
   - stat:
-      path: /var/lib/origin/openshift.local.config/console-fullchain.pem
+      path: "{{ oc_host_config_dir }}/console-fullchain.pem"
     register: console_ssl_stat
 
   - name: Set a fact to tell if SSL was previously configured and now disabled
@@ -154,8 +154,16 @@
       oc_cluster_up_first_run: True
     when: "not 'cluster was started' in oc_cluster_status.stdout"
 
+  - name: Create command line for oc cluster up execution
+    set_fact:
+      oc_cluster_up_cmd: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_routing_suffix }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit --image=docker.io/ansibleplaybookbundle/origin --host-config-dir={{ oc_host_config_dir }}"
+
+  - debug:
+      msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
+
+  # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
   - name: Run oc cluster up
-    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit --image=docker.io/ansibleplaybookbundle/origin"
+    shell: "{{ oc_cluster_up_cmd }}"
     when: (oc_cluster_up_first_run and not master_config_stat.stat.exists) or ssl_changed is defined
 
   - debug:
@@ -171,17 +179,6 @@
     when: not ec2_install
 
   # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
-  - set_fact:
-      base_oc_cluster_cmd_line: "--routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit --image=docker.io/ansibleplaybookbundle/origin"
-
-  - set_fact:
-      oc_cluster_cmd_line: "{{ base_oc_cluster_cmd_line }} --create-machine"
-    when: ansible_os_family == "Darwin"
-
-  - set_fact:
-      oc_cluster_cmd_line: "{{ base_oc_cluster_cmd_line }}"
-    when: ansible_os_family == "RedHat"
-
   - name: Run oc cluster down
     shell: "{{ oc_cmd }} cluster down"
     when: (oc_cluster_up_first_run and not master_config_stat.stat.exists) or ssl_changed is defined
@@ -190,7 +187,7 @@
     copy:
       remote_src: True
       src: /tmp/console-fullchain.pem
-      dest: /var/lib/origin/openshift.local.config/console-fullchain.pem
+      dest: "{{ oc_host_config_dir }}/console-fullchain.pem"
       owner: root
       group: root
       mode: 0644
@@ -200,7 +197,7 @@
     copy:
       remote_src: True
       src: /tmp/console-privkey.pem
-      dest: /var/lib/origin/openshift.local.config/console-privkey.pem
+      dest: "{{ oc_host_config_dir }}/console-privkey.pem"
       owner: root
       group: root
       mode: 0644
@@ -210,7 +207,7 @@
     copy:
       remote_src: True
       src: /tmp/apiserver-fullchain.pem
-      dest: /var/lib/origin/openshift.local.config/apiserver-fullchain.pem
+      dest: "{{ oc_host_config_dir }}/apiserver-fullchain.pem"
       owner: root
       group: root
       mode: 0644
@@ -220,7 +217,7 @@
     copy:
       remote_src: True
       src: /tmp/apiserver-privkey.pem
-      dest: /var/lib/origin/openshift.local.config/apiserver-privkey.pem
+      dest: "{{ oc_host_config_dir }}/apiserver-privkey.pem"
       owner: root
       group: root
       mode: 0644
@@ -229,69 +226,67 @@
   - name: Add extension script to oc config to talk to svc catalog
     template:
       src: extension.j2
-      dest: /var/lib/origin/openshift.local.config/extension.js
-      owner: root
-      group: root
+      dest: "{{ oc_host_config_dir }}/extension.js"
       mode: 0644
     register: extension_script_result
     become: 'true'
 
   - name: Edit master-config to allow extension scripts
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
       regexp: "extensionDevelopment:"
       line: "  extensionDevelopment: true"
     become: 'true'
 
   - name: Add extension script to assetConfig
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
       insertafter: "extensionScripts: null"
       line: "    - /var/lib/origin/openshift.local.config/extension.js"
     become: 'true'
 
   - name: Edit master-config to add extension script
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
       regexp: "extensionScripts: null"
       line: "  extensionScripts:"
     become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
       insertafter: "namedCertificates: null"
-      line: "    - certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem"
+      line: "    - certFile: {{ oc_host_config_dir }}/console-fullchain.pem"
     when: use_ssl == True
     become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      insertafter: "certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem"
-      line: "      keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem"
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
+      insertafter: "certFile: {{ oc_host_config_dir }}/console-fullchain.pem"
+      line: "      keyFile: {{ oc_host_config_dir }}/console-privkey.pem"
     when: use_ssl == True
     become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      insertafter: "keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem"
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
+      insertafter: "keyFile: {{ oc_host_config_dir }}/console-privkey.pem"
       line: "      names:"
     when: use_ssl == True
     become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
       insertafter: "names:"
-      line: "      - \"apiserver-service-catalog.{{ openshift_hostname }}\""
+      line: "      - \"apiserver-service-catalog.{{ openshift_routing_suffix }}\""
     when: use_ssl == True
     become: 'true'
 
   - name: Add SSL cert to namedCertificates
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
       insertafter: "names:"
       line: "      - \"{{ openshift_hostname }}\""
     when: use_ssl == True
@@ -299,45 +294,21 @@
 
   - name: Edit master-config to allow SSL cert
     lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
       regexp: "namedCertificates: null"
       line: "  namedCertificates:"
     when: use_ssl == True
     become: 'true'
 
-  - name: Add extension script to oc config to talk to svc catalog
-    template:
-      src: extension.j2
-      dest: /var/lib/origin/openshift.local.config/extension.js
-      owner: root
-      group: root
-      mode: 0644
-    become: 'true'
-    register: extension_script_result
+  - name: Update oc cluster up command to use --use-existing-config
+    set_fact:
+      oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --use-existing-config"
 
-  - name: Edit master-config to allow extension scripts
-    lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      regexp: "extensionDevelopment:"
-      line: "  extensionDevelopment: true"
-    become: 'true'
-
-  - name: Add extension script to assetConfig
-    lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      insertafter: "extensionScripts: null"
-      line: "    - /var/lib/origin/openshift.local.config/extension.js"
-    become: 'true'
-
-  - name: Edit master-config to add extension script
-    lineinfile:
-      dest: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      regexp: "extensionScripts: null"
-      line: "  extensionScripts:"
-    become: 'true'
+  - debug:
+      msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
 
   - name: Run oc cluster up
-    shell: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_hostname }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit --image=docker.io/ansibleplaybookbundle/origin --host-config-dir=/var/lib/origin/openshift.local.config --use-existing-config"
+    shell: "{{ oc_cluster_up_cmd }}"
     when: oc_cluster_up_first_run
     register: oc_cluster_up
   #
