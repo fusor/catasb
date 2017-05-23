@@ -94,10 +94,10 @@
     shell: "{{ oc_cmd }} cluster down"
     when: reset_cluster
 
-  - name: Install docker-py through pip as it's a requirement of ansible docker module
+  - name: Install docker through pip as it's a requirement of ansible docker module
     pip:
-      name: docker-py
-      version: 1.10.6
+      name: docker
+      version: 2.3.0
     become: 'true'
 
   - name: Removing certain docker images if they exist so we are sure we are pulling latest
