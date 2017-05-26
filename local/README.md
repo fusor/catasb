@@ -1,54 +1,74 @@
 # CATalogASB Local Deployment
 
-catasb is a collection of playbooks to create an OpenShift environment with a Service Catalog & Ansible Service Broker in a local environment.
-
 ### Overview
-These playbooks will:
+These playbooks will do the following in a local environment:
   * Setup Origin through `oc cluster up`
-  * Install Service Catalog on Origin
-  * Install Ansible Service Broker on Origin
+  * Install [Service Catalog](https://github.com/kubernetes-incubator/service-catalog) on Origin
+  * Install [Ansible Service Broker](https://github.com/fusor/ansible-service-broker) on Origin
 
 ### Pre-Reqs
   * Ansible needs to be installed so its source code is available to Python.
     * Check to see if Ansible modules are available to Python
-            $ python -c "import ansible;print(ansible.__version__)"
-            2.2.2.0
+      ```bash
+      $ python -c "import ansible;print(ansible.__version__)"
+      2.2.2.0
+      ```
     * MacOS requires Ansible to be installed from `pip` and not `brew`
-          $ python -c "import ansible;print(ansible.__version__)"
-          Traceback (most recent call last):
-          File "<string>", line 1, in <module>
-          ImportError: No module named ansible
+      ```bash
+      $ python -c "import ansible;print(ansible.__version__)"
+      Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+      ImportError: No module named ansible
 
-          brew uninstall ansible
-          pip install ansible
+      brew uninstall ansible
+      pip install ansible
 
-          $ python -c "import ansible;print(ansible.__version__)"
-          2.2.2.0
+      $ python -c "import ansible;print(ansible.__version__)"
+      2.2.2.0
+      ```
   * Install python dependencies
-     * `pip install six`
+    ```bash
+    $ pip install six
+    ```
 
 ### Execute
-  * `cd local`
-  * Edit the variables file `local/common_vars`
-    * Update:
-      * CLUSTER_IP if your installation of Docker is not using the default bridge of `docker0`
-  * `./run_setup_local.sh`
-    * Sets up OpenShift
-  * In Web Browser
+  * Navigate to the `local` folder
+    ```bash
+    $ cd catasb/local
+    ```
+  * Edit the variables file `common_vars`
+    * Note: `CLUSTER_IP` assumes that the default bridge of `docker0` is being used
+    * Optional: Edit the variables file `my_vars`
+      ```bash
+      $ more my_vars
+      export DOCKERHUB_USER_NAME="docker_user_name"
+      export DOCKERHUB_USER_PASSWORD="my_password"
+      export DOCKERHUB_ORG_NAME="my_org"
+      ```
+
+  * Run the setup script
+    ```bash
+    $ ./run_setup_local.sh
+    ```
+  * Open a Web Browser
     * Visit: `https://apiserver-service-catalog.CLUSTERIP.nip.io`
-      * Accept the certificate
-      * You will see some text on the screen, ignore this and proceed to the main openshift URL next
-       * Point of this step is just to accept the SSL cert for the apiserver-service-catalog endpoint
-    * Visit: `https://CLUSTERIP.nip.io:8443`
+      * Accept the SSL certificate for the apiserver-service-catalog endpoint
+      * Ignore the text that appears and proceed to the main OpenShift URL next
+      * Note: must accept the new SSL cert, each time you reset your OpenShift environment
+    * Visit: `https://<CLUSTERIP>.nip.io:8443`
+      * The <CLUSTERIP> is the same as the one you set in `common_vars`
 
 ### Cleanup
 
-To terminate the local instance run the below
-  * `oc cluster down`
+* To terminate the local instance run the below
+  ```bash
+  $ oc cluster down
+  ```
 
-To reset the environment to a clean instance of origin with ASB and Service Catalog run the below
-  * `cd local`
-  * `./reset_environment.sh`
+* To reset the environment to a clean instance of origin with ASB and Service Catalog run the below
+  ```bash
+  $ ./reset_environment.sh
+  ```
 
 ### Tested with
   * ansible 2.2.2.0 & 2.3.0.0
