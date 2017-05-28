@@ -1,6 +1,12 @@
 ---
+  - name: upgrade vim-minimal to avoid conflicts issue
+    package:
+      name: vim-minimal
+      state: latest
+    become: true
+
   - name: install packages
-    yum:
+    package:
       name: "{{ item }}"
       state: installed
     with_items:
@@ -15,10 +21,13 @@
       - "vim"
       - "vim-enhanced"
       - "golang"
+      - "glide"
       - "nodejs"
       - "ansible"
+    become: True
 
   - name: Install pip
     easy_install:
       name: pip
       state: latest
+    become: True

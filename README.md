@@ -12,8 +12,12 @@ These playbooks will:
   * Install [Ansible Service Broker](https://github.com/fusor/ansible-service-broker) on Origin
 
 
-### Local and EC-2 deployment options
+### Local, EC-2, and Vagrant deployment options
   * To view individual Readme documents for these options click below
   * [Local Linux deployment](local/linux/README.md)
   * [Local macOS deployment](local/mac/README.md)
   * [EC-2 deployment](ec2/README.md)
+  * Vagrant (creates a VM on host)
+    * Requires Vagrant + Ansible to be installed on host.
+    * Works with:  Virtualbox or Libvirt
+    * Usage: ```vagrant up```

@@ -5,6 +5,7 @@ target_subdomain: ""
 instance_name: ""
 instance_lookup_value: ""
 ec2_install: true
+target_user: ec2-user
 
 #aws_tag_prefix is used to name the various VPC resources so they are only created once per account
 #even if shared with multiple IAM users
@@ -61,6 +62,9 @@ email_address: "foo@bar.com"
 var_lib_docker_ebs_device_name: "sdc"
 var_lib_docker_block_device: "/dev/xvdc"
 var_lib_docker_mount_point: "/var/lib/docker"
+
+setup_docker_storage: True
+modify_docker_network: True
 
 docker_vg_ebs_device_name: "sdd"
 docker_vg_block_device: "/dev/xvdd"
