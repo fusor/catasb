@@ -11,7 +11,7 @@
     pip:
       requirements: "{{ asb_src_dir }}/scripts/asbcli/requirements.txt"
     when: git_clone_asb.changed
-    become: 'true'
+    become: true
 
   - name: Docker pull ansibleplaybookbundle/ansible-service-broker-apb:latest
     docker_image:
@@ -75,7 +75,6 @@
       src: ansible_service_broker.yaml.j2
       dest: /tmp/ansible_service_broker.yaml
       owner: "{{ ansible_env.USER }}"
-      group: "{{ ansible_env.USER }}"
       mode: 0644
     register: ansible_service_broker_template
 

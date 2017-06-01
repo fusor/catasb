@@ -1,4 +1,4 @@
 window.OPENSHIFT_CONFIG.additionalServers = [{
-  hostPort: "apiserver-service-catalog.{{ openshift_hostname }}",
+  hostPort: "apiserver-service-catalog.{{ openshift_routing_suffix }}",
   prefix: "/apis"
 }];

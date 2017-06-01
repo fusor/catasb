@@ -20,6 +20,16 @@
     - name: Setting fact of security group id
       set_fact:
         my_security_group_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].groups[0].id }}"
+  vars_prompt:
+    - name: dockerhub_user_name
+      prompt: "Enter your dockerhub username: "
+      private: no
+    - name: dockerhub_user_password
+      prompt: "Enter your dockerhub password: "
+      private: yes
+    - name: dockerhub_org_name
+      prompt: "Enter the dockerhub organization you'd like to pull images from: "
+      private: no
   roles:
     - { role: ssl_setup, when: use_ssl == True }
     - { role: openshift_setup, reset_cluster: True }
@@ -35,7 +45,7 @@
             SSH Key Name:              {{ ssh_key_name }}
             Region:                    {{ aws_region }}
             Next steps:
-            1) Visit https://apiserver-service-catalog.{{ openshift_hostname }}
+            1) Visit https://apiserver-service-catalog.{{ openshift_routing_suffix }}
             2) Accept the certificate
             3) Visit https://{{ openshift_hostname }}:8443 for the console
             4) Provision a RDS APB into awsdemo project

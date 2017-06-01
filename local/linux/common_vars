@@ -1,0 +1,6 @@
+export PUBLIC_IP="$(ifconfig docker0 | grep inet | awk '{print $2}' | head -1)"
+
+export OPENSHIFT_HOSTNAME="${PUBLIC_IP}"
+export OPENSHIFT_ROUTING_SUFFIX="${PUBLIC_IP}.nip.io"
+
+export EXTRA_VARS="{\"remove_docker_images\":${RESET_ENV}, \"ec2_install\":False, \"use_ssl\":False, \"openshift_hostname\":\"${OPENSHIFT_HOSTNAME}\", \"openshift_routing_suffix\":\"${OPENSHIFT_ROUTING_SUFFIX}\" }"

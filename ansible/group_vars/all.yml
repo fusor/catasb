@@ -42,7 +42,17 @@ aws_ami_id: ami-b63769a1
 
 instance_type: c4.4xlarge
 
+# For local setup, especially on Mac the openshift_hostname will be
+# different from the routing_suffix.
+# We expect the openshift_hostname for Mac to be the public IP
+# This is needed so oc cluster up and can ensure it's listening
+# on the correct interface.
+#
+# For ec2 runs this is less important to differentiate and we expect
+# openshift_hostname and openshift_routing_suffix to be the same
+#
 openshift_hostname: "{{target_subdomain}}.{{target_dns_zone}}"
+openshift_routing_suffix: "{{target_subdomain}}.{{target_dns_zone}}"
 openshift_url: "{{ openshift_hostname }}:8443"
 
 use_ssl: True
@@ -75,6 +85,7 @@ oc_cmd: "{{ oc_client_install_path }}/oc"
 oadm_cmd: "{{ oc_client_install_path }}/oadm"
 kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 
+oc_host_config_dir: /var/lib/origin/openshift.local.config
 
 deploy_rds_demo_instance: true
 

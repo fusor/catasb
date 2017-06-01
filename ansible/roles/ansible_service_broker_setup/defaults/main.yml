@@ -1,1 +1,3 @@
 asb_src_dir: /tmp/ansible-service-broker
+dockerhub_user_name: changeme
+dockerhub_user_password: changeme
