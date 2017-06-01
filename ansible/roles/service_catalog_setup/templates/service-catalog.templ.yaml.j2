@@ -26,6 +26,8 @@ objects:
       spec:
         containers:
         - args:
+          - --admission-control
+          - KubernetesNamespaceLifecycle
           - --storage-type
           - etcd
           - --secure-port
@@ -40,6 +42,7 @@ objects:
           - "10"
           - --cors-allowed-origins
           - ${CORS_ALLOWED_ORIGIN}
+          - --disable-auth
           image: {{ svc_cat_apiserver_tag }}
           imagePullPolicy: Never
           name: apiserver

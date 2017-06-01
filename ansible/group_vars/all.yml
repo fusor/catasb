@@ -110,8 +110,8 @@ docker_images_group1:
 
 # These docker images change less frequently, we are OK pulling them once and reusing
 docker_images_group2:
-  - { img: "docker.io/ansibleplaybookbundle/controller-manager", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/apiserver", tag: "latest" }
+  - { img: "quay.io/kubernetes-service-catalog/controller-manager", tag: "latest" }
+  - { img: "quay.io/kubernetes-service-catalog/apiserver", tag: "latest" }
   - { img: "docker.io/centos/python-35-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-34-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-27-centos7", tag: "latest" }
