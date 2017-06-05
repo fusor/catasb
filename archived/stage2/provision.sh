@@ -50,9 +50,9 @@ cat /shared/kubeconfig.templ.yaml | sed "s|{{SERVICE_CATALOG_ENDPOINT}}|$SERVICE
 chown -R vagrant:vagrant /home/vagrant/.kube
 
 # Bring up broker
-mkdir -p $GOPATH/src/github.com/fusor
-cd $GOPATH/src/github.com/fusor
-git clone https://github.com/fusor/ansible-service-broker.git
+mkdir -p $GOPATH/src/github.com/openshift
+cd $GOPATH/src/github.com/openshift
+git clone https://github.com/openshift/ansible-service-broker.git
 pushd ansible-service-broker && git checkout $ASB_BRANCH && popd
 cd ansible-service-broker/scripts/asbcli
 pip install -r ./requirements.txt

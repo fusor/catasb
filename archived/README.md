@@ -4,7 +4,7 @@ libvirt vagrant environment for working with a service-catalog/broker.
 
 Service Catalog: https://github.com/kubernetes-incubator/service-catalog
 
-Ansible Service Broker: https://github.com/fusor/ansible-service-broker
+Ansible Service Broker: https://github.com/openshift/ansible-service-broker
 
 ## About
 
@@ -73,7 +73,7 @@ built from master with `BUILD_CATALOG=1` env var.
 * `catctl` is setup as an alias for controlling the service-catalog. It's
 `kubectl` with a `kubeconfig` setup to point to the apiserver directly.
 * ASB is launched in the `ansible-service-broker` project and
-[bootstrapped](https://github.com/fusor/ansible-service-broker/blob/master/docs/design.md).
+[bootstrapped](https://github.com/openshift/ansible-service-broker/blob/master/docs/design.md).
 
 #### Running
 

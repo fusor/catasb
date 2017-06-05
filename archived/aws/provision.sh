@@ -48,9 +48,9 @@ cat /shared/kubeconfig.templ.yaml | sed "s|{{SERVICE_CATALOG_ENDPOINT}}|$SERVICE
 chown -R ec2-user:ec2-user /home/ec2-user/.kube
 
 # Bring up broker
-mkdir -p $GOPATH/src/github.com/fusor
-cd $GOPATH/src/github.com/fusor
-git clone https://github.com/fusor/ansible-service-broker.git
+mkdir -p $GOPATH/src/github.com/openshift
+cd $GOPATH/src/github.com/openshift
+git clone https://github.com/openshift/ansible-service-broker.git
 cd ansible-service-broker/scripts/asbcli
 git checkout forced-async-prov
 pip install -r ./requirements.txt
