@@ -104,7 +104,6 @@ remove_docker_images: false
 
 # These docker images we want to remove and fetch on each setup
 docker_images_group1:
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-apb", tag: "latest" }
   - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-asb", tag: "latest" }
   - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-etcd", tag: "latest" }
 
