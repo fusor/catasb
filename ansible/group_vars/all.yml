@@ -85,6 +85,7 @@ oc_cmd: "{{ oc_client_install_path }}/oc"
 oadm_cmd: "{{ oc_client_install_path }}/oadm"
 kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 
+origin_tag: latest
 oc_host_config_dir: /var/lib/origin/openshift.local.config
 
 deploy_rds_demo_instance: true
@@ -114,8 +115,8 @@ docker_images_group2:
   - { img: "docker.io/centos/python-35-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-34-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-27-centos7", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-sti-builder", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-deployer", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-docker-registry", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-haproxy-router", tag: "latest" }
+  - { img: "docker.io/openshift/origin", tag: "{{ origin_tag }}" }
+  - { img: "docker.io/openshift/origin-sti-builder", tag: "{{ origin_tag }}" }
+  - { img: "docker.io/openshift/origin-deployer", tag: "{{ origin_tag }}" }
+  - { img: "docker.io/openshift/origin-docker-registry", tag: "{{ origin_tag }}" }
+  - { img: "docker.io/openshift/origin-haproxy-router", tag: "{{ origin_tag }}" }
