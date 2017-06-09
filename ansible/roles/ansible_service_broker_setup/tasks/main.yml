@@ -10,6 +10,7 @@
   - name: Curling ansible-service-broker-all.yaml
     get_url:
       url: "{{ asb_template_url }}"
+      force: yes
       dest: /tmp/deploy-ansible-service-broker-all.yaml.j2
 
   - name: Setting facts for rendering ansible-service-broker-all.yaml template

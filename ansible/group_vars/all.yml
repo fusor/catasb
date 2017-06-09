@@ -80,6 +80,15 @@ cluster_user_password: admin
 cluster_system_admin: "system:admin"
 service_catalog_user: "system:serviceaccount:service-catalog:default"
 
+service_catalog_tag: "canary"
+svc_cat_apiserver_img_no_tag: "quay.io/kubernetes-service-catalog/apiserver"
+svc_cat_apiserver_img: "{{ svc_cat_apiserver_img_no_tag }}:{{ service_catalog_tag }}"
+svc_cat_apiserver_tag: "apiserver:{{ service_catalog_tag }}"
+svc_cat_controller_mgr_img_no_tag: "quay.io/kubernetes-service-catalog/controller-manager"
+svc_cat_controller_mgr_img: "{{ svc_cat_controller_mgr_img_no_tag }}:{{ service_catalog_tag }}"
+svc_cat_controller_mgr_tag: "controller-manager:{{ service_catalog_tag }}"
+
+
 oc_client_install_path: "/usr/local/bin"
 oc_cmd: "{{ oc_client_install_path }}/oc"
 oadm_cmd: "{{ oc_client_install_path }}/oadm"
@@ -110,11 +119,11 @@ remove_docker_images: false
 docker_images_group1:
   - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker", tag: "latest" }
   - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-etcd", tag: "latest" }
+  - { img: "{{ svc_cat_controller_mgr_img_no_tag }}",  tag: "{{ service_catalog_tag }}" }
+  - { img: "{{ svc_cat_apiserver_img_no_tag }}", tag: "{{ service_catalog_tag }}" }
 
 # These docker images change less frequently, we are OK pulling them once and reusing
 docker_images_group2:
-  - { img: "quay.io/kubernetes-service-catalog/controller-manager", tag: "latest" }
-  - { img: "quay.io/kubernetes-service-catalog/apiserver", tag: "latest" }
   - { img: "docker.io/centos/python-35-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-34-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-27-centos7", tag: "latest" }
