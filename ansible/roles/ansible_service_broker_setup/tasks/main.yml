@@ -9,7 +9,7 @@
 
   - name: Curling ansible-service-broker-all.yaml
     get_url:
-      url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/ansible-service-broker-all.yaml
+      url: "{{ asb_template_url }}"
       dest: /tmp/deploy-ansible-service-broker-all.yaml.j2
 
   - name: Setting facts for rendering ansible-service-broker-all.yaml template

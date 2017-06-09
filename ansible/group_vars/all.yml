@@ -88,6 +88,9 @@ kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 origin_tag: latest
 oc_host_config_dir: /var/lib/origin/openshift.local.config
 
+asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/ansible-service-broker-all.yaml
+#asb_template_url: file:///path/to/file/deploy.yaml.j2
+
 deploy_rds_demo_instance: true
 
 aws_sec_group_name: "{{ aws_tag_prefix }}_security_group"
@@ -105,7 +108,7 @@ remove_docker_images: false
 
 # These docker images we want to remove and fetch on each setup
 docker_images_group1:
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-asb", tag: "latest" }
+  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker", tag: "latest" }
   - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-etcd", tag: "latest" }
 
 # These docker images change less frequently, we are OK pulling them once and reusing
