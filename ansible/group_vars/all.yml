@@ -97,8 +97,31 @@ kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 origin_tag: latest
 oc_host_config_dir: /var/lib/origin/openshift.local.config
 
-asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/ansible-service-broker-all.yaml
-#asb_template_url: file:///path/to/file/deploy.yaml.j2
+asb_project: ansible-service-broker
+
+
+# If you want to make changes to deploying the broker, grab a copy of the template and make local changes and update it to point to 'asb_template_url'
+# remember to use a file:// path as in:
+# asb_template_url: file:///path/to/file/deploy.yaml.j2
+asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml
+
+broker_registry_type: dockerhub
+broker_registry_url: docker.io
+broker_dev_broker: false
+
+broker_tag: "latest"
+broker_image_name: docker.io/ansibleplaybookbundle/ansible-service-broker
+broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
+
+
+etcd_tag: "latest"
+etcd_image_name: "quay.io/coreos/etcd"
+etcd_image: "{{ etcd_image_name }}:{{ etcd_tag }}"
+
+# Location where we will store the local template, note this will always attempt to fetch and overwrite from 'asb_template_url'
+# If you want to modify the template, modify 'asb_template_url'
+local_target_asb_template: /tmp/deploy-ansible-service-broker.template.yaml.local
+local_target_asb_template_processed: /tmp/deploy-ansible-service-broker.template.yaml.local.processed
 
 deploy_rds_demo_instance: true
 
@@ -117,8 +140,8 @@ remove_docker_images: false
 
 # These docker images we want to remove and fetch on each setup
 docker_images_group1:
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-etcd", tag: "latest" }
+  - { img: "{{ broker_image_name }}", tag: "{{ broker_tag }}" }
+  - { img: "{{ etcd_image_name }}", tag: "{{ etcd_tag }}" }
   - { img: "{{ svc_cat_controller_mgr_img_no_tag }}",  tag: "{{ service_catalog_tag }}" }
   - { img: "{{ svc_cat_apiserver_img_no_tag }}", tag: "{{ service_catalog_tag }}" }
 

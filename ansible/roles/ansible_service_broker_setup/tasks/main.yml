@@ -1,17 +1,9 @@
 ---
-  - name: Docker pull {{ broker_image }}
-    docker_image:
-      name: "{{ broker_image }}"
-
-  - name: Docker pull {{ etcd_image }}
-    docker_image:
-      name: "{{ etcd_image }}"
-
   - name: Curling ansible-service-broker-all.yaml
     get_url:
       url: "{{ asb_template_url }}"
       force: yes
-      dest: /tmp/deploy-ansible-service-broker-all.yaml.j2
+      dest: "{{ local_target_asb_template }}"
 
   - name: Setting facts for rendering ansible-service-broker-all.yaml template
     set_fact:
@@ -22,18 +14,36 @@
       openshift_user: "{{ cluster_user }}"
       openshift_target: "{{ openshift_url }}"
 
-  - name: Rendering deploy-ansible-service-broker-all.yaml
-    template:
-      src: /tmp/deploy-ansible-service-broker-all.yaml.j2
-      dest: /tmp/deploy-ansible-service-broker-all.yaml
-      owner: "{{ ansible_env.USER }}"
-      mode: 0644
+  - name: check if the {{ asb_project }} project exists
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ asb_project }}( |$)' | cat"
+    register: project
 
-  - name: Create ansible-service-broker-all
-    shell: "{{ oc_cmd }} create -f /tmp/deploy-ansible-service-broker-all.yaml"
+  - name: Create a new project for the {{ asb_project }}
+    shell: "{{ oc_cmd }} new-project {{ asb_project }}"
+    register: new_asb_project
+    when: project.stdout.find( "{{ asb_project }}" ) == -1
 
-  - name: Switch project to ansible-service-broker
-    shell: "{{ oc_cmd }} project ansible-service-broker"
+  - name: Process template "{{ local_target_asb_template }}"
+    shell: >
+      {{ oc_cmd }}
+      process
+      -f {{ local_target_asb_template }}
+      -n {{ asb_project }}
+      -p BROKER_IMAGE={{ broker_image }}
+      -p ETCD_IMAGE={{ etcd_image }}
+      -p REGISTRY_TYPE={{ broker_registry_type }}
+      -p REGISTRY_URL={{ broker_registry_url }}
+      -p DEV_BROKER={{ broker_dev_broker }}
+      -p DOCKERHUB_ORG={{ dockerhub_org_name }}
+      -p DOCKERHUB_PASS={{ dockerhub_user_password }}
+      -p DOCKERHUB_USER={{ dockerhub_user_name }}
+      &> {{ local_target_asb_template_processed }}
+
+  - name: Running oc create on processed template
+    shell: "{{ oc_cmd }} create -f {{ local_target_asb_template_processed }}"
+
+  - name: Switch project to {{ asb_project }}
+    shell: "{{ oc_cmd }} project {{ asb_project }}"
 
   - name: Waiting 10 minutes for ASB pod
     action:

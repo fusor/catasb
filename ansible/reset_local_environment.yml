@@ -12,9 +12,9 @@
       private: no
   roles:
     - { role: openshift_setup, reset_cluster: True }
+    - env_hacks
     - service_catalog_setup
     - ansible_service_broker_setup
-    - env_hacks
   post_tasks:
     - set_fact:
         msg: |
