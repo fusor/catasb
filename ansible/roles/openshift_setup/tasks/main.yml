@@ -176,7 +176,14 @@
       msg: "oc_cluster_up_first_run = {{ oc_cluster_up_first_run }}, oc_cluster_status.stdout = '{{ oc_cluster_status.stdout }}'"
 
   # ec2 install will mount a ebs volume, for local we just need to create a directory
-  - name: Ensure {{ persistedvol_mount_point }} directory exists if running in local mode
+  - name: Delete persisted volume directory {{ persistedvol_mount_point }}
+    file:
+      path: "{{ persistedvol_mount_point }}"
+      state: absent
+    become: true
+    when: not ec2_install
+
+  - name: Create {{ persistedvol_mount_point }} directory if running in local mode
     file:
       path: "{{ persistedvol_mount_point }}"
       state: directory

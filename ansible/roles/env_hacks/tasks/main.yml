@@ -15,13 +15,6 @@
     with_sequence: count=100 format="%004d"
     become: true
 
-  - name: clear out persistent volumes
-    shell: |
-      for dir in `ls {{ persistedvol_mount_point }}/ | grep pv`; do
-        rm -rf {{ persistedvol_mount_point}}/$dir/* ; done
-    when: persistedvol_mount_point != "/"
-    become: true
-
   - name: Adjust persistent volume permissions to be 777 to make testing easier
     file:
       path: "{{ persistedvol_mount_point }}"
