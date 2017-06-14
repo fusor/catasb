@@ -306,6 +306,13 @@
     when: use_ssl == True
     become: 'true'
 
+  - name: Edit master-config to turn on PodPreset
+    lineinfile:
+      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
+      insertbefore: "openshift.io/ImagePolicy:"
+      line: "    PodPreset:\n      configuration:\n        kind: DefaultAdmissionConfig\n        apiVersion: v1\n        disable: false"
+    become: 'true'
+
   - name: Update oc cluster up command to use --use-existing-config
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --use-existing-config"
