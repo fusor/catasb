@@ -13,7 +13,7 @@ These playbooks will:
     * Check to see if Ansible modules are available to Python
 
           $ python -c "import ansible;print(ansible.__version__)"
-          2.2.2.0
+          2.3.0.0
     * MacOS requires Ansible to be installed from `pip` and not `brew`
           $ python -c "import ansible;print(ansible.__version__)"
           Traceback (most recent call last):
@@ -24,7 +24,7 @@ These playbooks will:
           pip install ansible
 
           $ python -c "import ansible;print(ansible.__version__)"
-          2.2.2.0
+          2.3.0.0
   * Install python dependencies
      * `pip install six`
 
@@ -52,7 +52,7 @@ To reset the environment to a clean instance of origin with ASB and Service Cata
   * `./reset_environment.sh`
 
 ### Tested with
-  * ansible 2.2.2.0 & 2.3.0.0
+  * ansible 2.3.0.0
     * Problems were seen using ansible 2.0
 
 ### Troubleshooting
@@ -68,4 +68,15 @@ The recommended fix for this is to uninstall docker-py, as there is an ansible t
 
 ```
 <sudo> pip uninstall docker-py
+```
+
+**APBs not visible from OpenShift Web UI**
+
+In some cases APBs won't be visible from the OpenShift Console after `./run_setup_local.sh`.
+This can happen when the catalog is unable to talk to the broker due to an issue with iptables.
+
+The recommended fix is to flush iptables rules and reset the catasb environment.
+```
+sudo iptables -F
+./reset_environment.sh
 ```

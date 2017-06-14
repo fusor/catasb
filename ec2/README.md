@@ -17,7 +17,7 @@ These playbooks will:
   * Ansible needs to be installed so its source code is available to Python.
     * Check to see if Ansible modules are available to Python
             $ python -c "import ansible;print(ansible.__version__)"
-            2.2.2.0
+            2.3.0.0
     * MacOS requires Ansible to be installed from `pip` and not `brew`
           $ python -c "import ansible;print(ansible.__version__)"
           Traceback (most recent call last):
@@ -28,7 +28,7 @@ These playbooks will:
           pip install ansible
 
           $ python -c "import ansible;print(ansible.__version__)"
-          2.2.2.0
+          2.3.0.0
   * Install python dependencies (This is needed for python2. Use pip2 if using python3)
      * `pip install boto boto3 six`
   * Configure a SSH Key in your AWS EC-2 account for the given region
@@ -70,5 +70,5 @@ To reset the ec2 instance back to clean origin and deployment of ASB and Service
 
 
 ### Tested with
-  * ansible 2.2.2.0 & 2.3.0.0
+  * ansible 2.3.0.0
     * Problems were seen using ansible 2.0

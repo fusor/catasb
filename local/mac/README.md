@@ -89,5 +89,5 @@ To reset the environment to a clean instance of origin with ASB and Service Cata
   * `./reset_environment.sh`
 
 ### Tested with
-  * ansible 2.2.2.0 & 2.3.0.0
+  * ansible 2.3.0.0
     * Problems were seen using ansible 2.0
