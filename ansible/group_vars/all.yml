@@ -108,6 +108,8 @@ asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-br
 broker_registry_type: dockerhub
 broker_registry_url: docker.io
 broker_dev_broker: false
+broker_launch_apb_on_bind: false
+broker_output_request: false
 
 broker_tag: "latest"
 broker_image_name: docker.io/ansibleplaybookbundle/ansible-service-broker
