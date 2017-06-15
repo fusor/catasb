@@ -12,10 +12,10 @@
       private: no
   roles:
     - openshift_setup
+    - env_hacks
     - service_catalog_setup
     - ansible_service_broker_setup
     - local_demo_prep
-    - env_hacks
   post_tasks:
     - set_fact:
         msg: |

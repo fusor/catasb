@@ -175,21 +175,31 @@
   - debug:
       msg: "oc_cluster_up_first_run = {{ oc_cluster_up_first_run }}, oc_cluster_status.stdout = '{{ oc_cluster_status.stdout }}'"
 
-  # ec2 install will mount a ebs volume, for local we just need to create a directory
-  - name: Delete persisted volume directory {{ persistedvol_mount_point }}
-    file:
-      path: "{{ persistedvol_mount_point }}"
-      state: absent
-    become: true
-    when: not ec2_install
-
-  - name: Create {{ persistedvol_mount_point }} directory if running in local mode
+  - name: Ensure {{ persistedvol_mount_point }} directory exists if running in local mode
     file:
       path: "{{ persistedvol_mount_point }}"
       state: directory
       mode: 0755
     become: 'true'
     when: not ec2_install
+
+  # Below is intended to help with re-runs and cleaning up
+  # Note for macOS we can not just delete the persistent volume directory and recreate
+  # For mac, the persistent volume directory is shared into the vm running docker
+  # deleting the persistent volume directory interferes and breaks the share to the VM
+  - name: clear out persistent volumes if they exist
+    shell: |
+      for dir in `ls {{ persistedvol_mount_point }}/ | grep 'pv\|registry'`; do
+        rm -rf {{ persistedvol_mount_point}}/$dir/* ; done
+    when: persistedvol_mount_point != "/"
+    become: true
+
+  - name: Adjust any existing directories under persistent volume to have permissions 777
+    file:
+      path: "{{ persistedvol_mount_point }}"
+      mode: 0777
+      recurse: true
+    become: true
 
   # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
   - name: Run oc cluster down

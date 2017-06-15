@@ -18,7 +18,7 @@ These playbooks will:
     * Check to see if Ansible modules are available to Python
       ```bash
       $ python -c "import ansible;print(ansible.__version__)"
-      2.2.2.0
+      2.3.0.0
       ```
     * MacOS requires Ansible to be installed from `pip` and not `brew`
       ```bash
@@ -31,7 +31,7 @@ These playbooks will:
       pip install ansible
 
       $ python -c "import ansible;print(ansible.__version__)"
-      2.2.2.0
+      2.3.0.0
       ```
   * Install python dependencies (This is needed for python2. Use pip2 if using python3)
     ```bash
@@ -58,6 +58,20 @@ These playbooks will:
       TARGET_DNS_ZONE="ec2.dog8code.com"
       ```
       Needs to match a hosted zone entry in your Route53 account, we will create a subdomain under it for the ec2 instance
+  * To make re-runs easy, create a `my_vars.yml` with your dockerhub credentials
+    * `cp my_vars.yml.example my_vars.yml`
+    * Replace with your dockerhub username/password
+     * Valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
+    * For dockerhub organization you may use your own if you pushed APBs to it or you may use: `ansibleplaybookbundle`
+       * https://hub.docker.com/u/ansibleplaybookbundle/
+    * Example `my_vars.yml`
+
+          $ cat my_vars.yml
+          ---
+
+          dockerhub_user_name: foo@bar.com
+          dockerhub_user_password: changeme
+          dockerhub_org_name: ansibleplaybookbundle
   * Create our infrastructure in ec2 if it doesn't exist
     ```bash
     $ ./run_create_infrastructure.sh
@@ -87,5 +101,5 @@ These playbooks will:
   ```
 
 ### Tested with
-  * ansible 2.2.2.0 & 2.3.0.0
-    * Problems were seen using ansible 2.0
+  * ansible 2.3.0.0
+    * Problems were seen using ansible 2.2 and lower

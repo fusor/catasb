@@ -11,7 +11,7 @@ These playbooks will do the following in a local environment:
     * Check to see if Ansible modules are available to Python
       ```bash
       $ python -c "import ansible;print(ansible.__version__)"
-      2.2.2.0
+      2.3.0.0
       ```
     * MacOS requires Ansible to be installed from `pip` and not `brew`
       ```bash
@@ -24,7 +24,7 @@ These playbooks will do the following in a local environment:
       pip install ansible
 
       $ python -c "import ansible;print(ansible.__version__)"
-      2.2.2.0
+      2.3.0.0
       ```
   * Install python dependencies
     ```bash
@@ -38,13 +38,20 @@ These playbooks will do the following in a local environment:
     ```
   * Edit the variables file `common_vars`
     * Note: `CLUSTER_IP` assumes that the default bridge of `docker0` is being used
-    * Optional: Edit the variables file `my_vars`
-      ```bash
-      $ more my_vars
-      export DOCKERHUB_USER_NAME="docker_user_name"
-      export DOCKERHUB_USER_PASSWORD="my_password"
-      export DOCKERHUB_ORG_NAME="my_org"
-      ```
+  * To make re-runs easy, create a `my_vars.yml` with your dockerhub credentials
+    * `cp my_vars.yml.example my_vars.yml`
+    * Replace with your dockerhub username/password
+     * Valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
+    * For dockerhub organization you may use your own if you pushed APBs to it or you may use: `ansibleplaybookbundle`
+       * https://hub.docker.com/u/ansibleplaybookbundle/
+    * Example `my_vars.yml`
+
+          $ cat my_vars.yml
+          ---
+
+          dockerhub_user_name: foo@bar.com
+          dockerhub_user_password: changeme
+          dockerhub_org_name: ansibleplaybookbundle
 
   * Run the setup script
     ```bash
@@ -71,5 +78,5 @@ These playbooks will do the following in a local environment:
   ```
 
 ### Tested with
-  * ansible 2.2.2.0 & 2.3.0.0
-    * Problems were seen using ansible 2.0
+  * ansible 2.3.0.0
+    * Problems were seen using ansible 2.2 and lower

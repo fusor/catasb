@@ -8,12 +8,13 @@
   #   https://github.com/openshift/origin/issues/13496https://github.com/openshift/origin/issues/13496
   # Putting in a workaround for manually opening up the permissions
 
-  - name: wait for persistent volumes to be created
-    wait_for:
-      path: '{{ persistedvol_mount_point }}/pv{{ item }}'
-      timeout: 300
-    with_sequence: count=100 format="%004d"
-    become: true
+  - name: Waiting 10 minutes for 'persistent-volume-setup' pod to complete to create PVs
+    action:
+      shell "{{ oc_cmd }}" get pods -n default | grep ^persistent-volume-setup | grep Completed
+    register: wait_for_pv_setup_pod
+    until: wait_for_pv_setup_pod.rc == 0
+    retries: 60
+    delay: 10
 
   - name: Adjust persistent volume permissions to be 777 to make testing easier
     file:
@@ -21,4 +22,3 @@
       mode: 0777
       recurse: true
     become: true
-

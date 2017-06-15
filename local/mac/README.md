@@ -63,6 +63,20 @@ These playbooks will:
   * Edit the variables file `local/mac/common_vars`
     * Update:
       * CLUSTER_IP if you want to use a different static IP.
+  * To make re-runs easy, create a `my_vars.yml` with your dockerhub credentials
+    * `cp my_vars.yml.example my_vars.yml`
+    * Replace with your dockerhub username/password
+     * Valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
+    * For dockerhub organization you may use your own if you pushed APBs to it or you may use: `ansibleplaybookbundle`
+       * https://hub.docker.com/u/ansibleplaybookbundle/
+    * Example `my_vars.yml`
+
+          $ cat my_vars.yml
+          ---
+
+          dockerhub_user_name: foo@bar.com
+          dockerhub_user_password: changeme
+          dockerhub_org_name: ansibleplaybookbundle
   * `./run_mac_local.sh`
     * Sets up OpenShift
   * In Web Browser
@@ -89,5 +103,5 @@ To reset the environment to a clean instance of origin with ASB and Service Cata
   * `./reset_environment.sh`
 
 ### Tested with
-  * ansible 2.2.2.0 & 2.3.0.0
-    * Problems were seen using ansible 2.0
+  * ansible 2.3.0.0
+    * Problems were seen using ansible 2.2 and lower
