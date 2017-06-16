@@ -120,6 +120,7 @@ broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
 etcd_tag: "latest"
 etcd_image_name: "quay.io/coreos/etcd"
 etcd_image: "{{ etcd_image_name }}:{{ etcd_tag }}"
+etcd_path: "/usr/local/bin/etcd"
 
 # Location where we will store the local template, note this will always attempt to fetch and overwrite from 'asb_template_url'
 # If you want to modify the template, modify 'asb_template_url'

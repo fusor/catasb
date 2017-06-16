@@ -31,6 +31,7 @@
       -n {{ asb_project }}
       -p BROKER_IMAGE={{ broker_image }}
       -p ETCD_IMAGE={{ etcd_image }}
+      -p ETCD_PATH={{ etcd_path }}
       -p REGISTRY_TYPE={{ broker_registry_type }}
       -p REGISTRY_URL={{ broker_registry_url }}
       -p DEV_BROKER={{ broker_dev_broker }}

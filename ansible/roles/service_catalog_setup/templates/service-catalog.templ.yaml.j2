@@ -60,7 +60,7 @@ objects:
         - env:
           - name: ETCD_DATA_DIR
             value: /data-dir
-          image: quay.io/coreos/etcd:latest
+          image: {{ etcd_image }}
           imagePullPolicy: Always
           name: etcd
           resources: {}
