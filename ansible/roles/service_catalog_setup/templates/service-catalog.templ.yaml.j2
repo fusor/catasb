@@ -130,6 +130,8 @@ objects:
           - "5"
           - --service-catalog-api-server-url
           - http://$(APISERVER_SERVICE_HOST):$(APISERVER_SERVICE_PORT)
+          - --broker-relist-interval
+          - {{ svc_cat_controller_mgr_relist_interval }}
           image: {{ svc_cat_controller_mgr_tag }}
           imagePullPolicy: Never
           name: controller-manager
