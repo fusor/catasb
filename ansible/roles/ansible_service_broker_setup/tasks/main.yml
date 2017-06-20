@@ -79,7 +79,7 @@
       url: http://{{ ansible_service_broker_route }}/v2/bootstrap
       method: POST
     register: response
-    until: response|success and response.json and response.json.spec_count
+    until: response|success and response.json and response.json.spec_count is defined
     retries: 3
     delay: 30
 

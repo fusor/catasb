@@ -1,0 +1,2 @@
+oc_host_config_dir: /docker_shared/origin
+demo: True

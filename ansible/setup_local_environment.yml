@@ -1,20 +1,23 @@
 - hosts: localhost
   gather_facts: True
+  vars:
+    demo: False
   vars_prompt:
     - name: dockerhub_user_name
-      prompt: "Enter your dockerhub username: "
+      prompt: "Enter your dockerhub username"
       private: no
     - name: dockerhub_user_password
-      prompt: "Enter your dockerhub password: "
+      prompt: "Enter your dockerhub password"
       private: yes
     - name: dockerhub_org_name
-      prompt: "Enter the dockerhub organization you'd like to pull images from: "
+      prompt: "Enter the dockerhub organization you'd like to pull images from"
       private: no
   roles:
     - openshift_setup
     - env_hacks
     - service_catalog_setup
     - ansible_service_broker_setup
+    - { role: local_demo_prep, when: demo }
   post_tasks:
     - set_fact:
         msg: |

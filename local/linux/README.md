@@ -32,29 +32,24 @@ These playbooks will do the following in a local environment:
     ```
 
 ### Execute
-  * Navigate to the `local` folder
+  * Copy `local/config/my_vars.yml.example` to `local/config/my_vars.yml` and edit as needed.  You can use the `my_vars.yml` to override any settings.  For example:
     ```bash
-    $ cd catasb/local
+    $ cp local/config/my_vars.yml.example local/config/my_vars.yml
+    $ vim local/config/my_vars.yml
     ```
-  * Edit the variables file `common_vars`
-    * Note: `CLUSTER_IP` assumes that the default bridge of `docker0` is being used
-  * To make re-runs easy, create a `my_vars.yml` with your dockerhub credentials
-    * `cp my_vars.yml.example my_vars.yml`
-    * Replace with your dockerhub username/password
-     * Valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
-    * For dockerhub organization you may use your own if you pushed APBs to it or you may use: `ansibleplaybookbundle`
-       * https://hub.docker.com/u/ansibleplaybookbundle/
+    * Set `dockerhub_user_name` (and optionally `dockerhub_user_password`) with your own dockerhub username (and password).  This will skip the prompts during execution and makes re-runs easy. A valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
+    * Set `dockerhub_org_name` to load APB images into your broker from an organization.  For dockerhub organization you may use your own if you pushed your own APBs or you may use the `ansibleplaybookbundle` [organization](https://hub.docker.com/u/ansibleplaybookbundle/) as a sample.
+    * Set `openshift_hostname` and `dockerhub_org_name` if you want to use a different static IP.
     * Example `my_vars.yml`
-
-          $ cat my_vars.yml
+          $ cat local/config/my_vars.yml
           ---
 
           dockerhub_user_name: foo@bar.com
-          dockerhub_user_password: changeme
+          # dockerhub_user_password: changeme  # if commented out, will prompt
           dockerhub_org_name: ansibleplaybookbundle
-
-  * Run the setup script
+  * Navigate to the `local/linux` folder and run the script to set up OpenShift.
     ```bash
+    $ cd local/linux
     $ ./run_setup_local.sh
     ```
   * Open a Web Browser
