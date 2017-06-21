@@ -102,6 +102,11 @@ To reset the environment to a clean instance of origin with ASB and Service Cata
   * `cd local/mac`
   * `./reset_environment.sh`
 
+### Testing downstream images
+  * Use the --rcm flag. For instance:
+    * `./run_setup_local.sh --rcm`
+    * `./reset_environment.sh --rcm`
+
 ### Tested with
   * ansible 2.3.0.0
     * Problems were seen using ansible 2.2 and lower

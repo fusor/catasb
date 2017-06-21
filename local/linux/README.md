@@ -72,6 +72,11 @@ These playbooks will do the following in a local environment:
   $ ./reset_environment.sh
   ```
 
+### Testing downstream images
+  * Use the --rcm flag. For instance:
+    * `./run_setup_local.sh --rcm`
+    * `./reset_environment.sh --rcm`
+
 ### Tested with
   * ansible 2.3.0.0
     * Problems were seen using ansible 2.2 and lower

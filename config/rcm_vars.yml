@@ -1,0 +1,7 @@
+---
+
+broker_registry_type: rhcc
+broker_registry_url: http://registry.access.redhat.com
+broker_image_name: registry.access.redhat.com/openshift3/ansible-service-broker
+etcd_image_name: registry.access.redhat.com/rhel7/etcd
+etcd_path: "/bin/etcd"
