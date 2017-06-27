@@ -1,2 +1,5 @@
 oc_host_config_dir: /docker_shared/origin
 demo: True
+
+# Temporary fix until release version of oc client works with latest images.
+openshift_client_url: https://s3.amazonaws.com/catasb/darwin/amd64/oc

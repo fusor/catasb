@@ -43,36 +43,45 @@
       state: directory
       mode: 0755
 
-  - name: Download oc binary "{{ openshift_client_release_url }}"
+# Temporary fix until release version of oc client works with latest images.
+  - name: Download oc binary "{{ openshift_client_url }}"
     get_url:
-      url: "{{ openshift_client_release_url }}"
-      dest: /tmp/{{ openshift_client_release_file }}
-      mode: 0440
-    register: get_openshift_release
-
-  - name: extract archive
-    unarchive: src=/tmp/{{ openshift_client_release_file }} dest=/tmp copy=no
-    when: openshift_release_ext == "zip"
-
-  - name: Untar {{ openshift_client_release_file }}
-    shell: tar -xzf /tmp/{{ openshift_client_release_file }} -C /tmp
-    when: get_openshift_release.changed and openshift_release_ext == "tar.gz"
-
-  - name: Install oc
-    copy:
-      remote_src: True
-      src: /tmp/oc
+      url: "{{ openshift_client_url }}"
       dest: "{{ oc_tools_dir }}/oc"
       mode: 0755
-    when: openshift_release_ext == "zip"
+      force: yes
 
-  - name: Install oc
-    copy:
-      remote_src: True
-      src: /tmp/{{ openshift_client_release }}/oc
-      dest: "{{ oc_tools_dir }}/oc"
-      mode: 0755
-    when: openshift_release_ext == "tar.gz"
+
+#  - name: Download oc binary "{{ openshift_client_release_url }}"
+#    get_url:
+#      url: "{{ openshift_client_release_url }}"
+#      dest: /tmp/{{ openshift_client_release_file }}
+#      mode: 0440
+#    register: get_openshift_release
+#
+#  - name: extract archive
+#    unarchive: src=/tmp/{{ openshift_client_release_file }} dest=/tmp copy=no
+#    when: openshift_release_ext == "zip"
+#
+#  - name: Untar {{ openshift_client_release_file }}
+#    shell: tar -xzf /tmp/{{ openshift_client_release_file }} -C /tmp
+#    when: get_openshift_release.changed and openshift_release_ext == "tar.gz"
+#
+#  - name: Install oc
+#    copy:
+#      remote_src: True
+#      src: /tmp/oc
+#      dest: "{{ oc_tools_dir }}/oc"
+#      mode: 0755
+#    when: openshift_release_ext == "zip"
+#
+#  - name: Install oc
+#    copy:
+#      remote_src: True
+#      src: /tmp/{{ openshift_client_release }}/oc
+#      dest: "{{ oc_tools_dir }}/oc"
+#      mode: 0755
+#    when: openshift_release_ext == "tar.gz"
 
   - name: Download kube_ctl, "{{ kube_ctl_url }}"
     get_url:
