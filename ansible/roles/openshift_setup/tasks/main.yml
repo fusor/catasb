@@ -170,7 +170,8 @@
         --routing-suffix={{ openshift_routing_suffix }}
         --public-hostname={{ openshift_hostname }}
         --host-pv-dir={{ persistedvol_mount_point }}
-        --version={{ origin_tag }}
+        --image={{ origin_image_name }}
+        --version={{ origin_image_tag }}
         --host-config-dir={{ oc_host_config_dir }}
 
   - debug:

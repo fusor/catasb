@@ -95,7 +95,8 @@ oc_cmd: "{{ oc_client_install_path }}/oc"
 oadm_cmd: "{{ oc_client_install_path }}/oadm"
 kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 
-origin_tag: latest
+origin_image_name: docker.io/openshift/origin
+origin_image_tag: latest
 oc_host_config_dir: /var/lib/origin/openshift.local.config
 
 asb_project: ansible-service-broker
@@ -152,11 +153,9 @@ docker_images_group1:
 
 # These docker images change less frequently, we are OK pulling them once and reusing
 docker_images_group2:
-  - { img: "docker.io/centos/python-35-centos7", tag: "latest" }
-  - { img: "docker.io/centos/python-34-centos7", tag: "latest" }
-  - { img: "docker.io/centos/python-27-centos7", tag: "latest" }
-  - { img: "docker.io/openshift/origin", tag: "{{ origin_tag }}" }
-  - { img: "docker.io/openshift/origin-sti-builder", tag: "{{ origin_tag }}" }
-  - { img: "docker.io/openshift/origin-deployer", tag: "{{ origin_tag }}" }
-  - { img: "docker.io/openshift/origin-docker-registry", tag: "{{ origin_tag }}" }
-  - { img: "docker.io/openshift/origin-haproxy-router", tag: "{{ origin_tag }}" }
+  - { img: "{{ origin_image_name }}", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-sti-builder", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-deployer", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-docker-registry", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-pod", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-haproxy-router", tag: "{{ origin_image_tag }}" }
