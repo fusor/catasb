@@ -40,22 +40,6 @@
       auth
     when: certsLocal.stat.exists == False and certsRemote.stat.isdir is not defined
 
-  - name: Run letsencrypt script for apiserver
-    shell: >
-      {{ go_path }}/src/github.com/letsencrypt/letsencrypt/letsencrypt-auto
-      --renew-by-default
-      -a standalone
-      --webroot-path
-      /tmp/letsencrypt/
-      --server https://acme-v01.api.letsencrypt.org/directory
-      --email {{ email_address }}
-      --text
-      {{ "--test-cert" if use_test_cert else "" }}
-      --agree-tos
-      -d apiserver-service-catalog.{{ openshift_hostname }}
-      auth
-    when: certsLocal.stat.exists == False and certsRemote.stat.isdir is not defined
-
   - name: Store SSL certs locally for future instances
     fetch:
       src: /etc/letsencrypt/archive/{{ openshift_hostname }}/fullchain1.pem
@@ -67,20 +51,6 @@
     fetch:
       src: /etc/letsencrypt/archive/{{ openshift_hostname }}/privkey1.pem
       dest: certs/{{ openshift_hostname}}-console-key.pem
-      flat: yes
-    when: certsLocal.stat.exists == False
-
-  - name: Store SSL certs locally for future instances
-    fetch:
-      src: /etc/letsencrypt/archive/apiserver-service-catalog.{{ openshift_hostname }}/fullchain1.pem
-      dest: certs/{{ openshift_hostname }}-apiserver-cert.pem
-      flat: yes
-    when: certsLocal.stat.exists == False
-
-  - name: Store SSL certs locally for future instances
-    fetch:
-      src: /etc/letsencrypt/archive/apiserver-service-catalog.{{ openshift_hostname }}/privkey1.pem
-      dest: certs/{{ openshift_hostname }}-apiserver-key.pem
       flat: yes
     when: certsLocal.stat.exists == False
 
@@ -96,22 +66,6 @@
     copy:
       src: certs/{{ openshift_hostname }}-console-key.pem
       dest: /tmp/console-privkey.pem
-      owner: root
-      group: root
-      mode: 0644
-
-  - name: Copy credentials into /tmp
-    copy:
-      src: certs/{{ openshift_hostname }}-apiserver-cert.pem
-      dest: /tmp/apiserver-fullchain.pem
-      owner: root
-      group: root
-      mode: 0644
-
-  - name: Copy credentials into /tmp
-    copy:
-      src: certs/{{ openshift_hostname }}-apiserver-key.pem
-      dest: /tmp/apiserver-privkey.pem
       owner: root
       group: root
       mode: 0644

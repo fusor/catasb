@@ -92,4 +92,4 @@
     register: ansible_service_broker_template
 
   - name: Create Broker resource in Service Catalog
-    shell: "{{ kubectl_cmd }} --kubeconfig={{ ansible_env.HOME }}/.kube/service-catalog.config create -f /tmp/ansible_service_broker.yaml"
+    shell: "{{ oc_cmd }} create -f /tmp/ansible_service_broker.yaml"
