@@ -13,9 +13,9 @@
     when: git_clone_asb.changed
     become: true
 
-  - name: Docker pull ansibleplaybookbundle/ansible-service-broker-apb:summit
+  - name: Docker pull ansibleplaybookbundle/ansible-service-broker-apb:summit2017
     docker_image:
-      name: ansibleplaybookbundle/ansible-service-broker-apb:summit
+      name: ansibleplaybookbundle/ansible-service-broker-apb:summit2017
 
   - name: Check if ansible-service-broker project already exists from a prior run
     shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^ansible-service-broker( |$)' | cat"

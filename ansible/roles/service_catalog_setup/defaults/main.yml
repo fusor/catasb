@@ -1,4 +1,4 @@
-service_catalog_tag: "summit"
+service_catalog_tag: "summit2017"
 #svc_cat_apiserver_img: "quay.io/kubernetes-service-catalog/apiserver:{{ service_catalog_tag }}"
 svc_cat_apiserver_img: "docker.io/ansibleplaybookbundle/apiserver:{{ service_catalog_tag }}"
 svc_cat_apiserver_tag: "apiserver:{{ service_catalog_tag }}"

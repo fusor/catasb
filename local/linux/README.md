@@ -60,7 +60,7 @@ To reset the environment to a clean instance of origin with ASB and Service Cata
 **pull() got an unexpected keyword argument 'decode'**
 
 ```
-Error pulling image docker.io/ansibleplaybookbundle/ansible-service-broker-apb:summit - pull() got an unexpected keyword argument 'decode'
+Error pulling image docker.io/ansibleplaybookbundle/ansible-service-broker-apb:summit2017 - pull() got an unexpected keyword argument 'decode'
 ```
 
 This is a problem with having docker-py installed, and at a specific version. More info in https://github.com/ansible/ansible-modules-core/issues/5515.
