@@ -1,4 +1,16 @@
 ---
+  - name: Upgrade all packages
+    yum:
+      name: '*'
+      state: latest
+      update_cache: yes
+
+  - name: Add Ansible Service Broker Copr Repository
+    get_url:
+      url: https://copr.fedorainfracloud.org/coprs/g/ansible-service-broker/ansible-service-broker/repo/epel-7/group_ansible-service-broker-ansible-service-broker-epel-7.repo
+      dest: /etc/yum.repos.d/ansible-service-broker.repo
+      mode: 0644
+
   - name: install packages
     yum:
       name: "{{ item }}"
@@ -17,8 +29,6 @@
       - "golang"
       - "nodejs"
       - "ansible"
+      - "python2-docker"
+      - "apb"
 
-  - name: Install pip
-    easy_install:
-      name: pip
-      state: latest

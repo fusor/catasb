@@ -21,7 +21,7 @@
   - name: Create a new project for the {{ asb_project }}
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
     register: new_asb_project
-    when: project.stdout.find( "{{ asb_project }}" ) == -1
+    when: project.stdout.find(asb_project) == -1
 
   - name: Process template "{{ local_target_asb_template }}"
     shell: >

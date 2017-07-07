@@ -1,0 +1,21 @@
+- hosts: localhost
+  become: True
+  vars:
+    demo: False
+  roles:
+    - packages
+    - docker_setup
+    - openshift_setup
+    - env_hacks
+    - ansible_service_broker_setup
+  post_tasks:
+    - set_fact:
+        msg: |
+            Hostname: {{ openshift_hostname }}
+            Next steps:
+            Visit https://{{ openshift_hostname }}:8443 for the web console
+            OR
+            For CLI access:
+            oc login --insecure-skip-tls-verify {{ openshift_hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+    - debug:
+        msg: "{{ msg.split('\n') }}"

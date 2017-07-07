@@ -1,0 +1,31 @@
+- hosts: all
+  become: True
+  vars:
+    demo: False
+  vars_prompt:
+    - name: dockerhub_user_name
+      prompt: "Enter your dockerhub username"
+      private: no
+    - name: dockerhub_user_password
+      prompt: "Enter your dockerhub password"
+      private: yes
+    - name: dockerhub_org_name
+      prompt: "Enter the dockerhub organization you'd like to pull images from"
+      private: no
+  roles:
+    - packages
+    - docker_setup
+    - openshift_setup
+    - env_hacks
+    - ansible_service_broker_setup
+  post_tasks:
+    - set_fact:
+        msg: |
+            Hostname: {{ openshift_hostname }}
+            Next steps:
+            Visit https://{{ openshift_hostname }}:8443 for the web console
+            OR
+            For CLI access:
+            oc login --insecure-skip-tls-verify {{ openshift_hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+    - debug:
+        msg: "{{ msg.split('\n') }}"

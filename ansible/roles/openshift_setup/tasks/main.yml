@@ -13,11 +13,11 @@
 
   - set_fact:
       oc_tools_dir: /usr/bin
-    when: ec2_install
+    when: ec2_install or vm_install
 
   - set_fact:
       oc_tools_dir: "{{ ansible_env.HOME }}/bin"
-    when: not ec2_install
+    when: not ec2_install and not vm_install
 
   - set_fact:
       oc_cmd: "{{ oc_tools_dir }}/oc"
@@ -75,8 +75,9 @@
       force: yes
     register: get_openshift_release
 
-  - name: Untar {{ openshift_client_release_file }}
-    shell: tar -xzf /tmp/{{ openshift_client_release_file }} -C /tmp
+  - unarchive:
+      src: /tmp/{{ openshift_client_release_file }}
+      dest: /tmp
 
   - name: Install oc
     copy:
@@ -139,6 +140,19 @@
       state: started
     when: ec2_install
 
+  - name: Get openshift_hostname for vm installations
+    shell: echo $(ifconfig eth0 | grep inet | awk '{print $2}' | head -1)
+    register: openshift_hostname_cmd
+    when: vm_install
+
+  - set_fact:
+      openshift_hostname: "{{openshift_hostname_cmd.stdout}}"
+    when: vm_install
+
+  - set_fact:
+      openshift_routing_suffix: "{{openshift_hostname}}.nip.io"
+    when: vm_install
+
   - name: Resetting cluster
     shell: "{{ oc_cmd }} cluster down"
     when: reset_cluster
@@ -149,12 +163,6 @@
       state: absent
     become: true
     when: reset_cluster
-
-  - name: Install docker through pip as it's a requirement of ansible docker module
-    pip:
-      name: docker
-      version: 2.3.0
-    become: 'true'
 
   - name: Removing certain docker images if they exist so we are sure we are pulling latest
     docker_image:

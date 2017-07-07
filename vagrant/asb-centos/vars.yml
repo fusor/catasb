@@ -1,0 +1,4 @@
+broker_dev_broker: true
+ec2_install: false
+vm_install: true
+use_ssl: false
