@@ -4,7 +4,7 @@
     git:
       repo: https://github.com/openshift/ansible-service-broker.git
       dest: "{{ asb_src_dir }}"
-      version: "demo"
+      version: "summit2017"
     register: git_clone_asb
 
   - name: Install asbcli requirements
