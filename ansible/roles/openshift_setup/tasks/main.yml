@@ -88,6 +88,7 @@
   - name: Checking version of oc client
     shell: "{{ oc_cmd }} version"
     register: oc_version_output
+    ignore_errors: yes
 
   - debug:
       msg: "{{ oc_version_output.stdout_lines }}"
