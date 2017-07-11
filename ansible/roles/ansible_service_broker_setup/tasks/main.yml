@@ -1,42 +1,53 @@
 ---
+  - name: Curling ansible-service-broker-all.yaml
+    get_url:
+      url: "{{ asb_template_url }}"
+      force: yes
+      dest: "{{ local_target_asb_template }}"
 
-  - name: git clone ansible-service-broker
-    git:
-      repo: https://github.com/openshift/ansible-service-broker.git
-      dest: "{{ asb_src_dir }}"
-      version: "demo"
-    register: git_clone_asb
+  - name: Setting facts for rendering ansible-service-broker-all.yaml template
+    set_fact:
+      dockerhub_pass: "{{ dockerhub_user_password }}"
+      dockerhub_user: "{{ dockerhub_user_name }}"
+      dockerhub_org: "{{ dockerhub_org_name }}"
+      openshift_pass: "{{ cluster_user_password }}"
+      openshift_user: "{{ cluster_user }}"
+      openshift_target: "{{ openshift_url }}"
 
-  - name: Install asbcli requirements
-    pip:
-      requirements: "{{ asb_src_dir }}/scripts/asbcli/requirements.txt"
-    when: git_clone_asb.changed
-    become: true
+  - name: check if the {{ asb_project }} project exists
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ asb_project }}( |$)' | cat"
+    register: project
 
-  - name: Docker pull ansibleplaybookbundle/ansible-service-broker-apb:summit
-    docker_image:
-      name: ansibleplaybookbundle/ansible-service-broker-apb:summit
+  - name: Create a new project for the {{ asb_project }}
+    shell: "{{ oc_cmd }} new-project {{ asb_project }}"
+    register: new_asb_project
+    when: project.stdout.find( "{{ asb_project }}" ) == -1
 
-  - name: Check if ansible-service-broker project already exists from a prior run
-    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^ansible-service-broker( |$)' | cat"
-    register: oc_get_projects_asb
-
-  - name: Use asbcli up to install Ansible Service Broker
+  - name: Process template "{{ local_target_asb_template }}"
     shell: >
-      ./asbcli up {{ openshift_url }}
-      --cluster-user={{ cluster_user }}
-      --cluster-pass={{ cluster_user_password }}
-      --dockerhub-user={{ dockerhub_user_name }}
-      --dockerhub-pass={{ dockerhub_user_password }}
+      {{ oc_cmd }}
+      process
+      -f {{ local_target_asb_template }}
+      -n {{ asb_project }}
+      -p BROKER_IMAGE={{ broker_image }}
+      -p ETCD_IMAGE={{ etcd_image }}
+      -p ETCD_PATH={{ etcd_path }}
+      -p REGISTRY_TYPE={{ broker_registry_type }}
+      -p REGISTRY_URL={{ broker_registry_url }}
+      -p DEV_BROKER={{ broker_dev_broker }}
+      -p DOCKERHUB_ORG={{ dockerhub_org_name }}
+      -p DOCKERHUB_PASS={{ dockerhub_user_password }}
+      -p DOCKERHUB_USER={{ dockerhub_user_name }}
+      -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
+      -p OUTPUT_REQUEST={{ broker_output_request }}
+      -p RECOVERY={{ broker_recovery }}
+      &> {{ local_target_asb_template_processed }}
 
-    args:
-      chdir: "{{ asb_src_dir }}/scripts/asbcli"
-    retries: 2
-    register: asbcli_up
-    when: oc_get_projects_asb.stdout.find( "ansible-service-broker" ) == -1
+  - name: Running oc create on processed template
+    shell: "{{ oc_cmd }} create -f {{ local_target_asb_template_processed }}"
 
-  - name: Switch project to ansible-service-broker
-    shell: "{{ oc_cmd }} project ansible-service-broker"
+  - name: Switch project to {{ asb_project }}
+    shell: "{{ oc_cmd }} project {{ asb_project }}"
 
   - name: Waiting 10 minutes for ASB pod
     action:
@@ -63,12 +74,14 @@
   - set_fact:
       ansible_service_broker_route:  "{{ result_get_route_asb.stdout }}"
 
-  - uri:
+  - name: Trigger ASB bootstrap to load APBs
+    uri:
       url: http://{{ ansible_service_broker_route }}/v2/bootstrap
       method: POST
-    when: asbcli_up.changed
     register: response
-    failed_when: "not response.json or not response.json.SpecCount or response.json.SpecCount == 0"
+    until: response|success and response.json and response.json.spec_count is defined
+    retries: 3
+    delay: 30
 
   - name: Creating /tmp/ansible_service_broker.yaml
     template:
@@ -79,5 +92,4 @@
     register: ansible_service_broker_template
 
   - name: Create Broker resource in Service Catalog
-    shell: "{{ kubectl_cmd }} --kubeconfig={{ ansible_env.HOME }}/.kube/service-catalog.config create -f /tmp/ansible_service_broker.yaml"
-    when: asbcli_up.changed
+    shell: "{{ oc_cmd }} create -f /tmp/ansible_service_broker.yaml"

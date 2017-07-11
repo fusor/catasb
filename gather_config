@@ -1,0 +1,27 @@
+extra_args=''
+export relpath="../../"
+
+if [ "$(pwd | awk -F '/' '{ print $NF }')" == "ec2" ]; then
+  relpath="../"
+  source "${relpath}config/ec2_env_vars"
+elif [ "$(pwd | awk -F '/' '{ print $NF }')" == "mac" ]; then
+  source ${relpath}config/mac_env_vars
+  extra_args+=" -e @${relpath}config/local_vars.yml"
+  extra_args+=" -e @${relpath}config/mac_vars.yml"
+elif [ "$(pwd | awk -F '/' '{ print $NF }')" == "linux" ]; then
+  source ${relpath}config/linux_env_vars
+  extra_args+=" -e @${relpath}config/local_vars.yml"
+fi
+
+if echo "$0" | grep -q reset; then
+  extra_args+=" -e @${relpath}config/reset_vars.yml"
+fi
+
+if [ "$1" == "--rcm" ]; then
+  shift
+  extra_args+=" -e @${relpath}config/rcm_vars.yml"
+fi
+
+[[ ! -e ${relpath}config/my_vars.yml ]] || extra_args+=" -e @${relpath}config/my_vars.yml"
+
+ANS_CODE="${relpath}ansible"

@@ -20,6 +20,16 @@
     - name: Setting fact of security group id
       set_fact:
         my_security_group_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].groups[0].id }}"
+  vars_prompt:
+    - name: dockerhub_user_name
+      prompt: "Enter your dockerhub username: "
+      private: no
+    - name: dockerhub_user_password
+      prompt: "Enter your dockerhub password: "
+      private: yes
+    - name: dockerhub_org_name
+      prompt: "Enter the dockerhub organization you'd like to pull images from: "
+      private: no
   roles:
     - ebs_volumes
     - aws_repo_setup
@@ -27,10 +37,9 @@
     - docker_setup
     - { role: ssl_setup, when: use_ssl == True }
     - openshift_setup
-    - service_catalog_setup
+    - env_hacks
     - ansible_service_broker_setup
     - demo_prep
-    - env_hacks
   post_tasks:
     - set_fact:
         msg: |
@@ -39,13 +48,11 @@
             SSH Key Name:              {{ ssh_key_name }}
             Region:                    {{ aws_region }}
             Next steps:
-            1) Visit https://apiserver-service-catalog.{{ openshift_routing_suffix }}
-            2) Accept the certificate
-            3) Visit https://{{ openshift_hostname }}:8443 for the console
-            4) Provision a RDS APB into awsdemo project
-            5) Add to the aws-demo project a Python 3.5 project based off of https://github.com/thesteve0/awsdemo.git
-            6) Click on the python project and select creating binding to the RDS APB
-            7) Redeploy the python project
+            1) Visit https://{{ openshift_hostname }}:8443 for the console
+            2) Provision a RDS APB into awsdemo project
+            3) Add to the aws-demo project a Python 3.5 project based off of https://github.com/thesteve0/awsdemo.git
+            4) Click on the python project and select creating binding to the RDS APB
+            5) Redeploy the python project
             OR
             For CLI access:
             oc login --insecure-skip-tls-verify {{ openshift_hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}

@@ -26,6 +26,8 @@ objects:
       spec:
         containers:
         - args:
+          - --admission-control
+          - KubernetesNamespaceLifecycle
           - --storage-type
           - etcd
           - --secure-port
@@ -40,6 +42,7 @@ objects:
           - "10"
           - --cors-allowed-origins
           - ${CORS_ALLOWED_ORIGIN}
+          - --disable-auth
           image: {{ svc_cat_apiserver_tag }}
           imagePullPolicy: Never
           name: apiserver
@@ -57,7 +60,7 @@ objects:
         - env:
           - name: ETCD_DATA_DIR
             value: /data-dir
-          image: quay.io/coreos/etcd:latest
+          image: {{ etcd_image }}
           imagePullPolicy: Always
           name: etcd
           resources: {}
@@ -127,6 +130,8 @@ objects:
           - "5"
           - --service-catalog-api-server-url
           - http://$(APISERVER_SERVICE_HOST):$(APISERVER_SERVICE_PORT)
+          - --broker-relist-interval
+          - {{ svc_cat_controller_mgr_relist_interval }}
           image: {{ svc_cat_controller_mgr_tag }}
           imagePullPolicy: Never
           name: controller-manager

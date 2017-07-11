@@ -1,3 +1,13 @@
 asb_src_dir: /tmp/ansible-service-broker
 dockerhub_user_name: changeme
 dockerhub_user_password: changeme
+
+asb_registry: "ansibleplaybookbundle"
+
+broker_tag: "latest"
+broker_image_name: "{{ asb_registry }}/ansible-service-broker-apb"
+broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
+
+etcd_tag: "latest"
+etcd_image_name: "{{ asb_registry }}/ansible-service-broker-etcd"
+etcd_image: "{{ etcd_image_name }}:{{ etcd_tag }}"
