@@ -1,0 +1,2 @@
+remove_docker_images: true
+reset_cluster: true

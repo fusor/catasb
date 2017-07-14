@@ -1,0 +1,14 @@
+---
+# Override any and all Ansible variables when running catasb setup scripts.
+
+# For convenience you can skip being prompted for these vars by storing them here.
+dockerhub_user_name: example_user
+dockerhub_org_name: example_org
+
+# Omit this unless you want to store your password in plain text to skip prompts.
+# dockerhub_user_password: example_password
+
+# You can override other variables as needed.  For example to change your OpenShift hostname
+# you can modify the hostname and suffix here:
+# openshift_hostname: 172.17.0.1
+# openshift_routing_suffix: 172.17.0.1.nip.io

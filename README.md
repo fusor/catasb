@@ -17,3 +17,10 @@ These playbooks will:
   * [Local Linux deployment](local/linux/README.md)
   * [Local macOS deployment](local/mac/README.md)
   * [EC-2 deployment](ec2/README.md)
+
+
+### Summit 2017 demo
+  * To recreate the demonstration from Red Hat Summit 2017 (shown [here](https://github.com/fusor/catasb/pull/87) on YouTube), checkout the branch [summit2017](https://github.com/fusor/catasb/tree/summit2017).
+  ```bash
+  git checkout summit2017
+  ```

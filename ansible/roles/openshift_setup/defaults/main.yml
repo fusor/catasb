@@ -1,3 +1,7 @@
 reset_cluster: False
-openshift_client_release_ver: openshift-origin-client-tools-v3.6.0-alpha.1-46942ad
+openshift_release_url: https://github.com/openshift/origin/releases/download/v3.6.0-alpha.2
+openshift_client_release_ver: openshift-origin-client-tools-v3.6.0-alpha.2-3c221d5
 oc_tools_dir: /usr/local/bin
+
+# Temporary fix until release version of oc client works with latest images.
+openshift_client_url: https://s3.amazonaws.com/catasb/linux/amd64/oc
