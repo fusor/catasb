@@ -144,9 +144,9 @@
     shell: "{{ oc_cmd }} cluster down"
     when: reset_cluster
 
-  - name: Remove {{ oc_host_config_dir }}/master/master-config.yaml when resetting cluster
+  - name: Remove {{ oc_host_config_dir }} when resetting cluster
     file:
-      path: "{{ oc_host_config_dir }}/master/master-config.yaml"
+      path: "{{ oc_host_config_dir }}"
       state: absent
     become: true
     when: reset_cluster
