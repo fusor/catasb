@@ -74,15 +74,6 @@
   - set_fact:
       ansible_service_broker_route:  "{{ result_get_route_asb.stdout }}"
 
-  - name: Trigger ASB bootstrap to load APBs
-    uri:
-      url: http://{{ ansible_service_broker_route }}/v2/bootstrap
-      method: POST
-    register: response
-    until: response|success and response.json and response.json.spec_count is defined
-    retries: 3
-    delay: 30
-
   - name: Creating /tmp/ansible_service_broker.yaml
     template:
       src: ansible_service_broker.yaml.j2
