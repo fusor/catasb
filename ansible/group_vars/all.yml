@@ -109,12 +109,17 @@ asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-br
 
 broker_registry_type: dockerhub
 broker_registry_url: docker.io
+# Need to shortern registry_name for short term due to below issue where podpreset
+# name needs to be under 63 chars
+#https://github.com/openshift/ansible-service-broker/issues/283
+broker_registry_name: dh
 broker_dev_broker: false
 broker_launch_apb_on_bind: false
 broker_output_request: false
 broker_recovery: true
 
 broker_tag: "latest"
+
 broker_image_name: docker.io/ansibleplaybookbundle/ansible-service-broker
 broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
 

@@ -34,6 +34,7 @@
       -p ETCD_PATH={{ etcd_path }}
       -p REGISTRY_TYPE={{ broker_registry_type }}
       -p REGISTRY_URL={{ broker_registry_url }}
+      -p REGISTRY_NAME={{ broker_registry_name }}
       -p DEV_BROKER={{ broker_dev_broker }}
       -p DOCKERHUB_ORG={{ dockerhub_org_name }}
       -p DOCKERHUB_PASS={{ dockerhub_user_password }}
