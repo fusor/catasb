@@ -156,7 +156,7 @@
 
   - name: Create command line for oc cluster up execution
     set_fact:
-      oc_cluster_up_cmd: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_routing_suffix }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit2017 --image=docker.io/ansibleplaybookbundle/origin --host-config-dir={{ oc_host_config_dir }}"
+      oc_cluster_up_cmd: "{{ oc_cmd }} cluster up --routing-suffix={{ openshift_routing_suffix }} --public-hostname={{ openshift_hostname }} --host-pv-dir={{ persistedvol_mount_point }} --version=summit2017 --image=docker.io/apbsummit2017/origin --host-config-dir={{ oc_host_config_dir }}"
 
   - debug:
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"

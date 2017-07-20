@@ -101,14 +101,15 @@ rds_subnet_group_name: "{{ aws_tag_prefix }}_rds_group"
 
 # If true, will remove all docker images from 'docker_images_group1'
 remove_docker_images: false
+dockerhub_org_name_cluster_images: apbsummit2017
 
 # These docker images we want to remove and fetch on each setup
 docker_images_group1:
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-apb", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-asb", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/ansible-service-broker-etcd", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/postgresql-demo-apb", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/rds-postgres-apb", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/ansible-service-broker-apb", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/ansible-service-broker-asb", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/ansible-service-broker-etcd", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/postgresql-demo-apb", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/rds-postgres-apb", tag: "summit2017" }
   - { img: "manageiq/manageiq-pods", tag: "app-latest" }
   - { img: "manageiq/manageiq-pods", tag: "memcached-latest" }
   - { img: "manageiq/manageiq-pods", tag: "postgresql-latest" }
@@ -116,13 +117,13 @@ docker_images_group1:
 
 # These docker images change less frequently, we are OK pulling them once and reusing
 docker_images_group2:
-  - { img: "docker.io/ansibleplaybookbundle/controller-manager", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/apiserver", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/controller-manager", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/apiserver", tag: "summit2017" }
   - { img: "docker.io/centos/python-35-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-34-centos7", tag: "latest" }
   - { img: "docker.io/centos/python-27-centos7", tag: "latest" }
-  - { img: "docker.io/ansibleplaybookbundle/origin", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-sti-builder", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-deployer", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-docker-registry", tag: "summit2017" }
-  - { img: "docker.io/ansibleplaybookbundle/origin-haproxy-router", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/origin", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/origin-sti-builder", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/origin-deployer", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/origin-docker-registry", tag: "summit2017" }
+  - { img: "docker.io/{{ dockerhub_org_name_cluster_images }}/origin-haproxy-router", tag: "summit2017" }
