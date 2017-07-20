@@ -43,10 +43,10 @@ These playbooks will do the following in a local environment:
     ```
 
 ### Execute
-  * Copy `local/config/my_vars.yml.example` to `local/config/my_vars.yml` and edit as needed.  You can use the `my_vars.yml` to override any settings.  For example:
+  * Copy `config/my_vars.yml.example` to `config/my_vars.yml` and edit as needed.  You can use the `my_vars.yml` to override any settings.  For example:
     ```bash
-    $ cp local/config/my_vars.yml.example local/config/my_vars.yml
-    $ vim local/config/my_vars.yml
+    $ cp config/my_vars.yml.example config/my_vars.yml
+    $ vim config/my_vars.yml
     ```
     * Set `dockerhub_user_name` (and optionally `dockerhub_user_password`) with your own dockerhub username (and password).  This will skip the prompts during execution and makes re-runs easy. A valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
     * Set `dockerhub_org_name` to load APB images into your broker from an organization.  For dockerhub organization you may use your own if you pushed your own APBs or you may use the `ansibleplaybookbundle` [organization](https://hub.docker.com/u/ansibleplaybookbundle/) as a sample.
