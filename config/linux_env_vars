@@ -1,4 +1,4 @@
-export PUBLIC_IP="$(ifconfig docker0 | grep inet | awk '{print $2}' | head -1)"
+export PUBLIC_IP="$(ip addr show docker0 | grep -Po 'inet \K[\d.]+')"
 
 export OPENSHIFT_HOSTNAME="${PUBLIC_IP}"
 export OPENSHIFT_ROUTING_SUFFIX="${PUBLIC_IP}.nip.io"

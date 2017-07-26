@@ -2,6 +2,7 @@
   gather_facts: True
   vars:
     demo: False
+    broker_ci: False
   vars_prompt:
     - name: dockerhub_user_name
       prompt: "Enter your dockerhub username"
@@ -15,7 +16,7 @@
   roles:
     - openshift_setup
     - env_hacks
-    - ansible_service_broker_setup
+    - { role: ansible_service_broker_setup, when: not broker_ci }
     - { role: local_demo_prep, when: demo }
   post_tasks:
     - set_fact:
