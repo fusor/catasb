@@ -58,14 +58,6 @@
     retries: 60
     delay: 10
 
-  - name: Waiting 10 minutes for ASB etcd pod
-    action:
-      shell "{{ oc_cmd }}" get pods | grep -iEm1 "etcd.*?running" | grep -v deploy
-    register: wait_for_asb_etcd_pod
-    until: wait_for_asb_etcd_pod.rc == 0
-    retries: 60
-    delay: 10
-
   - name: Get route for ansible-service-broker
     shell: "'{{ oc_cmd }}' get routes | grep ansible-service-broker | awk '{print $2}'"
     register: result_get_route_asb
