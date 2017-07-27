@@ -1,8 +1,10 @@
-service_catalog_tag: "latest"
+service_catalog_user: "system:serviceaccount:service-catalog:default"
 
-svc_cat_apiserver_img: "quay.io/kubernetes-service-catalog/apiserver:{{ service_catalog_tag }}"
+service_catalog_tag: "canary"
+svc_cat_apiserver_img_no_tag: "quay.io/kubernetes-service-catalog/apiserver"
+svc_cat_apiserver_img: "{{ svc_cat_apiserver_img_no_tag }}:{{ service_catalog_tag }}"
 svc_cat_apiserver_tag: "apiserver:{{ service_catalog_tag }}"
-
-svc_cat_controller_mgr_img: "quay.io/kubernetes-service-catalog/controller-manager:{{ service_catalog_tag }}"
+svc_cat_controller_mgr_img_no_tag: "quay.io/kubernetes-service-catalog/controller-manager"
+svc_cat_controller_mgr_img: "{{ svc_cat_controller_mgr_img_no_tag }}:{{ service_catalog_tag }}"
 svc_cat_controller_mgr_tag: "controller-manager:{{ service_catalog_tag }}"
 svc_cat_controller_mgr_relist_interval: "5m"
