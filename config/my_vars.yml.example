@@ -12,3 +12,6 @@ dockerhub_org_name: example_org
 # you can modify the hostname and suffix here:
 # openshift_hostname: 172.17.0.1
 # openshift_routing_suffix: 172.17.0.1.nip.io
+
+# Default to the "anyuid" scc for pod deployments
+# scc_anyuid: True

@@ -39,7 +39,7 @@ These playbooks will do the following in a local environment:
       ```
   * Install python dependencies
     ```bash
-    $ pip install six
+    $ pip install six==1.10.0 docker==2.4.2 ansible==2.3.0
     ```
 
 ### Execute
