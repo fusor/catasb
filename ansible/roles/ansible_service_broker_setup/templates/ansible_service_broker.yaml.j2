@@ -4,3 +4,7 @@ metadata:
   name: ansible-service-broker
 spec:
   url: https://{{ ansible_service_broker_route }}
+  authInfo:
+    basicAuthSecret:
+      namespace: ansible-service-broker
+      name: asb-auth-secret
