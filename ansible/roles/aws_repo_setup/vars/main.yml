@@ -1,0 +1,2 @@
+---
+omb_aos_repo: "{{ aos_ops_repo_url }}"

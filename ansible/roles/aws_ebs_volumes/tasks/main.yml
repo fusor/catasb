@@ -1,6 +1,6 @@
 ---
+- include: minimal.yml
+  when: minimal
+
 - include: multi_node.yml
   when: multi_node
-
-- include: steps.yml
-  when: not multi_node

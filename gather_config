@@ -1,6 +1,7 @@
 extra_args=''
 export relpath="../../"
 
+<<<<<<< 2c493fc7ed3b9a7522cdcfb534b07257cc1b7f9e
 if [[ "${1}" == "-k" ]] ||
    [[ "${1}" == "k8s" ]] ||
    [[ "${1}" == "kubernetes" ]]; then
@@ -12,6 +13,9 @@ fi
 
 if [ "$(pwd | awk -F '/' '{ print $NF }')" == "ec2" ]; then
   relpath="../"
+=======
+if [[ "$(pwd)" == *"ec2"* ]]; then
+>>>>>>> update
   source "${relpath}config/ec2_env_vars"
 elif [ "$(pwd | awk -F '/' '{ print $NF }')" == "mac" ]; then
   source ${relpath}config/mac_env_vars

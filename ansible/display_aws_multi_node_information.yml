@@ -1,0 +1,8 @@
+- hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - include: aws_multi_node_pretasks.yml
+  vars:
+    - ec2_instance_info: []
+  tasks:
+    - include: aws_multi_node_infrastructure_info.yml

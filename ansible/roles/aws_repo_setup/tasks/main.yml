@@ -1,16 +1,9 @@
----
-  - name: install EPEL
-    yum:
-      name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-      state: installed
+--- 
+- include: epel.yml
+  when: enable_epel_repo
 
-  - name: Import EPEL GPG key.
-    rpm_key:
-      key: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
-      state: present
+- include: ops_mirror.yml
+  when: enable_ops_mirror_repo
 
-  - name: Enable extras repo
-    shell: yum-config-manager --enable rhui-REGION-rhel-server-extras
-
-  - name: Enable optional repo
-    shell: yum-config-manager --enable rhui-REGION-rhel-server-optional
+- include: rh_cdn.yml
+  when: enable_rh_cdn_repo

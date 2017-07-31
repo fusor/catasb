@@ -1,0 +1,22 @@
+---
+  - include: "{{ './minimal_network.yml' if minimal else './multi_node_network.yml' }}"
+
+  # Create a single instance for the minimal (single node) cluster
+  - include: minimal_instance.yml
+    vars:
+      - ec2_instance_name: "{{ instance_name }}"
+      - host_fqdn: "{{ aws_custom_prefix }}.{{ target_dns_zone }}"
+      - wildcard_entry: "*.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
+    when: minimal
+
+  # Create instances for a multi-node cluster 
+  - include: multi_node_instance.yml
+    vars:
+      - host_name: "{{ item }}"
+      - ec2_instance_name: "{{ owners_name }}_{{ aws_custom_prefix }}_{{ item }}_{{ target_dns_zone }}"
+      - host_fqdn: "{{ item }}.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
+      - wildcard_entry: "*.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
+    when: multi_node
+    with_items: 
+      - "{{ masters }}"
+      - "{{ nodes }}"

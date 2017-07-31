@@ -1,0 +1,8 @@
+- hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - include: aws_minimal_pretasks.yml
+  vars:
+    - post_openshift_install: true
+  tasks:
+    - include: aws_minimal_infrastructure_info.yml

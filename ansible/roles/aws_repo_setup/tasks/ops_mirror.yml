@@ -1,0 +1,52 @@
+---
+- name: Copy standard yum repository configuration
+  copy:
+    src: "{{ ops_mirror_roles_dir }}/files/{{ item }}"
+    dest: /etc/yum.repos.d/{{ item }}
+    force: no
+  with_items:
+  - oso-rhui-rhel-server-releases.repo
+  - oso-rhui-rhel-server-extras.repo
+
+- set_fact:
+    prerelease_rhel7_repo_enable: "{{ prerelease_rhel7_repo_enable | default( true ) | bool }}"
+    prerelease_docker_repo_enable: "{{ prerelease_docker_repo_enable | default( true ) | bool }}"
+
+- name: Create pre-release RHEL7 yum repository configuration
+  copy:
+    src: "{{ ops_mirror_roles_dir }}/files/{{ item }}"
+    dest: /etc/yum.repos.d/{{ item }}
+    force: no
+  with_items:
+  - rhel7next.repo
+  when: prerelease_rhel7_repo_enable | bool
+
+- name: Create pre-release docker yum repository configuration
+  copy:
+    src: "{{ ops_mirror_roles_dir }}/files/{{ item }}"
+    dest: /etc/yum.repos.d/{{ item }}
+    force: no
+  with_items:
+  - dockernext.repo
+  when: prerelease_docker_repo_enable | bool
+
+- name: Create AOS yum repository configuration
+  template:
+    src: aos.repo.j2
+    dest: /etc/yum.repos.d/aos.repo
+
+- name: Remove li repos to avoid noise if aos_repo is defined
+  file:
+    dest: /etc/yum.repos.d/li.repo
+    state: absent
+  when: omb_aos_repo | length > 0
+
+- name: Copy Atomic OpenShift yum repository certificate
+  copy:
+    src: "{{ ops_mirror_roles_dir }}/files/client-cert.pem"
+    dest: /var/lib/yum/
+
+- name: Copy Atomic OpenShift yum repository key
+  copy:
+    src: "{{ ops_mirror_roles_dir }}/files/client-key.pem"
+    dest: /var/lib/yum/

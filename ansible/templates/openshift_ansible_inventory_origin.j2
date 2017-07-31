@@ -1,0 +1,80 @@
+[OSEv3:children]
+masters
+etcd
+nodes
+
+[OSEv3:vars]
+ansible_become=yes
+ansible_ssh_user=centos
+
+cluster_id={{ ose_cluster_id }}
+
+qe_repo_image_prepull=False
+{{ aos_repo_line }}
+
+openshift_deployment_type=origin
+openshift_release={{ openshift_ver }}
+
+openshift_disable_check={{ disablecheck_list }}
+openshift_docker_additional_registries={{ additional_registries }}
+openshift_docker_insecure_registries={{ insecure_registries | to_json }}
+openshift_master_cluster_method=native
+openshift_master_api_port={{ master_api_port }}
+openshift_master_console_port={{ master_console_port }}
+
+openshift_enable_service_catalog=True
+
+{{ containerized_line }}
+
+system_images_registry="docker.io"
+
+ansible_service_broker_image_prefix={{ dockerhub_org_name }}/
+ansible_service_broker_registry_url={{ asb_reg_url }}
+ansible_service_broker_registry_user={{ dockerhub_user_name }}
+ansible_service_broker_registry_password={{ dockerhub_user_password }}
+ansible_service_broker_registry_organization={{ dockerhub_org_name }}
+
+openshift_master_cluster_hostname={{ master_route53_name }}
+openshift_master_cluster_public_hostname={{ master_route53_name }}
+openshift_master_public_api_url=https://{{ master_route53_name }}:{{ master_api_port }}
+openshift_master_public_console_url=https://{{ master_route53_name }}:{{ master_console_port }}/console
+
+openshift_use_openshift_sdn=True
+
+os_sdn_network_plugin_name={{ sdn_nw_plugin_name }}
+
+osm_default_subdomain=apps.{{ aws_custom_prefix }}.{{ target_dns_zone }}
+openshift_master_default_subdomain=apps.{{ aws_custom_prefix }}.{{ target_dns_zone }}
+openshift_hosted_router_force_subdomain='${name}-${namespace}.apps.{{ aws_custom_prefix }}.{{ target_dns_zone }}'
+
+openshift_cloudprovider_kind=aws
+openshift_cloudprovider_aws_access_key="{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+openshift_cloudprovider_aws_secret_key="{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '{{ master_htpasswd_file }}'}]
+
+openshift_install_examples=True
+
+osm_use_cockpit=false
+os_firewall_use_firewalld=False
+
+osm_cluster_network_cidr={{ cluster_network_cidr }}
+openshift_master_portal_net={{ master_portal_net }}
+
+# Openshift Router
+openshift_hosted_manage_router=true
+openshift_hosted_router_selector='type=infra'
+openshift_hosted_router_replicas=1
+
+# Openshift Registry
+openshift_hosted_manage_registry=true
+openshift_hosted_registry_selector='type=infra'
+
+[masters]
+{{ master_public_dns_name }}
+
+[etcd]
+{{ master_public_dns_name }}
+
+[nodes]
+{{ all_nodes }}

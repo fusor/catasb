@@ -1,0 +1,45 @@
+---
+  # We want this to run sometime after oc cluster up has come up, since we want
+  # it to alter the permssions of the pv* directories it creates sometime after
+  # startup.
+  #
+  # We've seen some permission errors testing certain containers with PVs
+  # May be related to this issue:
+  #   https://github.com/openshift/origin/issues/13496https://github.com/openshift/origin/issues/13496
+  # Putting in a workaround for manually opening up the permissions
+
+  - name: Waiting 10 minutes for 'persistent-volume-setup' pod to complete to create PVs
+    action:
+      shell "{{ oc_cmd }}" get pods -n default | grep ^persistent-volume-setup | grep Completed
+    register: wait_for_pv_setup_pod
+    until: wait_for_pv_setup_pod.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Adjust persistent volume permissions to be 777 to make testing easier
+    file:
+      path: "{{ persistedvol_mount_point }}"
+      mode: 0777
+      recurse: true
+    become: true
+
+  - block:
+    - block:
+      - name: Workaround canary permissions issue
+        shell: "{{ oc_cmd }} adm policy add-cluster-role-to-user cluster-admin system:anonymous"
+
+      - name: Get current apiserver args and update them
+        shell: "{{ oc_cmd }} export -n service-catalog deployment apiserver -o json | python -c 'import json, sys; args=json.load(sys.stdin)[\"spec\"][\"template\"][\"spec\"][\"containers\"][0][\"args\"]; args.remove(\"--insecure-bind-address\"); args.remove(\"0.0.0.0\"); args.remove(\"--insecure-port\"); args.remove(\"8081\"); print json.dumps(args)'"
+        register: arglist
+
+      - name: Use canary apiserver
+        shell: "{{ oc_cmd }} patch -n service-catalog deployment/apiserver -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"apiserver\",\"image\":\"{{ coalmine_apiserver }}\", \"command\": [\"/opt/services/apiserver\"], \"args\": {{ arglist.stdout }} }]}}}}'"
+
+      - name: Get current controller-manager args and update them
+        shell: "{{ oc_cmd }} export -n service-catalog deployment controller-manager -o json | python -c 'import json, sys; args=json.load(sys.stdin)[\"spec\"][\"template\"][\"spec\"][\"containers\"][0][\"args\"]; args.remove(\"--service-catalog-api-server-url\"); args.remove(\"http://$(APISERVER_SERVICE_HOST):$(APISERVER_SERVICE_PORT)\"); args.append(\"--service-catalog-api-server-url\"); args.append(\"https://$(APISERVER_SERVICE_HOST):$(APISERVER_PORT_443_TCP_PORT)\"); args.append(\"--service-catalog-insecure-skip-verify\"); print json.dumps(args)'"
+        register: arglist
+
+      - name: Use canary controller-manager
+        shell: "{{ oc_cmd }} patch -n service-catalog deployment/controller-manager -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"controller-manager\",\"image\":\"{{ coalmine_controller }}\", \"command\": [\"/opt/services/controller-manager\"], \"args\": {{ arglist.stdout }} }]}}}}'"
+      when: coalmine
+    when: coalmine is defined

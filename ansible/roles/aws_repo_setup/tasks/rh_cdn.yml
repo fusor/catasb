@@ -1,0 +1,21 @@
+---
+- name: Register RHN user '{{  rhn_user  }}'
+  redhat_subscription:
+    state: present
+    username: "{{ rhn_user }}"
+    password: "{{ rhn_passwd }}"
+    autosubscribe: false
+
+- name: Attach to the Pool-ID '{{ aos_pool_id }}'
+  shell: subscription-manager attach --pool={{ aos_pool_id }}
+
+- name: Disable all repos
+  shell: subscription-manager repos --disable=*
+
+- name: Enable RHEL7 Repos (Server, Server-Extras, Server-OSEv3.6, and Fast-Datapath)
+  shell: |
+    subscription-manager repos --enable="rhel-7-server-rpms" 
+    subscription-manager repos --enable="rhel-7-server-extras-rpms" 
+    subscription-manager repos --enable="rhel-7-server-ose-3.6-rpms" 
+    subscription-manager repos --enable="rhel-7-fast-datapath-rpms"
+    exit 0

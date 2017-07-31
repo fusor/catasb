@@ -1,0 +1,38 @@
+---
+  - set_fact:
+      disablecheck_list: "disk_availability,docker_storage,memory_availability,package_version"
+
+  - set_fact:
+      asb_reg_url: "docker.io"
+
+  - set_fact:
+      inventory_template_file: "openshift_ansible_inventory_origin.j2"
+      #openshift_ver: "v3.6.0"
+      #containerized_line: "containerized=true"
+      openshift_ver: "v3.6"
+      containerized_line: ""
+      aos_repo_line: ""
+      disablecheck_list: "disk_availability,docker_storage,memory_availability,package_version,package_availability,docker_image_availability"
+      additional_registries: "docker.io"
+      insecure_registries: "['{{ master_portal_net }}', 'docker.io']"
+      router_registry_url: ""
+    when: deploy_origin
+
+  - set_fact:
+      aos_repo_line: ""
+    when: enable_rh_cdn_repo
+
+  - set_fact:
+      aos_repo_line: "aos_repo={{ aos_ops_repo_url }}"
+    when: enable_ops_mirror_repo
+
+  - name: Remove existing inventory file '{{ openshift_ansible_inventory_path }}' if it exists
+    file:
+      path: "{{ openshift_ansible_inventory_path }}"
+      state: absent
+
+  - name: Create Openshift-Ansible Inventory file from 'openshift_ansible_inventory.j2' template.
+    template:
+      src: "{{ inventory_template_file }}"
+      dest: "{{ openshift_ansible_inventory_path }}"
+      mode: 0644

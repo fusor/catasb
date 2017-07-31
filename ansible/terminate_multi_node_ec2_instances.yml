@@ -1,0 +1,45 @@
+- hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - include: aws_multi_node_pretasks.yml
+  vars:
+    - deleted_ec2_instance_info: []
+  tasks:
+    - name: EC2 Remote Facts
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "*_{{ aws_custom_prefix }}_*"
+        region: "{{ aws_region }}"
+      register: my_ec2_facts
+    - name:  Delete EC-2 Instance(s)
+      ec2:
+        state: absent
+        wait: yes
+        instance_ids:
+          - "{{ item.id }}"
+        region: "{{ aws_region }}"
+      with_items:
+        "{{ my_ec2_facts.instances }}"
+      when: my_ec2_facts.instances
+    - name: Settings facts of ec2 instance
+      set_fact:
+        deleted_ec2_instance_info: "{{ deleted_ec2_instance_info }} + ['
+          {{ item.tags.Name }}
+          id={{ item.id }}
+          {{ item.public_dns_name }}
+          ']"
+      with_items: 
+        "{{ my_ec2_facts.instances }}"
+      when: my_ec2_facts.instances
+    - debug: var=deleted_ec2_instance_info
+    - set_fact:
+        msg: |
+            WARNING:
+              Only the EC2 Instances listed above have been 'terminated'.
+              Network items (i.e. VPC, GW, Subnets, Security groups, etc.) 
+              and Custom DNS entries created during the 'setup' step still remain.  
+
+              Visit the AWS WebUI console and remove any other unwanted items manually.
+    - debug:
+        msg: "{{ msg.split('\n') }}"

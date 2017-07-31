@@ -1,0 +1,18 @@
+---
+- name: Setting facts for AWS Minimal Infrastructure (Single Node) 
+  set_fact:
+    minimal: true
+    multi_node: false
+    enable_epel_repo: true
+    enable_ops_mirror_repo: false
+    enable_rh_cdn_repo: false
+
+- name: Check that 'aws_custom_prefix' is defined and not empty
+  fail:
+    msg: "Missing or empty variable 'aws_custom_prefix'"
+  when: ( (aws_custom_prefix is undefined) or (aws_custom_prefix is none) or (aws_custom_prefix | trim == '') )
+
+- name: Check that instance_name is defined and not empty
+  fail:
+    msg: "Missing or empty variable 'instance_name'"
+  when: ( (instance_name is undefined) or (instance_name is none) or (instance_name | trim == '') )

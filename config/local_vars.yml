@@ -1,3 +1,6 @@
 broker_dev_broker: true
 ec2_install: false
 use_ssl: false
+
+multi_node: false
+minimal: false

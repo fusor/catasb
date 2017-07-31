@@ -1,0 +1,9 @@
+---
+  - include: minimal.yml
+    when: minimal
+
+  - include: multi_node.yml
+    when: multi_node
+
+  - include: rh_cdn.yml
+    when: (multi_node and enable_rh_cdn_repo and (not deploy_origin))

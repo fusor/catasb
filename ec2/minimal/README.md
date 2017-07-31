@@ -1,37 +1,55 @@
-# CatASB with AWS
-Openshift can be deployed in the Amazon Web Services (AWS) environment in the following configurations
+# CATalogASB EC-2 Deployment
 
-* [Minimal](./minimal)
+OpenShift environment with a Service Catalog & Ansible Service Broker in a single EC-2 Instance.
 
-    * Single EC-2 Instance
-    * Installs Origin via **`oc cluster up`**
+## Overview
+These playbooks will:
+  * Create a public VPC if it does not exist
+  * Create a security group if it does not exist
+  * Create a single EC-2 instance with a specific Name if does not exist
+  * Associate an elastic ip to instance
+  * Configure a hostname with elastic ip through Route53
+  * Setup *Origin* through **`oc cluster up`**
+  * Install Service Catalog on Origin
+  * Install Ansible Service Broker on Origin
 
-* [Multi-Node](./multi_node)
+## Pre-Reqs
+  * Ansible needs to be installed so its source code is available to Python.
+    * Check to see if Ansible modules are available to Python
+      ```bash
+      $ python -c "import ansible;print(ansible.__version__)"
+      2.3.0.0
+      ```
+    * MacOS requires Ansible to be installed from `pip` and not `brew`
+      ```bash
+      $ python -c "import ansible;print(ansible.__version__)"
+      Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+      ImportError: No module named ansible
 
-<<<<<<< 2c493fc7ed3b9a7522cdcfb534b07257cc1b7f9e
       brew uninstall ansible
       pip install ansible
 
       $ python -c "import ansible;print(ansible.__version__)"
       2.3.0.0
       ```
-  * Install python dependencies (This is needed for python2. Use pip2 if using python3)
+  * Install python dependencies (This is needed for python2. Use pip3 if using python3)
     * On Fedora and EL7 it is recommended that you use ansible in a python virtualenv.
      * This is due to a couple reasons:
        - boto rpms are not sufficiently new enough
-       - pip is not sudo safe on Fedora and EL7
-     * To setup and active a virtualenv do the following;
+       - pip is not sudo safe on Fedora and EL7 
+     * To setup and activate a virtualenv do the following;
      ```
-     sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv
+     sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv 
      virtualenv /tmp/ansible
      source /tmp/ansible/bin/activate
      pip install ansible
      ```
    * Continue with the next step:
 
-      ```bash
-      $ pip install boto boto3 six
-      ```
+    ```bash
+    $ pip install boto boto3 six
+    ```
   * Configure a SSH Key in your AWS EC-2 account for the given region
   * Create a hosted zone in Route53
   * Set these environment variables:
@@ -41,20 +59,24 @@ Openshift can be deployed in the Amazon Web Services (AWS) environment in the fo
     AWS_SSH_PRIV_KEY_PATH  - Path to your private ssh key to use for the ec2 instances
     ```
 
-### Execute
-  * Edit the variables file `../config/ec2_env_vars`
+## Execute
+  * Navigate to the [config](../../config) folder
+    ```bash
+    $ cd catasb/config
+    ```
+  * Edit the variables file [ec2_env_vars](../../config/ec2_env_vars)
     * Note the following and update:
       ```bash
       AWS_SSH_KEY_NAME="splice"
       TARGET_DNS_ZONE="ec2.dog8code.com"
       ```
       Needs to match a hosted zone entry in your Route53 account, we will create a subdomain under it for the ec2 instance
-  * To make re-runs easy, create a `catasb/config/my_vars.yml` with your dockerhub credentials
-    * `cp catasb/config/my_vars.yml.example catasb/config/my_vars.yml`
+  * To make re-runs easy, create a `my_vars.yml` with your dockerhub credentials
+    * `cp my_vars.yml.example my_vars.yml`
     * Replace with your dockerhub username/password
-      * A valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
+     * Valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
     * For dockerhub organization you may use your own if you pushed APBs to it or you may use: `ansibleplaybookbundle`
-      * https://hub.docker.com/u/ansibleplaybookbundle/
+       * https://hub.docker.com/u/ansibleplaybookbundle/
     * Example `my_vars.yml`
 
           $ cat my_vars.yml
@@ -62,10 +84,10 @@ Openshift can be deployed in the Amazon Web Services (AWS) environment in the fo
 
           dockerhub_user_name: foo@bar.com
           dockerhub_user_password: changeme
-          dockerhub_org: ansibleplaybookbundle 
-  * Navigate to the `ec2` folder
+          dockerhub_org_name: ansibleplaybookbundle
+  * Navigate back to the [ec2/minimal](./) folder
     ```bash
-    $ cd catasb/ec2
+    $ cd catasb/ec2/minimal
     ```
   * Create our infrastructure in ec2 if it doesn't exist
     ```bash
@@ -78,12 +100,11 @@ Openshift can be deployed in the Amazon Web Services (AWS) environment in the fo
   * Open a Web Browser
     * Visit: `https://apiserver-service-catalog.USERNAME.ec2.dog8code.com`
       * Accept the SSL certificate for the apiserver-service-catalog endpoint
-      * Ignore the text that appears and proceed to the main OpenShift URL next
       * Note: must accept the new SSL cert, each time you reset your OpenShift environment
     * Visit: `https://<USERNAME>.ec2.dog8code.com:8443`
       * Where `<USERNAME>` is the value of `whoami` when you launched `run_setup_environment.sh`
 
-### Cleanup
+## Cleanup
 
 * To terminate the ec2 instance and cleanup the associated EBS volumes run the below
   ```bash
@@ -95,18 +116,11 @@ Openshift can be deployed in the Amazon Web Services (AWS) environment in the fo
   $ ./reset_environment.sh
   ```
 
-### Testing downstream images
+## Testing downstream images
   * Use the --rcm flag. For instance:
     * `./run_setup_envrironment.sh --rcm`
     * `./reset_environmet.sh --rcm`
 
-### Tested with
+## Tested with
   * ansible 2.3.0.0
     * Problems were seen using ansible 2.2 and lower
-=======
-    * Multiple EC-2 Instances
-    * Installs Openshift Enterprise via [Openshift Ansible](https://github.com/openshift/openshift-ansible)
-    * Configurable Contents
-        * RH CDN
-        * Latest Mirror Repos
->>>>>>> update
