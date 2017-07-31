@@ -1,0 +1,56 @@
+---
+- name: Setting facts for AWS Multi-Node Infrastructure
+  set_fact:
+    minimal: false
+    multi_node: true
+
+- name: Check that 'aws_custom_prefix' is defined and not empty
+  fail:
+    msg: "Missing or empty variable 'aws_custom_prefix'"
+  when: ( (aws_custom_prefix is undefined) or (aws_custom_prefix is none) or (aws_custom_prefix | trim == '') )
+
+- name: Check that 'wildcard_dns_host' is defined and not empty
+  fail:
+    msg: "Missing or empty variable 'wildcard_dns_host'"
+  when: ( (wildcard_dns_host is undefined) or (wildcard_dns_host is none) or (wildcard_dns_host | trim == '') )
+
+- name: Set AMI ID 'aws_ami_id' to 'centos7' IF 'deploy_origin=true'
+  set_fact:
+    aws_ami_id: ami-46c1b650    # centos7 (x86_64) US East (N. Virginia)
+    #aws_ami_id: ami-18f8df7d   # centos7 (x86_64) US East (Ohio)
+  when: deploy_origin
+
+#
+# The DEFAULT repo settings in 'group_vars/all.yml' are as follows:
+#   enable_epel_repo: false
+#   enable_ops_mirror_repo: false
+#   enable_rh_cdn_repo: true
+#
+# If the user has changed the default via 'my_vars',
+# the below will properly enable/disable other repos
+#
+- name: If 'enable_epel_repo' is set to 'true', set other repos to 'false'
+  set_fact:
+    enable_ops_mirror_repo: false
+    enable_rh_cdn_repo: false
+  when: enable_epel_repo
+
+- name: If 'enable_ops_mirror_repo' is set to 'true', set other repos to 'false'
+  set_fact:
+    enable_epel_repo: false
+    enable_rh_cdn_repo: false
+  when: enable_ops_mirror_repo
+
+# If 'deploy_origin' is true, IGNORE all repo settings
+# and RESET the repo vars as below
+- name: Enable correct repos if 'deploy_origin=true'
+  set_fact:
+    enable_epel_repo: true
+    enable_ops_mirror_repo: false
+    enable_rh_cdn_repo: false
+  when: deploy_origin
+
+- name: Verify that 'enable_rh_cdn_repo' AND 'enable_ops_mirror_repo' are NOT both set to 'true'
+  fail:
+    msg: "'enable_rh_cdn_repo' AND 'enable_ops_mirror_repo' CANNOT both be 'true'"
+  when: (enable_rh_cdn_repo and enable_ops_mirror_repo)

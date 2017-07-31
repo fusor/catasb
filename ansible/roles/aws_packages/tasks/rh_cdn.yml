@@ -1,0 +1,21 @@
+---
+  - name: install 'atomic-openshift-utils'
+    yum:
+      name: atomic-openshift-utils
+      state: present
+
+  - name: Yum install 'atomic-openshift-excluder' and 'atomic-openshift-docker-excluder'
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - atomic-openshift-excluder
+      - atomic-openshift-docker-excluder
+  
+  - name: Run command 'atomic-openshift-excluder unexclude'
+    shell: atomic-openshift-excluder unexclude
+
+  - name: Yum install 'docker'
+    yum:
+      name: docker
+      state: present

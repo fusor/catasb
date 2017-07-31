@@ -1,0 +1,61 @@
+#
+# We are looking up the ec2 facts and storing them in a host variable
+# so a later play can retrieve the data.
+#
+- hosts: localhost
+  gather_facts: True
+  tasks:
+    - name: EC2 Remote Facts
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "{{ instance_name }}"
+        region: "{{ aws_region }}"
+      register: my_ec2_facts
+
+- hosts: tag_Name_{{ instance_lookup_value }}
+  gather_facts: True
+  become: True
+  pre_tasks:
+    - name: Setting fact for 'my_security_group_id'
+      set_fact:
+        my_security_group_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].groups[0].id }}"
+    - include: aws_minimal_pretasks.yml
+  vars_prompt:
+    - name: dockerhub_user_name
+      prompt: "Enter your dockerhub username: "
+      private: no
+    - name: dockerhub_user_password
+      prompt: "Enter your dockerhub password: "
+      private: yes
+    - name: dockerhub_org_name
+      prompt: "Enter the dockerhub organization you'd like to pull images from: "
+      private: no
+  roles:
+    - aws_ebs_volumes
+    - aws_repo_setup
+    - aws_packages
+    - aws_docker_setup
+    - { role: ssl_setup, when: use_ssl == True }
+    - openshift_setup
+    - env_hacks
+    - ansible_service_broker_setup
+    - { role: aws_demo_prep, when: demo }
+  post_tasks:
+    - set_fact:
+        msg: |
+            EC-2 Instance Tags:        Name={{ instance_name }}
+            Hostname:                  {{ openshift_hostname }}
+            SSH Key Name:              {{ ssh_key_name }}
+            Region:                    {{ aws_region }}
+            Next steps:
+            1) Visit https://{{ openshift_hostname }}:8443 for the console
+            2) Provision a RDS APB into awsdemo project
+            3) Add to the aws-demo project a Python 3.5 project based off of https://github.com/thesteve0/awsdemo.git
+            4) Click on the python project and select creating binding to the RDS APB
+            5) Redeploy the python project
+            OR
+            For CLI access:
+            oc login --insecure-skip-tls-verify {{ openshift_hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+    - debug:
+        msg: "{{ msg.split('\n') }}"

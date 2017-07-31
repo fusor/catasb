@@ -1,0 +1,119 @@
+---
+  - name: Create the EC-2 Instance for host - "{{ host_name }}"
+    ec2:
+      key_name: "{{ ssh_key_name }}"
+      instance_type: "{{ instance_type }}"
+      instance_tags: 
+        Name: '{{ ec2_instance_name }}'
+        KubernetesCluster: '{{ kubernetes_cluster_tag_value }}'
+      image: "{{ aws_ami_id }}"
+      wait: yes
+      exact_count: 1
+      count_tag:
+        Name: "{{ ec2_instance_name }}"
+      group_id: "{{ my_sec_group.group_id }}"
+      vpc_subnet_id: "{{ public_subnet_id }}"
+      assign_public_ip: yes
+      region: "{{ aws_region }}"
+      volumes:
+        - device_name: /dev/sda1
+          volume_type: gp2
+          volume_size: 250
+          delete_on_termination: true
+    register: my_ec2_instances
+
+  - name: Wait for SSH to come up on {{ my_ec2_instances.tagged_instances[0].public_dns_name }} - "{{ host_name }}"
+    wait_for:
+      host: "{{ my_ec2_instances.tagged_instances[0].public_dns_name }}"
+      port: 22
+      delay: 0
+      timeout: 320
+      state: started
+
+  - name: Set DNS CNAME Record '{{ host_fqdn }}' for "{{  my_ec2_instances.tagged_instances[0].public_dns_name }}"
+    route53: >
+      command=create
+      zone="{{ target_dns_zone }}"
+      record="{{ host_fqdn }}"
+      type=CNAME
+      ttl=60
+      overwrite=yes
+      value="{{ my_ec2_instances.tagged_instances[0].public_dns_name }}"
+
+  - name: Set DNS CNAME Record for the WildCard '{{ wildcard_entry }}' for "{{  my_ec2_instances.tagged_instances[0].public_dns_name }}"
+    route53: >
+      command=create
+      zone="{{ target_dns_zone }}"
+      record="{{ wildcard_entry }}"
+      type=CNAME
+      ttl=60
+      overwrite=yes
+      value="{{ my_ec2_instances.tagged_instances[0].public_dns_name }}"
+    when: wildcard_dns_host == host_name
+
+  - name: Set Fact 'wildcard_hostname_value' (for displaying it later)
+    set_fact:
+      wildcard_hostname_value: "{{ my_ec2_instances.tagged_instances[0].public_dns_name }}"
+    when: wildcard_dns_host == host_name
+
+  - name: Create EBS Volume for '/tmp' - "{{ host_name }}"
+    ec2_vol:
+      instance: "{{ my_ec2_instances.tagged_instances[0].id }}"
+      volume_size: 50
+      region: "{{ aws_region }}"
+      device_name: "{{ tmp_ebs_device_name }}"
+      delete_on_termination: yes
+      tags:
+        Name: "{{ kubernetes_cluster_tag_value }}_tmp"
+        KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
+    register: ec2_vol_tmp
+
+  - name: Create EBS Volume for 'docker_vg' - "{{ host_name }}"
+    ec2_vol:
+      instance: "{{ my_ec2_instances.tagged_instances[0].id }}"
+      volume_size: 250
+      region: "{{ aws_region }}"
+      device_name: "{{ docker_vg_ebs_device_name }}"
+      delete_on_termination: yes
+      tags:
+        Name: "{{ kubernetes_cluster_tag_value }}_docker_vg"
+        KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
+    register: ec2_vol_docker_vg
+
+  - name: Create EBS Volume for '/var/lib/docker' - "{{ host_name }}"
+    ec2_vol:
+      instance: "{{ my_ec2_instances.tagged_instances[0].id }}"
+      volume_size: 100
+      region: "{{ aws_region }}"
+      device_name: "{{ var_lib_docker_ebs_device_name }}"
+      delete_on_termination: yes
+      tags:
+        Name: "{{ kubernetes_cluster_tag_value }}_var_lib_docker"
+        KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
+    register: ec2_vol_var_lib_docker
+
+  - name: Set Fact 'master_route53_name' (for Openshift Ansible Inventory Template)
+    set_fact:
+      master_route53_name: "{{ host_fqdn }}"
+    when: ('master' in host_name)
+
+  - name: Set Fact 'master_public_dns_name' (for Openshift Ansible Inventory Template)
+    set_fact:
+      master_public_dns_name: "{{ my_ec2_instances.tagged_instances[0].public_dns_name }}"
+    when: ('master' in host_name)
+
+  - name: Set Fact 'all_nodes' (for Openshift Ansible Inventory Template) for the Master Node
+    set_fact:
+      all_nodes: "{{ all_nodes }}\n{{ my_ec2_instances.tagged_instances[0].public_dns_name }} 
+        openshift_hostname={{ my_ec2_instances.tagged_instances[0].private_dns_name }} 
+        openshift_public_hostname={{ host_fqdn }} 
+        {{ master_labels }}\n"
+    when: ('master' in host_name)
+
+  - name: Set Fact 'all_nodes' (for Openshift Ansible Inventory Template) for the Node
+    set_fact:
+      all_nodes: "{{ all_nodes }}\n{{ my_ec2_instances.tagged_instances[0].public_dns_name }} 
+        openshift_hostname={{ my_ec2_instances.tagged_instances[0].private_dns_name }} 
+        openshift_public_hostname={{ host_fqdn }} 
+        {{ node_labels }}\n"
+    when: ('master' not in host_name)

@@ -1,0 +1,60 @@
+- hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - include: aws_multi_node_pretasks.yml
+  tasks:
+    - name: EC2 Remote Facts
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "*_{{ aws_custom_prefix }}_*"
+        region: "{{ aws_region }}"
+      register: my_ec2_facts
+    - set_fact:
+        cluster_node: "{{ item }}"
+      when: ('master' in item.tags.Name)
+      with_items:
+        "{{ my_ec2_facts.instances }}"
+    - name: Add the  EC2 Instance to "ec2_node"
+      add_host:
+        hostname: "{{ cluster_node.public_dns_name }}"
+        groupname: ec2_node
+      when: cluster_node is defined
+
+- hosts: ec2_node
+  gather_facts: True
+  become: True
+  tasks:
+    - name: Install python-passlib
+      package:
+        name: python-passlib
+        state: installed
+    - name: Create htpasswd file for the privileged user '{{ cluster_privileged_user }}'
+      htpasswd:
+        path: "{{ master_htpasswd_file }}"
+        name: "{{ cluster_privileged_user }}"
+        password: "{{ cluster_privileged_user_password }}"
+        owner: root
+        group: root
+        mode: 0644
+    - name: Create htpasswd file for the developer user '{{ cluster_dev_user }}'
+      htpasswd:
+        path: "{{ master_htpasswd_file }}"
+        name: "{{ cluster_dev_user }}"
+        password: "{{ cluster_dev_user_password }}"
+        owner: root
+        group: root
+        mode: 0644
+    - name: Login as {{ cluster_system_admin }}
+      shell: "oc login -u {{ cluster_system_admin }}"
+    - name: Create the privileged user '{{ cluster_privileged_user }}'
+      shell: "oc create user {{ cluster_privileged_user }}"
+    - name: Add admin role to {{ cluster_privileged_user }}
+      shell: "oc adm policy add-cluster-role-to-user cluster-admin {{ cluster_privileged_user }}"
+    - name: Add privileged scc to {{ cluster_privileged_user }}
+      shell: "oc adm policy add-scc-to-user privileged {{ cluster_privileged_user }}"
+    - name: Create the developer user '{{ cluster_dev_user }}'
+      shell: "oc create user {{ cluster_dev_user }}"
+    - name: Add privileged scc to {{ cluster_dev_user }}
+      shell: "oc adm policy add-scc-to-user privileged {{ cluster_dev_user }}"
+

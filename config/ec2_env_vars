@@ -8,8 +8,14 @@ export TARGET_DNS_ZONE
 OWNERS_NAME="${OWNERS_NAME:-`whoami`}"
 export OWNERS_NAME
 
-TARGET_SUBDOMAIN="${TARGET_SUBDOMAIN:-$OWNERS_NAME}"
-export TARGET_SUBDOMAIN
+AWS_CUSTOM_PREFIX="${AWS_CUSTOM_PREFIX:-$OWNERS_NAME}"
+export AWS_CUSTOM_PREFIX
+
+AOS_INVENTORY_PATH_FILE="${AOS_INVENTORY_PATH_FILE:-/tmp/aos_inventory_path_info.txt}"
+export AOS_INVENTORY_PATH_FILE
+
+OPENSHIFT_ANSIBLE_DIR="${OPENSHIFT_ANSIBLE_DIR:-/tmp/openshift-ansible}"
+export OPENSHIFT_ANSIBLE_DIR
 
 #####
 # We will tag the created ec2 instance with 'INSTANCE_NAME'
@@ -18,11 +24,19 @@ export TARGET_SUBDOMAIN
 # We are introducing TAG_NAME to do this transform so we can
 # use TAG_NAME as a variable for the group lookup
 #####
-export INSTANCE_NAME="${OWNERS_NAME}-${TARGET_SUBDOMAIN}.${TARGET_DNS_ZONE}"
+export INSTANCE_NAME="${OWNERS_NAME}-${AWS_CUSTOM_PREFIX}.${TARGET_DNS_ZONE}"
 export INSTANCE_LOOKUP_VALUE=`echo ${INSTANCE_NAME//./_}`
 export INSTANCE_LOOKUP_VALUE=`echo ${INSTANCE_LOOKUP_VALUE//-/_}`
 
+export EXTRA_VARS="{\
+\"ssh_key_name\":\"${AWS_SSH_KEY_NAME}\", \
+\"target_dns_zone\":\"${TARGET_DNS_ZONE}\", \
+\"aws_custom_prefix\":\"${AWS_CUSTOM_PREFIX}\", \
+\"openshift_ansible_inventory_info_file\":\"${AOS_INVENTORY_PATH_FILE}\", \
+\"openshift_ansible_repo_dir\":\"${OPENSHIFT_ANSIBLE_DIR}\", \
+\"instance_name\":\"${INSTANCE_NAME}\",
+\"instance_lookup_value\":\"${INSTANCE_LOOKUP_VALUE}\", \
+\"owners_name\":${OWNERS_NAME} \
+${EC2_HOSTS}}"
 
-export EC2_USER="ec2-user"
-export EXTRA_VARS="{\"ssh_key_name\":\"${AWS_SSH_KEY_NAME}\", \"target_dns_zone\":\"${TARGET_DNS_ZONE}\", \"target_subdomain\":\"${TARGET_SUBDOMAIN}\", \"instance_name\":\"${INSTANCE_NAME}\", \"instance_lookup_value\":\"${INSTANCE_LOOKUP_VALUE}\"}"
 export ANSIBLE_HOST_KEY_CHECKING=False

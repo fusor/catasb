@@ -1,0 +1,65 @@
+- name: Create AWS Infrastructure
+  hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - include: aws_multi_node_pretasks.yml
+    # If 'enable_ops_mirror_repo' is true, the 'aos_path'
+    # containing the proper certs, MUST be provided
+    - stat:
+        path: "{{ ops_mirror_roles_dir }}"
+      register: aos_path
+    - name: Check if the 'aos-ansible' path exists
+      fail:
+        msg: "Invalid path '{{ ops_mirror_roles_dir }}'"
+      when: (enable_ops_mirror_repo) and (aos_path.stat.exists == False)
+  vars:
+    - master_labels: "openshift_node_labels=\"{'region': 'infra', 'zone': 'default', 'type': 'infra'}\" openshift_schedulable=True"
+    - node_labels:   "openshift_node_labels=\"{'region': 'primary', 'zone': 'default', 'type': 'primary'}\""
+    - all_nodes: ""
+  roles:
+    - aws_infrastructure
+  tasks:
+    - include: create_openshift_ansible_inventory.yml
+    - name: Get EC2 Remote Facts
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "*_{{ aws_custom_prefix }}_*"
+        region: "{{ aws_region }}"
+      register: my_ec2_facts
+    - name: Add EC2 Instances to the host group "launched_ec2"
+      add_host:
+        hostname: "{{ item.public_dns_name }}"
+        groupname: launched_ec2
+      with_items: "{{ my_ec2_facts.instances }}"
+      when: my_ec2_facts.instances
+    - include: create_openshift_ansible_inventory.yml
+
+- name: Configure Environment for EC2 Instances
+  hosts: launched_ec2
+  become: True
+  gather_facts: True
+  pre_tasks:
+    - include: aws_multi_node_pretasks.yml
+  roles:
+    - aws_ebs_volumes
+    - aws_repo_setup
+    - aws_packages
+    - env_hacks
+
+- name: Display AWS EC2 Infrastructure Information
+  hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - include: aws_multi_node_pretasks.yml
+  vars:
+    - ec2_instance_info: []
+  tasks:
+    - include: aws_multi_node_infrastructure_info.yml
+    - set_fact:
+        msg: |
+            Next Steps:
+              RUN the Openshift-Ansible Installer via the following command:
+              INVENTORY_FILE={{ openshift_ansible_inventory_path }} ./run_openshift_ansible.sh
+    - debug:
+        msg: "{{ msg.split('\n') }}"

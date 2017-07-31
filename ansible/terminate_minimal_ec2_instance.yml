@@ -1,0 +1,63 @@
+- hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - include: aws_minimal_pretasks.yml
+
+  tasks:
+    - name: EC2 Remote Facts
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "{{ instance_name }}"
+        region: "{{ aws_region }}"
+      register: my_ec2_facts
+
+    - name: Remove DNS A Record '{{ aws_custom_prefix }}.{{ target_dns_zone }}' for {{ my_ec2_facts.instances[0].public_ip_address }}
+      route53: >
+        command=delete
+        zone="{{ target_dns_zone }}"
+        record="{{ aws_custom_prefix }}.{{ target_dns_zone }}"
+        type=A
+        ttl=60
+        value="{{ my_ec2_facts.instances[0].public_ip_address }}"
+      when: my_ec2_facts.instances
+
+    - name: Set DNS A Record '*.{{ aws_custom_prefix }}.{{ target_dns_zone }}' to Elastic IP {{ my_ec2_facts.instances[0].public_ip_address }}
+      route53: >
+        command=delete
+        zone="{{ target_dns_zone }}"
+        record="*.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
+        type=A
+        ttl=60
+        value="{{ my_ec2_facts.instances[0].public_ip_address }}"
+      when: my_ec2_facts.instances
+
+    - name:  Delete EC-2 Instance {{ my_ec2_facts.instances[0].id }}
+      ec2:
+        state: absent
+        wait: yes
+        instance_ids:
+          - "{{ my_ec2_facts.instances[0].id }}"
+        region: "{{ aws_region }}"
+      when: my_ec2_facts.instances
+
+    - set_fact:
+        msg: |
+            Deleted Instance.
+            EC-2 Instance Tags:        Name={{ instance_name }}
+            EC-2 Instance ID:          {{ my_ec2_facts.instances[0].id }}
+            Region:                    {{ aws_region }}
+            Removed Route53 DNS:       *.{{ aws_custom_prefix }}.{{ target_dns_zone }}
+                                       {{ aws_custom_prefix }}.{{ target_dns_zone }}
+
+            WARNING:
+              Only the EC2 Instance and its DNS entries listed above have been removed.
+              Network items (i.e. VPC, GW, Subnets, Security groups, etc.)
+              created during the 'setup' step still remain.
+
+              Visit the AWS WebUI console and remove any other unwanted items manually.
+      when: my_ec2_facts.instances
+
+    - debug:
+        msg: "{{ msg.split('\n') }}"
+      when: my_ec2_facts.instances

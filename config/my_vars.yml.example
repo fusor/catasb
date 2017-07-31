@@ -30,3 +30,22 @@ dockerhub_org_name: example_org
 # The default tag to use for apb's is latest. To change that you can set this option
 #apbtag: nightly
 #apbtag: canary
+
+# Custom Prefix/Identifier used for AWS resource names and Tags
+# aws_custom_prefix: <username>
+
+# Deployment Type:
+#   false : deploy 'openshift-enterprise' (default)
+#   true  : deploy 'origin' 
+# deploy_origin: false
+
+####################################################################
+#
+# needed ONLY if ENABLE_RH_CDN_REPO/enable_rh_cdn_repo is 'true'
+#
+# WARNING: password will be in plain text!
+#
+####################################################################
+# rhn_user: <user_name>
+# rhn_passwd: <passwd>
+# aos_pool_id: <pool id with OpenShift Container Platform subscription>

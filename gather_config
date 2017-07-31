@@ -1,8 +1,7 @@
 extra_args=''
 export relpath="../../"
 
-if [ "$(pwd | awk -F '/' '{ print $NF }')" == "ec2" ]; then
-  relpath="../"
+if [[ "$(pwd)" == *"ec2"* ]]; then
   source "${relpath}config/ec2_env_vars"
 elif [ "$(pwd | awk -F '/' '{ print $NF }')" == "mac" ]; then
   source ${relpath}config/mac_env_vars

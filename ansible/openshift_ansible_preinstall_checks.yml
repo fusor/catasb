@@ -1,0 +1,50 @@
+---
+- name: Openshift Ansible pre-installation checks
+  hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - include: aws_multi_node_pretasks.yml
+  tasks:
+    - name: Get EC2 Remote Facts
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "*_{{ aws_custom_prefix }}_*"
+        region: "{{ aws_region }}"
+      register: my_ec2_facts
+
+    - name: Check if EC2 Instances within the Filter '{{ aws_custom_prefix }}' exists
+      fail:
+        msg: NO EC2 Instances found with the aws_custom_prefix = '{{ aws_custom_prefix }}'!
+      when: not my_ec2_facts.instances
+
+    - debug: var=aws_custom_prefix
+
+    # Verify that a inventory file 'openshift_ansible_inventory_path' exists
+    # This file 'should' have been auto generated in the 'run_create_infrastructure.sh' step
+    - stat:
+        path: "{{ openshift_ansible_inventory_path }}"
+      register: stat_result
+    - name: Check that the Openshift Ansible Inventory File '{{ openshift_ansible_inventory_path }}' exists
+      fail:
+        msg: Missing inventory file '{{ openshift_ansible_inventory_path }}'
+      when: stat_result.stat.exists == False
+
+    # Create a file named 'openshift_ansible_inventory_info_file'
+    # which will contain the PATH of the actual inventory file (i.e. openshift_ansible_inventory_path)
+    # which will be used by 'openshift-ansible' BYO playbook later
+    - name: Remove '{{ openshift_ansible_inventory_info_file }}' if it exists
+      become: True
+      file:
+        path: "{{ openshift_ansible_inventory_info_file }}"
+        state: absent
+    - name: Create the INFO file - '{{ openshift_ansible_inventory_info_file }}'
+      shell: echo {{ openshift_ansible_inventory_path }} > {{ openshift_ansible_inventory_info_file }}
+
+    # checkout the latest 'openshift-ansible' repo
+    - name: Git checkout Openshift-Ansible repo
+      git:
+        repo: "{{ openshift_ansible_repo_url }}"
+        dest: "{{ openshift_ansible_repo_dir }}"
+        version: "{{ openshift_ansible_repo_branch }}"
+        force: yes
