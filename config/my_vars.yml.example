@@ -15,3 +15,8 @@ dockerhub_org_name: example_org
 
 # Default to the "anyuid" scc for pod deployments
 # scc_anyuid: True
+
+# Use the quay.io canary images for bleeding edge development
+# coalmine: true
+# coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
+# coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
