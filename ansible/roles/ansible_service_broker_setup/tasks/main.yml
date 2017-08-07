@@ -21,7 +21,7 @@
   - name: Create a new project for the {{ asb_project }}
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
     register: new_asb_project
-    when: project.stdout.find( "{{ asb_project }}" ) == -1
+    when: project.stdout.find( asb_project ) == -1
 
   #####
   # Remember that 'rcm' builds are using an older branch of the broker
@@ -43,9 +43,9 @@
         -p REGISTRY_TYPE={{ broker_registry_type }}
         -p REGISTRY_URL={{ broker_registry_url }}
         -p DEV_BROKER={{ broker_dev_broker }}
-        -p DOCKERHUB_ORG={{ dockerhub_org_name }}
-        -p DOCKERHUB_PASS={{ dockerhub_user_password }}
-        -p DOCKERHUB_USER={{ dockerhub_user_name }}
+        -p DOCKERHUB_ORG='{{ dockerhub_org_name }}'
+        -p DOCKERHUB_PASS='{{ dockerhub_user_password }}'
+        -p DOCKERHUB_USER='{{ dockerhub_user_name }}'
         -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
         -p OUTPUT_REQUEST={{ broker_output_request }}
         -p RECOVERY={{ broker_recovery }}
