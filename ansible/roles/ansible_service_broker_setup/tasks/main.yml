@@ -23,26 +23,44 @@
     register: new_asb_project
     when: project.stdout.find( "{{ asb_project }}" ) == -1
 
+  #####
+  # Remember that 'rcm' builds are using an older branch of the broker
+  # Some features in the deployment template may not be available, such as
+  #     REGISTRY_NAME
+  # Goal is to build up a common command, then modify it as needed for newer
+  # features.
+  #####
+  - name: Create command line for processing template
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ oc_cmd }}
+        process
+        -f {{ local_target_asb_template }}
+        -n {{ asb_project }}
+        -p BROKER_IMAGE={{ broker_image }}
+        -p ETCD_IMAGE={{ etcd_image }}
+        -p ETCD_PATH={{ etcd_path }}
+        -p REGISTRY_TYPE={{ broker_registry_type }}
+        -p REGISTRY_URL={{ broker_registry_url }}
+        -p DEV_BROKER={{ broker_dev_broker }}
+        -p DOCKERHUB_ORG={{ dockerhub_org_name }}
+        -p DOCKERHUB_PASS={{ dockerhub_user_password }}
+        -p DOCKERHUB_USER={{ dockerhub_user_name }}
+        -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
+        -p OUTPUT_REQUEST={{ broker_output_request }}
+        -p RECOVERY={{ broker_recovery }}
+
+  - name: Modify command if running a non-rcm build to use newer features
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ cmd_process_asb_template }}
+        -p REGISTRY_NAME={{ broker_registry_name }}
+        -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
+    when: "not rcm"
+
   - name: Process template "{{ local_target_asb_template }}"
     shell: >
-      {{ oc_cmd }}
-      process
-      -f {{ local_target_asb_template }}
-      -n {{ asb_project }}
-      -p BROKER_IMAGE={{ broker_image }}
-      -p ETCD_IMAGE={{ etcd_image }}
-      -p ETCD_PATH={{ etcd_path }}
-      -p REGISTRY_TYPE={{ broker_registry_type }}
-      -p REGISTRY_URL={{ broker_registry_url }}
-      -p REGISTRY_NAME={{ broker_registry_name }}
-      -p DEV_BROKER={{ broker_dev_broker }}
-      -p DOCKERHUB_ORG={{ dockerhub_org_name }}
-      -p DOCKERHUB_PASS={{ dockerhub_user_password }}
-      -p DOCKERHUB_USER={{ dockerhub_user_name }}
-      -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
-      -p OUTPUT_REQUEST={{ broker_output_request }}
-      -p RECOVERY={{ broker_recovery }}
-      -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
+      {{ cmd_process_asb_template }}
       &> {{ local_target_asb_template_processed }}
 
   - name: Running oc create on processed template
@@ -68,9 +86,20 @@
   - set_fact:
       ansible_service_broker_route:  "{{ result_get_route_asb.stdout }}"
 
+  # We will use a different broker resource file for older brokers (rcm example)
+  # Auth/HTTPS is not supported for older brokers from rcm in 3.6 release.
+  - set_fact:
+      ansible_service_broker_resource_file: "ansible_service_broker.yaml.j2"
+
+  - name: Overriding ansible_service_broker_resource_file if running with RCM
+    set_fact:
+      ansible_service_broker_resource_file: "rcm_ansible_service_broker.yaml.j2"
+    when: "rcm"
+
+
   - name: Creating /tmp/ansible_service_broker.yaml
     template:
-      src: ansible_service_broker.yaml.j2
+      src: "{{ ansible_service_broker_resource_file }}"
       dest: /tmp/ansible_service_broker.yaml
       owner: "{{ ansible_env.USER }}"
       mode: 0644
