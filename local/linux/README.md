@@ -15,8 +15,8 @@ These playbooks will do the following in a local environment:
       * ```sudo usermod -aG docker $USER```
       * ```sudo systemctl restart docker```
 
-  * Follow install instructions from ```oc cluster up``` documentation
-    * https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md#linux
+    * Follow the Docker setup instructions from ```oc cluster up``` documentation to configure the necessary Docker networking settings. Stop before installing the `oc` binary.
+      * https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md#linux
 
   * Ansible needs to be installed so its source code is available to Python.
     * Check to see if Ansible modules are available to Python
@@ -168,7 +168,7 @@ fatal: [localhost]: FAILED! => {"changed": true, "cmd": "/home/tsanders/bin/oc c
 	to retry, use: --limit @/home/tsanders/Workspace/catasb/ansible/setup_local_environment.retry
 
 PLAY RECAP ***********************************************************************************************************************************************************************************************
-localhost                  : ok=25   changed=4    unreachable=0    failed=1   
+localhost                  : ok=25   changed=4    unreachable=0    failed=1
 ```
 
 There are several configurations required to run ```oc cluster up```, please be sure to read and follow the ``` oc cluster up``` documentation here:  https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md#linux
