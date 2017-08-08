@@ -287,8 +287,10 @@
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
 
   - name: Run oc cluster up to start the cluster
-    shell: "{{ oc_cluster_up_cmd }}"
+    shell: "{{ oc_cmd }} cluster down && {{ oc_cluster_up_cmd }}"
     register: oc_cluster_up
+    retries: 5
+    delay: 10
   #
   # Add permissions to desired openshift user
   # Would be nice if we looked at existing users and permissions and made decisions of what to run
