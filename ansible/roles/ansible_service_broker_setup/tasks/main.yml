@@ -22,6 +22,15 @@
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
     register: new_asb_project
     when: project.stdout.find( asb_project ) == -1
+  
+  - name: Check that termination and insecure settings will work
+    fail:
+      msg: "The current configuration of termination: {{ broker_endpoint_termination|lower }} 
+      and insecure: {{ broker_insecure_mode|lower }} is not valid must change one of them."
+    when: (not broker_insecure_mode|bool and broker_endpoint_termination|lower == "edge") or
+          (broker_insecure_mode|bool and broker_endpoint_termination == "reencrypt") or
+          (broker_insecure_mode|bool and broker_endpoint_termination == "passthrough") 
+
 
   #####
   # Remember that 'rcm' builds are using an older branch of the broker
@@ -56,6 +65,8 @@
         {{ cmd_process_asb_template }}
         -p REGISTRY_NAME={{ broker_registry_name }}
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
+        -p INSECURE={{ broker_insecure_mode|lower }}
+        -p TERMINATION={{ broker_endpoint_termination }}
     when: "not rcm"
 
   - name: Process template "{{ local_target_asb_template }}"
