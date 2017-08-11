@@ -1,4 +1,20 @@
 ---
+  - name: Create ASB repo for EL7
+    yum_repository:
+      name: "ansible-service-broker"
+      description: "Ansible Service Broker"
+      baseurl: "https://copr-be.cloud.fedoraproject.org/results/@ansible-service-broker/ansible-service-broker/epel-7-$basearch/"
+      enabled: yes
+      gpgcheck: no
+    become: true
+    when: (ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat') and
+          ansible_distribution_major_version == "7"
+
+  - name: Enable ASB repo for Fedora 25
+    shell: dnf -y copr enable @ansible-service-broker/ansible-service-broker
+    become: true
+    when: ansible_distribution == 'Fedora' and ansible_distribution_major_version == "25"
+
   - name: install packages
     yum:
       name: "{{ item }}"
@@ -17,8 +33,10 @@
       - "golang"
       - "nodejs"
       - "ansible"
+      - "python2-docker"
 
   - name: Install pip
     easy_install:
       name: pip
       state: latest
+    when: ansible_os_family != "RedHat"

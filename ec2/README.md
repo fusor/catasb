@@ -34,6 +34,19 @@ These playbooks will:
       2.3.0.0
       ```
   * Install python dependencies (This is needed for python2. Use pip2 if using python3)
+    * On Fedora and EL7 it is recommended that you use ansible in a python virtualenv.
+     * This is due to a couple reasons:
+       - boto rpms are not sufficiently new enough
+       - pip is not sudo safe on Fedora and EL7 
+     * To setup and active a virtualenv do the following;
+     ```
+     sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv 
+     virtualenv /tmp/ansible
+     source /tmp/ansible/bin/activate
+     pip install ansible
+     ```
+   * Continue with the next step:
+
     ```bash
     $ pip install boto boto3 six
     ```

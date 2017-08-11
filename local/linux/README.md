@@ -7,8 +7,8 @@ These playbooks will do the following in a local environment:
   * Install [Ansible Service Broker](https://github.com/openshift/ansible-service-broker) on Origin
 
 ### Pre-Reqs
+  * Ansible 2.3.0+ installed.
   * Docker installed and configured
-
     * Suggestion, to ease usage we allow our regular user to access the docker server by doing the below:
 
       * ```sudo groupadd docker```
@@ -17,30 +17,6 @@ These playbooks will do the following in a local environment:
 
     * Follow the Docker setup instructions from ```oc cluster up``` documentation to configure the necessary Docker networking settings. Stop before installing the `oc` binary.
       * https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md#linux
-
-  * Ansible needs to be installed so its source code is available to Python.
-    * Check to see if Ansible modules are available to Python
-      ```bash
-      $ python -c "import ansible;print(ansible.__version__)"
-      2.3.0.0
-      ```
-    * MacOS requires Ansible to be installed from `pip` and not `brew`
-      ```bash
-      $ python -c "import ansible;print(ansible.__version__)"
-      Traceback (most recent call last):
-      File "<string>", line 1, in <module>
-      ImportError: No module named ansible
-
-      brew uninstall ansible
-      pip install ansible
-
-      $ python -c "import ansible;print(ansible.__version__)"
-      2.3.0.0
-      ```
-  * Install python dependencies
-    ```bash
-    $ pip install six==1.10.0 docker==2.4.2 ansible==2.3.0
-    ```
 
 ### Execute
   * Copy `config/my_vars.yml.example` to `config/my_vars.yml` and edit as needed.  You can use the `my_vars.yml` to override any settings.  For example:
@@ -102,11 +78,10 @@ Error pulling image docker.io/ansibleplaybookbundle/ansible-service-broker-apb:s
 ```
 
 This is a problem with having docker-py installed, and at a specific version. More info in https://github.com/ansible/ansible-modules-core/issues/5515.
-The recommended fix for this is to uninstall docker-py, as there is an ansible task for installing docker using pip.
-
-```
-<sudo> pip uninstall docker-py
-```
+The recommended fix for this is to uninstall docker-py, which needs to be uninstalled:
+For EL7: `sudo yum remove python-docker-py`
+For Fedora: `sudo dnf remove python-docker-py`
+For Others: `sudo pip uninstall docker-py`
 
 #### APBs not visible from OpenShift Web UI
 
