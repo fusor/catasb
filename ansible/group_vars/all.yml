@@ -75,6 +75,8 @@ tmp_block_device: "/dev/xvdf"
 tmp_mount_point: "/tmp"
 
 
+cluster_master_config_file: /var/lib/origin/openshift.local.config/master/master-config.yaml
+cluster_auth_htpasswd_file: /var/lib/origin/openshift.local.config/master/catasb_auth_htpasswd
 cluster_user: admin
 cluster_user_password: admin
 cluster_system_admin: "system:admin"

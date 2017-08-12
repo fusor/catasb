@@ -302,6 +302,37 @@
     when: generate_config and use_ssl == True
     become: 'true'
 
+  - name: Install python-passlib
+    package:
+      name: python-passlib
+      state: installed
+    become: 'true'
+    when: use_custom_config
+
+  - name: Create htpasswd file for cluster user auth
+    htpasswd:
+      path: "{{ cluster_auth_htpasswd_file }}"
+      name: "{{ cluster_user }}"
+      password: "{{ cluster_user_password }}"
+      owner: root
+      group: root
+      mode: 0640
+    become: 'true'
+    when: use_custom_config
+
+  - name: Copy update_oauth_provider_to_htpasswd.py
+    copy:
+      src: update_oauth_provider_to_htpasswd.py
+      dest: /tmp/update_oauth_provider_to_htpasswd.py
+      owner: root
+      group: root
+      mode: 0755
+    when: use_custom_config
+
+  - name: Update master-config.yaml with htpasswd file
+    shell: "/tmp/update_oauth_provider_to_htpasswd.py {{ cluster_master_config_file }} {{ cluster_auth_htpasswd_file }}"
+    when: use_custom_config
+
   - name: Update oc cluster up command to use --use-existing-config
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --use-existing-config"
