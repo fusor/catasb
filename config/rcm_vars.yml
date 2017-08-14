@@ -1,13 +1,13 @@
 ---
 # Need to distinguish rcm runs from others so we don't use newer features that aren't in the rcm build
 rcm: true
-origin_image_name: registry.ops.openshift.com/openshift3/ose
+origin_image_name: registry.access.redhat.com/openshift3/ose
 origin_image_tag: v3.6
 
 # Need to use the template from the release-0.9 branch of ansible-service-broker
 asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/release-0.9/templates/deploy-ansible-service-broker.template.yaml
 broker_registry_type: rhcc
-broker_registry_url: http://registry.access.stage.redhat.com
+broker_registry_url: http://registry.access.redhat.com
 broker_image_name: "{{ origin_image_name }}-ansible-service-broker"
 broker_tag: "{{ origin_image_tag }}"
 etcd_image_name: registry.access.redhat.com/rhel7/etcd
@@ -17,3 +17,5 @@ asb_scheme: http
 
 ## Override and use latest images pushed to developer servers to mimic stage
 #broker_registry_url: http://asb-registry.usersys.redhat.com:5000
+#broker_registry_url: http://registry.access.stage.redhat.com
+#origin_image_name: registry.ops.openshift.com/openshift3/ose
