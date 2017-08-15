@@ -113,9 +113,8 @@ broker_enable_basic_auth: true
 broker_insecure_mode: false
 broker_endpoint_termination: Reencrypt
 
+broker_image_name: docker.io/ansibleplaybookbundle/origin-ansible-service-broker
 broker_tag: "latest"
-
-broker_image_name: docker.io/ansibleplaybookbundle/ansible-service-broker
 broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
 
 
