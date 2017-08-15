@@ -20,3 +20,7 @@ dockerhub_org_name: example_org
 # coalmine: true
 # coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 # coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
+
+# The default tag to use for apb's is latest. To change that you can set this option
+#apbtag: nightly
+#apbtag: canary
