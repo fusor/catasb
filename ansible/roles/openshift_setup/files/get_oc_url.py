@@ -22,7 +22,7 @@ class CientListHTMLParser(HTMLParser):
 
     def handle_data(self, data):
         if self.processing_anchor:
-            match = re.search('(\d+)\.(\d+)\.(\d+)\.(\d+)\.(\d+)', data) or re.search('(\d+)\.(\d+)\.(\d+)\.(\d+)', data) or re.search('(\d+)\.(\d+)\.(\d+)', data)
+            match = re.search('(\d+)\.(\d+)\.(\d+)\.(\d+)\.(\d+)', data) or re.search('(\d+)\.(\d+)\.(\d+)\.(\d+)', data) or re.search('(\d+)\.(\d+)\.(\d+)[^\-]', data)
             if match:
                 if self.latest_version is None:
                     self.latest_version = match.groups()
