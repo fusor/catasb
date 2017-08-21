@@ -88,7 +88,12 @@ oadm_cmd: "{{ oc_client_install_path }}/oadm"
 kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 
 origin_image_name: docker.io/openshift/origin
-origin_image_tag: v3.6.0-rc.0
+origin_image_tag: v3.6.0
+
+openshift_client_release_ver: openshift-origin-client-tools-v3.6.0-c4dd4cf
+openshift_release_url: https://github.com/openshift/origin/releases/download/v3.6.0
+#https://github.com/openshift/origin/releases/download/v3.6.0/openshift-origin-client-tools-v3.6.0-c4dd4cf-linux-64bit.tar.gz
+
 oc_host_config_dir: /var/lib/origin/openshift.local.config
 
 asb_project: ansible-service-broker
