@@ -68,6 +68,7 @@
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
         -p INSECURE={{ broker_insecure_mode|lower }}
         -p TERMINATION={{ broker_endpoint_termination }}
+        -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
     when: "not rcm"
 
   - name: Process template "{{ local_target_asb_template }}"
