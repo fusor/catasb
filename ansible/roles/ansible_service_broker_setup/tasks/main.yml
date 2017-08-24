@@ -22,14 +22,14 @@
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
     register: new_asb_project
     when: project.stdout.find( asb_project ) == -1
-  
+
   - name: Check that termination and insecure settings will work
     fail:
-      msg: "The current configuration of termination: {{ broker_endpoint_termination|lower }} 
+      msg: "The current configuration of termination: {{ broker_endpoint_termination|lower }}
       and insecure: {{ broker_insecure_mode|lower }} is not valid must change one of them."
     when: (not broker_insecure_mode|bool and broker_endpoint_termination|lower == "edge") or
           (broker_insecure_mode|bool and broker_endpoint_termination == "reencrypt") or
-          (broker_insecure_mode|bool and broker_endpoint_termination == "passthrough") 
+          (broker_insecure_mode|bool and broker_endpoint_termination == "passthrough")
 
 
   #####
@@ -53,7 +53,6 @@
         -p REGISTRY_URL={{ broker_registry_url }}
         -p DEV_BROKER={{ broker_dev_broker }}
         -p DOCKERHUB_ORG='{{ dockerhub_org_name }}'
-        -p TAG={{ apbtag | default('latest') }}
         -p DOCKERHUB_PASS='{{ dockerhub_user_password }}'
         -p DOCKERHUB_USER='{{ dockerhub_user_name }}'
         -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
@@ -69,6 +68,7 @@
         -p INSECURE={{ broker_insecure_mode|lower }}
         -p TERMINATION={{ broker_endpoint_termination }}
         -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
+        -p TAG={{ apbtag | default('latest') }}
     when: "not rcm"
 
   - name: Process template "{{ local_target_asb_template }}"
