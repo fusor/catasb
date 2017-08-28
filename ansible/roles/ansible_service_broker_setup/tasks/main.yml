@@ -69,6 +69,7 @@
         -p TERMINATION={{ broker_endpoint_termination }}
         -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
         -p TAG={{ apbtag | default('latest') }}
+        -p SANDBOX_ROLE={{ broker_sandbox_role }}
     when: "not rcm"
 
   - name: Process template "{{ local_target_asb_template }}"
