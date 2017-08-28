@@ -46,7 +46,7 @@
 
   # Temporary fix until release version of oc client is stable
   - name: Get URL of latest version of oc client packaged by OpenShift
-    script: get_oc_url.py
+    script: get_oc_url.py "{{ openshift_client_version }}"
     register: get_oc_url_output
 
   - set_fact:
