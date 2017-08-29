@@ -63,6 +63,8 @@
     set_fact:
       cmd_process_asb_template: >-
         {{ cmd_process_asb_template }}
+        -p ASB_SCHEME={{ asb_scheme }}
+        -p ROUTING_SUFFIX={{ openshift_routing_suffix }}
         -p REGISTRY_NAME={{ broker_registry_name }}
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
         -p INSECURE={{ broker_insecure_mode|lower }}
@@ -97,27 +99,20 @@
     retries: 6
     delay: 10
 
+  # When using RCM, we'll have to create the broker resource
   - set_fact:
       ansible_service_broker_route:  "{{ result_get_route_asb.stdout }}"
-
-  # We will use a different broker resource file for older brokers (rcm example)
-  # Auth/HTTPS is not supported for older brokers from rcm in 3.6 release.
-  - set_fact:
-      ansible_service_broker_resource_file: "ansible_service_broker.yaml.j2"
-
-  - name: Overriding ansible_service_broker_resource_file if running with RCM
-    set_fact:
-      ansible_service_broker_resource_file: "rcm_ansible_service_broker.yaml.j2"
     when: "rcm"
-
 
   - name: Creating /tmp/ansible_service_broker.yaml
     template:
-      src: "{{ ansible_service_broker_resource_file }}"
+      src: "rcm_ansible_service_broker.yaml.j2"
       dest: /tmp/ansible_service_broker.yaml
       owner: "{{ ansible_env.USER }}"
       mode: 0644
     register: ansible_service_broker_template
+    when: "rcm"
 
   - name: Create Broker resource in Service Catalog
     shell: "{{ oc_cmd }} create -f /tmp/ansible_service_broker.yaml"
+    when: "rcm"
