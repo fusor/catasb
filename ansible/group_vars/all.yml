@@ -88,7 +88,7 @@ oadm_cmd: "{{ oc_client_install_path }}/oadm"
 kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 
 origin_image_name: docker.io/openshift/origin
-origin_image_tag: v3.6.0-rc.0
+origin_image_tag: v3.6.0
 oc_host_config_dir: /var/lib/origin/openshift.local.config
 
 asb_project: ansible-service-broker
