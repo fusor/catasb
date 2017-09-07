@@ -28,11 +28,18 @@ openshift_enable_service_catalog=True
 
 system_images_registry="docker.io"
 
-ansible_service_broker_image_prefix={{ dockerhub_org_name }}/
+ansible_service_broker_image_prefix={{ asb_image_prefix }}
+ansible_service_broker_image_tag={{ asb_image_tag }}
 ansible_service_broker_registry_url={{ asb_reg_url }}
 ansible_service_broker_registry_user={{ dockerhub_user_name }}
 ansible_service_broker_registry_password={{ dockerhub_user_password }}
 ansible_service_broker_registry_organization={{ dockerhub_org_name }}
+ansible_service_broker_registry_type={{ asb_registry_type }}
+ansible_service_broker_registry_name={{ asb_registry_name }}
+ansible_service_broker_log_level={{ asb_log_level }}
+
+openshift_service_catalog_image_prefix={{ osc_image_prefix }}
+openshift_service_catalog_image_version={{ osc_image_version }}
 
 openshift_master_cluster_hostname={{ master_route53_name }}
 openshift_master_cluster_public_hostname={{ master_route53_name }}

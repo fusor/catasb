@@ -3,9 +3,6 @@
       disablecheck_list: "disk_availability,docker_storage,memory_availability,package_version"
 
   - set_fact:
-      asb_reg_url: "docker.io"
-
-  - set_fact:
       inventory_template_file: "openshift_ansible_inventory_origin.j2"
       #openshift_ver: "v3.6.0"
       #containerized_line: "containerized=true"
