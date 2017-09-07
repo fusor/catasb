@@ -28,6 +28,16 @@ insecure_registries: "['{{ master_portal_net }}', 'registry.ops.openshift.com', 
 router_registry_url: "registry.ops.openshift.com/openshift3/ose-${component}:${version}"
 inventory_template_file: "openshift_ansible_inventory_ose.j2"
 
+# Service Catalog / Ansible Service Broker
+asb_image_prefix: "docker.io/ansibleplaybookbundle/origin-"
+asb_image_tag: "nightly"
+asb_reg_url: "docker.io"
+asb_registry_type: "dockerhub"
+asb_registry_name: "dh"
+asb_log_level: info
+osc_image_prefix: "docker.io/openshift/origin-"
+osc_image_version: "v3.6.0"
+
 # AWS Post Openshift Ansible Installation
 cluster_privileged_user: admin
 cluster_privileged_user_password: admin
