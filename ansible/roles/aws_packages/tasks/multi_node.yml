@@ -32,3 +32,4 @@
     yum:
       name: '*'
       state: latest
+    when: not enable_ops_mirror_repo
