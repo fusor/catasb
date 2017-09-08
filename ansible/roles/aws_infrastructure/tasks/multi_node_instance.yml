@@ -49,12 +49,12 @@
       ttl=60
       overwrite=yes
       value="{{ my_ec2_instances.tagged_instances[0].public_dns_name }}"
-    when: wildcard_dns_host == host_name
+    when: wildcard_dns_host[-1] == host_name
 
   - name: Set Fact 'wildcard_hostname_value' (for displaying it later)
     set_fact:
       wildcard_hostname_value: "{{ my_ec2_instances.tagged_instances[0].public_dns_name }}"
-    when: wildcard_dns_host == host_name
+    when: wildcard_dns_host[-1] == host_name
 
   - name: Create EBS Volume for '/tmp' - "{{ host_name }}"
     ec2_vol:
@@ -92,17 +92,17 @@
         KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
     register: ec2_vol_var_lib_docker
 
-  - name: Set Fact 'master_route53_name' (for Openshift Ansible Inventory Template)
+  - name: Set Fact 'master_route53_name' (for OpenShift Ansible Inventory Template)
     set_fact:
       master_route53_name: "{{ host_fqdn }}"
     when: ('master' in host_name)
 
-  - name: Set Fact 'master_public_dns_name' (for Openshift Ansible Inventory Template)
+  - name: Set Fact 'master_public_dns_name' (for OpenShift Ansible Inventory Template)
     set_fact:
       master_public_dns_name: "{{ my_ec2_instances.tagged_instances[0].public_dns_name }}"
     when: ('master' in host_name)
 
-  - name: Set Fact 'all_nodes' (for Openshift Ansible Inventory Template) for the Master Node
+  - name: Set Fact 'all_nodes' (for OpenShift Ansible Inventory Template) for the Master Node
     set_fact:
       all_nodes: "{{ all_nodes }}\n{{ my_ec2_instances.tagged_instances[0].public_dns_name }} 
         openshift_hostname={{ my_ec2_instances.tagged_instances[0].private_dns_name }} 
@@ -110,7 +110,7 @@
         {{ master_labels }}\n"
     when: ('master' in host_name)
 
-  - name: Set Fact 'all_nodes' (for Openshift Ansible Inventory Template) for the Node
+  - name: Set Fact 'all_nodes' (for OpenShift Ansible Inventory Template) for the Node
     set_fact:
       all_nodes: "{{ all_nodes }}\n{{ my_ec2_instances.tagged_instances[0].public_dns_name }} 
         openshift_hostname={{ my_ec2_instances.tagged_instances[0].private_dns_name }} 

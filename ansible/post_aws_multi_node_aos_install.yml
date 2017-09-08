@@ -23,6 +23,7 @@
 
 - hosts: ec2_node
   gather_facts: True
+  remote_user: "{{ 'centos' if deploy_origin else 'ec2-user' }}"
   become: True
   tasks:
     - name: Install python-passlib

@@ -4,11 +4,7 @@
 [ -z "$AWS_SSH_PRIV_KEY_PATH" ] && echo "Missing environment variable:  AWS_SSH_PRIV_KEY_PATH\nPlease set this to the path for your SSH private key\n" && exit 1;
 [ ! -r "$AWS_SSH_PRIV_KEY_PATH" ] && echo -e "Unable to read file pointed to by, AWS_SSH_PRIV_KEY_PATH, $AWS_SSH_PRIV_KEY_PATH" && exit 1;
 
-source ./export_ec2_hosts
-
 source ../../gather_config
-
-source ./get_ec2_username
 
 # preinstallation checks
 ansible-playbook \
@@ -16,7 +12,7 @@ ansible-playbook \
   --extra-vars "${EXTRA_VARS}" \
   ${extra_args} $@
 if [ $? -eq 0 ]; then
-  echo -e "Openshift Ansible preinstallation check - Success!\n\n"
+  echo -e "OpenShift Ansible preinstallation check - Success!\n\n"
 else
   echo -e "ERROR: Something went wrong during preinstallation check! exiting... \n"
   exit -1
@@ -31,7 +27,7 @@ fi
 AOS_INVENTORY_PATH=`more ${AOS_INVENTORY_PATH_FILE}`
 INVENTORY_FILE="${AOS_INVENTORY_PATH}"
 
-# Run the Openshift Ansible BYO playbook
+# Run the OpenShift Ansible BYO playbook
 ANSIBLE_HOST_KEY_CHECKING=False \
 ansible-playbook \
   -i ${INVENTORY_FILE} \

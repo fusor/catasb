@@ -37,6 +37,7 @@
 
 - name: Configure Environment for EC2 Instances
   hosts: launched_ec2
+  remote_user: "{{ 'centos' if deploy_origin else 'ec2-user' }}"
   become: True
   gather_facts: True
   pre_tasks:
@@ -46,6 +47,7 @@
     - aws_repo_setup
     - aws_packages
     - env_hacks
+    - aws_docker_setup
 
 - name: Display AWS EC2 Infrastructure Information
   hosts: localhost
@@ -59,7 +61,7 @@
     - set_fact:
         msg: |
             Next Steps:
-              RUN the Openshift-Ansible Installer via the following command:
+              RUN the OpenShift-Ansible Installer via the following command:
               INVENTORY_FILE={{ openshift_ansible_inventory_path }} ./run_openshift_ansible.sh
     - debug:
         msg: "{{ msg.split('\n') }}"

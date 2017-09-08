@@ -1,0 +1,8 @@
+---
+wildcard_dns_host:
+  - master
+masters:
+  - master
+nodes:
+  - node01
+  - node02

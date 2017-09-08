@@ -37,6 +37,6 @@ export EXTRA_VARS="{\
 \"instance_name\":\"${INSTANCE_NAME}\",
 \"instance_lookup_value\":\"${INSTANCE_LOOKUP_VALUE}\", \
 \"owners_name\":${OWNERS_NAME} \
-${EC2_HOSTS}}"
+}"
 
 export ANSIBLE_HOST_KEY_CHECKING=False

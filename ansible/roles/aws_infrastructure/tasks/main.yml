@@ -13,7 +13,7 @@
   - include: multi_node_instance.yml
     vars:
       - host_name: "{{ item }}"
-      - ec2_instance_name: "{{ owners_name }}_{{ aws_custom_prefix }}_{{ item }}_{{ target_dns_zone }}"
+      - ec2_instance_name: "{{ item }}_{{ aws_custom_prefix }}_{{ target_dns_zone }}"
       - host_fqdn: "{{ item }}.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
       - wildcard_entry: "*.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
     when: multi_node

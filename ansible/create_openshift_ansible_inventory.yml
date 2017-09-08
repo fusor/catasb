@@ -28,7 +28,7 @@
       path: "{{ openshift_ansible_inventory_path }}"
       state: absent
 
-  - name: Create Openshift-Ansible Inventory file from 'openshift_ansible_inventory.j2' template.
+  - name: Create OpenShift-Ansible Inventory file from 'openshift_ansible_inventory.j2' template.
     template:
       src: "{{ inventory_template_file }}"
       dest: "{{ openshift_ansible_inventory_path }}"

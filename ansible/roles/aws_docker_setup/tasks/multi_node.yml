@@ -1,0 +1,11 @@
+---
+- name: Created docker group
+  group:
+    name: docker
+    state: present
+
+- name: Add '{{ aws_username }}' user to 'docker' group
+  user:
+    name: "{{ aws_username }}"
+    group: docker
+    append: yes

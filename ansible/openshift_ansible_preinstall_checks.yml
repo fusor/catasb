@@ -1,5 +1,5 @@
 ---
-- name: Openshift Ansible pre-installation checks
+- name: OpenShift Ansible pre-installation checks
   hosts: localhost
   gather_facts: True
   pre_tasks:
@@ -25,7 +25,7 @@
     - stat:
         path: "{{ openshift_ansible_inventory_path }}"
       register: stat_result
-    - name: Check that the Openshift Ansible Inventory File '{{ openshift_ansible_inventory_path }}' exists
+    - name: Check that the OpenShift Ansible Inventory File '{{ openshift_ansible_inventory_path }}' exists
       fail:
         msg: Missing inventory file '{{ openshift_ansible_inventory_path }}'
       when: stat_result.stat.exists == False
@@ -42,7 +42,7 @@
       shell: echo {{ openshift_ansible_inventory_path }} > {{ openshift_ansible_inventory_info_file }}
 
     # checkout the latest 'openshift-ansible' repo
-    - name: Git checkout Openshift-Ansible repo
+    - name: Git checkout OpenShift-Ansible repo
       git:
         repo: "{{ openshift_ansible_repo_url }}"
         dest: "{{ openshift_ansible_repo_dir }}"
