@@ -5,56 +5,7 @@ aws_custom_prefix: ""
 instance_name: ""
 instance_lookup_value: ""
 ec2_install: true
-
-# Openshift Ansible Inventory file Specific Variables
-deploy_origin: false  #true=origin false=openshift-enterprise
-ose_cluster_id: "{{aws_custom_prefix}}"
-kubernetes_cluster_tag_value: "{{ aws_custom_prefix }}"
-openshift_ansible_inventory_path: "{{ playbook_dir }}/my_aos_inventory_file_{{ aws_custom_prefix }}"
-openshift_ansible_repo_dir: "/tmp/openshift-ansible"
-openshift_ansible_repo_url: "https://github.com/openshift/openshift-ansible.git"
-openshift_ansible_repo_branch: "master"
-aos_ops_repo_url: https://mirror.openshift.com/enterprise/enterprise-3.6/latest/RH7-RHAOS-3.6/x86_64/os
-aos_repo_line: ""
-openshift_ver: "v3.6"
-master_api_port: 8443
-master_console_port: 8443
-cluster_network_cidr: "10.37.0.0/16"
-master_portal_net: "172.30.0.0/16"
-sdn_nw_plugin_name: "redhat/openshift-ovs-subnet"
-master_htpasswd_file: "/etc/origin/master/htpasswd"
-additional_registries: "['docker.io', 'registry.ops.openshift.com', 'registry.access.redhat.com']"
-insecure_registries: "['{{ master_portal_net }}', 'registry.ops.openshift.com', 'registry.access.redhat.com']"
-router_registry_url: "registry.ops.openshift.com/openshift3/ose-${component}:${version}"
-inventory_template_file: "openshift_ansible_inventory_ose.j2"
-
-# Service Catalog / Ansible Service Broker
-asb_image_prefix: "docker.io/ansibleplaybookbundle/origin-"
-asb_image_tag: "nightly"
-asb_reg_url: "docker.io"
-asb_registry_type: "dockerhub"
-asb_registry_name: "dh"
-asb_log_level: info
-osc_image_prefix: "docker.io/openshift/origin-"
-osc_image_version: "v3.6.0"
-
-# AWS Post Openshift Ansible Installation
-cluster_privileged_user: admin
-cluster_privileged_user_password: admin
-cluster_dev_user: dev
-cluster_dev_user_password: dev
-
-# RHN 
-rhn_user: rhn_username
-rhn_passwd: dog8code
-aos_pool_id: abcdefghijklmnopqrxtuvwxyz123456
-
-# Repo Option
-enable_epel_repo: false
-enable_ops_mirror_repo: false
-enable_rh_cdn_repo: true
-ops_mirror_dir: /git/aos-ansible
-ops_mirror_roles_dir: "{{ ops_mirror_dir }}/playbooks/roles/ops_mirror_bootstrap"
+aws_username: "ec2-user"
 
 #aws_tag_prefix is used to name the various VPC resources so they are only created once per account
 #even if shared with multiple IAM users
@@ -166,7 +117,7 @@ broker_pull_policy: "IfNotPresent"
 broker_auto_escalate: true
 
 broker_image_name: docker.io/ansibleplaybookbundle/origin-ansible-service-broker
-broker_tag: "latest"
+broker_tag: "nightly"
 broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
 
 
@@ -220,3 +171,49 @@ docker_images_group2:
 
 coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
+
+# OpenShift Ansible Inventory file Specific Variables
+deploy_origin: false  #true=origin false=openshift-enterprise
+ose_cluster_id: "{{aws_custom_prefix}}"
+kubernetes_cluster_tag_value: "{{ aws_custom_prefix }}"
+openshift_ansible_inventory_path: "{{ playbook_dir }}/my_aos_inventory_file_{{ aws_custom_prefix }}"
+openshift_ansible_repo_dir: "/tmp/openshift-ansible"
+openshift_ansible_repo_url: "https://github.com/openshift/openshift-ansible.git"
+openshift_ansible_repo_branch: "master"
+aos_ops_repo_url: https://mirror.openshift.com/enterprise/enterprise-3.6/latest/RH7-RHAOS-3.6/x86_64/os
+aos_repo_line: ""
+openshift_ver: "v3.6"
+master_api_port: 8443
+master_console_port: 8443
+cluster_network_cidr: "10.37.0.0/16"
+master_portal_net: "172.30.0.0/16"
+sdn_nw_plugin_name: "redhat/openshift-ovs-subnet"
+master_htpasswd_file: "/etc/origin/master/htpasswd"
+additional_registries: "['docker.io', 'registry.ops.openshift.com', 'registry.access.redhat.com']"
+insecure_registries: "['{{ master_portal_net }}', 'registry.ops.openshift.com', 'registry.access.redhat.com']"
+router_registry_url: "registry.ops.openshift.com/openshift3/ose-${component}:${version}"
+inventory_template_file: "openshift_ansible_inventory_ose.j2"
+
+# Service Catalog / Ansible Service Broker (for OpenShift Ansible inventory template)
+broker_image_prefix: "docker.io/ansibleplaybookbundle/origin-"
+broker_log_level: info
+osc_image_prefix: "docker.io/openshift/origin-"
+osc_image_version: "v3.6.0"
+
+# AWS Post OpenShift Ansible Installation
+cluster_privileged_user: admin
+cluster_privileged_user_password: admin
+cluster_dev_user: dev
+cluster_dev_user_password: dev
+
+# RHN
+rhn_user: changeme
+rhn_passwd: changeme
+aos_pool_id: changeme
+
+# Repo Option
+enable_epel_repo: false
+enable_ops_mirror_repo: false
+enable_rh_cdn_repo: true
+ops_mirror_dir: /git/aos-ansible
+ops_mirror_roles_dir: "{{ ops_mirror_dir }}/playbooks/roles/ops_mirror_bootstrap"

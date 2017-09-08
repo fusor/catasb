@@ -20,6 +20,11 @@
     #aws_ami_id: ami-18f8df7d   # centos7 (x86_64) US East (Ohio)
   when: deploy_origin
 
+- name: Set 'aws_username' to 'centos' if 'deploy_origin=true'
+  set_fact:
+    aws_username: centos
+  when: deploy_origin
+
 #
 # The DEFAULT repo settings in 'group_vars/all.yml' are as follows:
 #   enable_epel_repo: false

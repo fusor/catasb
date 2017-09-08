@@ -28,15 +28,17 @@ openshift_enable_service_catalog=True
 
 system_images_registry="docker.io"
 
-ansible_service_broker_image_prefix={{ asb_image_prefix }}
-ansible_service_broker_image_tag={{ asb_image_tag }}
-ansible_service_broker_registry_url={{ asb_reg_url }}
+ansible_service_broker_registry_url={{ broker_registry_url }}
 ansible_service_broker_registry_user={{ dockerhub_user_name }}
 ansible_service_broker_registry_password={{ dockerhub_user_password }}
 ansible_service_broker_registry_organization={{ dockerhub_org_name }}
-ansible_service_broker_registry_type={{ asb_registry_type }}
-ansible_service_broker_registry_name={{ asb_registry_name }}
-ansible_service_broker_log_level={{ asb_log_level }}
+
+ansible_service_broker_registry_type={{ broker_registry_type }}
+ansible_service_broker_registry_name={{ broker_registry_name }}
+
+ansible_service_broker_image_prefix={{ broker_image_prefix }}
+ansible_service_broker_image_tag={{ broker_tag }}
+ansible_service_broker_log_level={{ broker_log_level }}
 
 openshift_service_catalog_image_prefix={{ osc_image_prefix }}
 openshift_service_catalog_image_version={{ osc_image_version }}
@@ -68,12 +70,12 @@ os_firewall_use_firewalld=False
 osm_cluster_network_cidr={{ cluster_network_cidr }}
 openshift_master_portal_net={{ master_portal_net }}
 
-# Openshift Router
+# OpenShift Router
 openshift_hosted_manage_router=true
 openshift_hosted_router_selector='type=infra'
 openshift_hosted_router_replicas=1
 
-# Openshift Registry
+# OpenShift Registry
 openshift_hosted_manage_registry=true
 openshift_hosted_registry_selector='type=infra'
 

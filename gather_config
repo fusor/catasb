@@ -17,6 +17,7 @@ if [ "$(pwd | awk -F '/' '{ print $NF }')" == "ec2" ]; then
 if [[ "$(pwd)" == *"ec2"* ]]; then
 >>>>>>> update
   source "${relpath}config/ec2_env_vars"
+  extra_args+=" -e @${relpath}config/ec2_multi_node_hosts.yml"
 elif [ "$(pwd | awk -F '/' '{ print $NF }')" == "mac" ]; then
   source ${relpath}config/mac_env_vars
   extra_args+=" -e @${relpath}config/local_vars.yml"

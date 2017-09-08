@@ -46,23 +46,27 @@
   - debug: var=wildcard_dns_host
   - set_fact:
       wildcard_hostname: "{{ item }}"
-    when: 'wildcard_dns_host in item.tags.Name'
+    when: '"{{wildcard_dns_host[-1]}}" in item.tags.Name'
     with_items:
       "{{ my_ec2_facts.instances }}"
   - set_fact:
       wildcard_hostname_value: "{{ wildcard_hostname.public_dns_name }}"
     when: (wildcard_hostname is defined) and (wildcard_hostname_value is not defined)
-  - debug: var=aws_custom_prefix
   - set_fact:
       msg: |
           EC-2 SSH Key Name:   {{ ssh_key_name }}
           EC-2 Region:         {{ aws_region }}
+          AWS Custom Prefix:   {{ aws_custom_prefix }}
 
           ##########################################
           #  NO network Information was available! #
           ##########################################
   - set_fact:
       msg: |
+          EC-2 SSH Key Name:   {{ ssh_key_name }}
+          EC-2 Region:         {{ aws_region }}
+          AWS Custom Prefix:   {{ aws_custom_prefix }}
+
           The following are the Network Information for 'aws_custom_prefix={{ aws_custom_prefix }}':
             Security Group
               Name  : {{ my_group_facts.security_groups[0].group_name }}
@@ -77,23 +81,28 @@
             Subnet
               Name  : {{ my_vpc_subnet_facts.subnets[0].tags.Name }}
               ID    : {{ my_vpc_subnet_facts.subnets[0].id }}
+
     when:
       my_group_facts.security_groups|length > 0 and
       my_vpc_route_table_facts.route_tables|length > 0 and
       my_vpc_igw_facts.internet_gateways|length > 0 and
       my_vpc_subnet_facts.subnets|length > 0
-  - debug:
-      msg: "{{ msg.split('\n') }}"
   - set_fact:
-      msg: |
-          EC-2 SSH Key Name:   {{ ssh_key_name }}
-          EC-2 Region:         {{ aws_region }}
-          Wildcard DNS CNAME Record:
-            *.{{ aws_custom_prefix }}.{{ target_dns_zone }} ({{ wildcard_hostname_value }})
-          Openshift-Ansible Inventory File Path:
-            {{ openshift_ansible_inventory_path }}
+      msg: "{{ msg }}
+
+        Wildcard DNS CNAME Record:\n
+            *.{{ aws_custom_prefix }}.{{ target_dns_zone }} ({{ wildcard_hostname_value }})"
     when: wildcard_hostname_value is defined
+  - stat:
+      path: "{{ openshift_ansible_inventory_path }}"
+    register: stat_result
+  - set_fact:
+      msg: "{{ msg }}
+
+
+        OpenShift-Ansible Inventory File Path:\n
+            {{ openshift_ansible_inventory_path }}"
+    when: stat_result.stat.exists == True
   - debug:
       msg: "{{ msg.split('\n') }}"
-    when: wildcard_hostname_value is defined
   - debug: var=ec2_instance_info
