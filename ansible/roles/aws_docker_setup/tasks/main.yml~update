@@ -1,0 +1,48 @@
+---
+  - name: Created docker group
+    group:
+      name: docker
+      state: present
+
+  - name: Added ec2-user to group
+    user:
+      name: ec2-user
+      groups: "ec2-user,adm,wheel,systemd-journal,docker"
+
+  - name: Copy /etc/sysconfig/docker
+    copy:
+      src: docker
+      dest: /etc/sysconfig/docker
+      owner: root
+      group: root
+      mode: 0644
+    register: sysconfig_docker
+
+  - name: Copy /etc/sysconfig/docker-network
+    copy:
+      src: docker
+      dest: /etc/sysconfig/docker
+      owner: root
+      group: root
+      mode: 0644
+
+  #Below needs to be tweaked to work for libvirt, assumes aws ebs volume information
+  - name: Creating /etc/sysconfig/docker-storage-setup
+    template:
+      src: docker-storage-setup.j2
+      dest: /etc/sysconfig/docker-storage-setup
+      owner: root
+      group: root
+      mode: 0644
+    register: docker_storage_template_result
+
+  - name: Running docker-storage-setup
+    shell: docker-storage-setup
+    when: docker_storage_template_result.changed
+
+  - name: Restart docker service and ensure it is enabled
+    service:
+      name: docker
+      enabled: yes
+      state: restarted
+    when: sysconfig_docker.changed
