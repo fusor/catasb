@@ -72,6 +72,7 @@
         -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
         -p TAG={{ apbtag | default('latest') }}
         -p SANDBOX_ROLE={{ broker_sandbox_role }}
+        -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
     when: "not rcm"
 
   - name: Process template "{{ local_target_asb_template }}"
