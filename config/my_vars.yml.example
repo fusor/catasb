@@ -22,6 +22,8 @@ dockerhub_org_name: example_org
 
 # Use the quay.io canary images for bleeding edge development
 # coalmine: true
+
+# Override the service-catalog's apiserver + controller images
 # coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 # coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
 

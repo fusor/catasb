@@ -1,4 +1,13 @@
 ---
+  - name: Waiting 1 minutes for service-catalog
+    action: >-
+      shell "{{ oc_cmd }}" get deployments -n {{ oc_service_catalog }} apiserver
+      -o go-template={% raw %}'{{ .status.availableReplicas }}'{% endraw %}
+    register: apiserver_deployment
+    until: apiserver_deployment.stdout == '1'
+    retries: 6
+    delay: 10
+
   - name: Curling ansible-service-broker-all.yaml
     get_url:
       url: "{{ asb_template_url }}"
@@ -22,6 +31,14 @@
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
     register: new_asb_project
     when: project.stdout.find( asb_project ) == -1
+
+  - name: Update broker settings if not using ssl
+    set_fact:
+      asb_scheme: http
+      broker_endpoint_termination: edge
+      broker_insecure_mode: true
+      broker_insecure_edge: Allow
+    when: not broker_ssl
 
   - name: Check that termination and insecure settings will work
     fail:
@@ -68,12 +85,23 @@
         -p REGISTRY_NAME={{ broker_registry_name }}
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
         -p INSECURE={{ broker_insecure_mode|lower }}
+        -p INSECURE_EDGE={{ broker_insecure_edge }}
         -p TERMINATION={{ broker_endpoint_termination }}
         -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
         -p TAG={{ apbtag | default('latest') }}
         -p SANDBOX_ROLE={{ broker_sandbox_role }}
         -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
+        {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
+        {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
     when: "not rcm"
+
+  - name: Update Broker Kind and Auth when using coalmine
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ cmd_process_asb_template }}
+        -p BROKER_KIND='ServiceBroker'
+        -p BROKER_AUTH='{ "basic": { "secretRef": { "namespace": "ansible-service-broker", "name": "asb-auth-secret" } } }'
+    when: coalmine is defined and coalmine
 
   - name: Process template "{{ local_target_asb_template }}"
     shell: >

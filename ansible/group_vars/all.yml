@@ -111,6 +111,8 @@ broker_output_request: false
 broker_recovery: true
 broker_enable_basic_auth: true
 broker_insecure_mode: false
+broker_insecure_edge: None
+broker_ssl: true
 broker_endpoint_termination: Reencrypt
 broker_bootstrap_refresh_interval: 600s
 broker_sandbox_role: edit
@@ -166,3 +168,6 @@ docker_images_group2:
   - { img: "{{ origin_image_name }}-pod", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-haproxy-router", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-service-catalog", tag: "{{ origin_image_tag }}" }
+
+coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
+coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary

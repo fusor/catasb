@@ -374,3 +374,19 @@
   - name: Login as {{ cluster_user }}
     shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }}"
     when: oc_cluster_up.changed
+
+  - name: Get the name for service-catalog project
+    shell: "{{ oc_cmd }} get projects --no-headers | grep 'service-catalog' | awk '{ printf \"%s\", $1}'"
+    register: oc_sc_project
+
+  - name: Save name for service-catalog project
+    set_fact:
+      oc_service_catalog: "{{ oc_sc_project.stdout }}"
+
+  - debug:
+      msg: "Looking at service-catalog project name {{ oc_service_catalog }}"
+
+  - name: Fail if service-catalog project does not exit
+    fail:
+      msg: "Failed to get the service-catalog project"
+    when: oc_service_catalog == ""
