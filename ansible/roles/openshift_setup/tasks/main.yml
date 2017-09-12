@@ -85,6 +85,7 @@
       src: /tmp/oc
       dest: "{{ oc_tools_dir }}/oc"
       mode: 0755
+    when: not local_oc_client
 
   - name: Checking version of oc client
     shell: "{{ oc_cmd }} version"
