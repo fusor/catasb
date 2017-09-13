@@ -1,6 +1,13 @@
 reset_cluster: False
-openshift_release_url: https://github.com/openshift/origin/releases/download/v3.6.0-alpha.2
-openshift_client_release_ver: openshift-origin-client-tools-v3.6.0-alpha.2-3c221d5
+
+openshift_clients:
+  '3.6':
+    url: https://github.com/openshift/origin/releases/download/v3.6.0
+    release_ver: openshift-origin-client-tools-v3.6.0-c4dd4cf
+  '3.7':
+    url: https://github.com/openshift/origin/releases/download/v3.7.0-alpha.1
+    release_ver: openshift-origin-client-tools-v3.7.0-alpha.1-fdbd3dc
+
 openshift_client_version: '3.6'
 oc_tools_dir: /usr/local/bin
 
