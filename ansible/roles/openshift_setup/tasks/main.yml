@@ -45,46 +45,47 @@
       mode: 0755
 
   # Temporary fix until release version of oc client is stable
-  - name: Get URL of latest version of oc client packaged by OpenShift
-    script: get_oc_url.py "{{ openshift_client_version }}"
-    register: get_oc_url_output
+  - block:
+    - name: Get URL of latest version of oc client packaged by OpenShift
+      script: get_oc_url.py "{{ openshift_client_version }}"
+      register: get_oc_url_output
 
-  - set_fact:
-      openshift_client_release_url: "{{get_oc_url_output.stdout}}"
+    - set_fact:
+        openshift_client_release_url: "{{get_oc_url_output.stdout}}"
 
-  - set_fact:
-      openshift_client_release_file: oc.tar.gz
+    - set_fact:
+        openshift_client_release_file: oc.tar.gz
 
-  - debug:
-      var: openshift_client_release_url
+    - debug:
+        var: openshift_client_release_url
 
-  - name: Delete previous downloaded client (readonly) file
-    file:
-      path: /tmp/{{ openshift_client_release_file }}
-      state: absent
+    - name: Delete previous downloaded client (readonly) file
+      file:
+        path: /tmp/{{ openshift_client_release_file }}
+        state: absent
 
-  - name: Delete previous decompressed client file
-    file:
-      path: /tmp/oc
-      state: absent
+    - name: Delete previous decompressed client file
+      file:
+        path: /tmp/oc
+        state: absent
 
-  - name: Download oc client "{{ openshift_client_release_url }}"
-    get_url:
-      url: "{{ openshift_client_release_url }}"
-      dest: /tmp/{{ openshift_client_release_file }}
-      mode: 0440
-      force: yes
-    register: get_openshift_release
+    - name: Download oc client "{{ openshift_client_release_url }}"
+      get_url:
+        url: "{{ openshift_client_release_url }}"
+        dest: /tmp/{{ openshift_client_release_file }}
+        mode: 0440
+        force: yes
+      register: get_openshift_release
 
-  - name: Untar {{ openshift_client_release_file }}
-    shell: tar -xzf /tmp/{{ openshift_client_release_file }} -C /tmp
+    - name: Untar {{ openshift_client_release_file }}
+      shell: tar -xzf /tmp/{{ openshift_client_release_file }} -C /tmp
 
-  - name: Install oc
-    copy:
-      remote_src: True
-      src: /tmp/oc
-      dest: "{{ oc_tools_dir }}/oc"
-      mode: 0755
+    - name: Install oc
+      copy:
+        remote_src: True
+        src: /tmp/oc
+        dest: "{{ oc_tools_dir }}/oc"
+        mode: 0755
     when: not local_oc_client
 
   - name: Checking version of oc client
