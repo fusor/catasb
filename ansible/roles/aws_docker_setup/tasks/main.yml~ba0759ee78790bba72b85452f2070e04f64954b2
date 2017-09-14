@@ -1,6 +1,0 @@
----
-- include: multi_node.yml
-  when: multi_node
-
-- include: minimal.yml
-  when: minimal
