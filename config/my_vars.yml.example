@@ -8,9 +8,9 @@ dockerhub_org_name: example_org
 # Omit this unless you want to store your password in plain text to skip prompts.
 # dockerhub_user_password: example_password
 
-# To use openshift origin 3.7, uncomment these lines
-# origin_image_tag: latest # or v3.7.0-alpha.1
-# openshift_client_version: '3.7'
+# To use openshift origin latest, uncomment these lines
+# origin_image_tag: latest
+# openshift_client_version: latest
 
 # You can override other variables as needed.  For example to change your OpenShift hostname
 # you can modify the hostname and suffix here:

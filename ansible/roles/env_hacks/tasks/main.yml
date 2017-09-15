@@ -58,6 +58,6 @@
 
         - name: Use canary controller-manager
           shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/controller-manager -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"controller-manager\",\"image\":\"{{ coalmine_controller }}\", \"command\": [\"/opt/services/controller-manager\"]}]}}}}'"
-        when: openshift_client_version == '3.7'
+        when: openshift_client_version == '3.7' or openshift_client_version == 'latest'
       when: coalmine
     when: coalmine is defined
