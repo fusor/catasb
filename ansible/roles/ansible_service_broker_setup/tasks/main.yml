@@ -99,9 +99,9 @@
     set_fact:
       cmd_process_asb_template: >-
         {{ cmd_process_asb_template }}
-        -p BROKER_KIND='ServiceBroker'
-        -p BROKER_AUTH='{ "basic": { "secretRef": { "namespace": "ansible-service-broker", "name": "asb-auth-secret" } } }'
-    when: (coalmine is defined and coalmine) or (openshift_client_version >= '3.7') or (openshift_client_version == 'latest')
+        -p BROKER_KIND='Broker'
+        -p BROKER_AUTH='{ "basicAuthSecret": { "namespace": "ansible-service-broker", "name": "asb-auth-secret" }}'
+    when: (coalmine is undefined or not coalmine) and (openshift_client_version == '3.6')
 
   - name: Process template "{{ local_target_asb_template }}"
     shell: >
