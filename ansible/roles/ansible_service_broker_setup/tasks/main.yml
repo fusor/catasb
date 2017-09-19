@@ -27,6 +27,14 @@
     shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ asb_project }}( |$)' | cat"
     register: project
 
+  - name: retrieve cert for cluster
+    shell: "{{ oc_cmd}} get secret --no-headers=true -n kube-service-catalog | grep -m 1 service-catalog-apiserver-token | {{ oc_cmd}} get secret $(awk '{ print $1 }') -n kube-service-catalog -o yaml | grep service-ca.crt | awk '{ print $2 }' | cat"
+    register: cluster_ca_cert
+
+  - debug:
+      msg: "Service Broker must have a CA Bundle set for the Ansible Service Broker and Service Catalog to be able to communicate"
+    when: cluster_ca_cert.stdout == "" and openshift_client_version != "3.6"
+    
   - name: Create a new project for the {{ asb_project }}
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
     register: new_asb_project
@@ -91,6 +99,7 @@
         -p TAG={{ apbtag | default('latest') }}
         -p SANDBOX_ROLE={{ broker_sandbox_role }}
         -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
+        -p BROKER_CA_CERT='{{ cluster_ca_cert.stdout }}'
         {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
         {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
     when: "not rcm"
