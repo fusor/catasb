@@ -18,7 +18,7 @@
     set_fact:
       dockerhub_pass: "{{ dockerhub_user_password }}"
       dockerhub_user: "{{ dockerhub_user_name }}"
-      dockerhub_org: "{{ dockerhub_org_name }}"
+      dockerhub_org: "{{ dockerhub_org }}"
       openshift_pass: "{{ cluster_user_password }}"
       openshift_user: "{{ cluster_user }}"
       openshift_target: "{{ cluster_url }}"
@@ -77,7 +77,7 @@
         -p REGISTRY_TYPE={{ broker_registry_type }}
         -p REGISTRY_URL={{ broker_registry_url }}
         -p DEV_BROKER={{ broker_dev_broker }}
-        -p DOCKERHUB_ORG='{{ dockerhub_org_name }}'
+        -p DOCKERHUB_ORG='{{ dockerhub_org }}'
         -p DOCKERHUB_PASS='{{ dockerhub_user_password }}'
         -p DOCKERHUB_USER='{{ dockerhub_user_name }}'
         -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
