@@ -7,13 +7,22 @@ For an overview of Ansible Service Broker and Ansible Playbook Bundles click [he
 
 ### Overview
 These playbooks will:
-  * Setup Origin through `oc cluster up`
+  * Setup an OpenShift or Kubernete cluster
   * Install [Service Catalog](https://github.com/kubernetes-incubator/service-catalog) on Origin
   * Install [Ansible Service Broker](https://github.com/openshift/ansible-service-broker) on Origin
 
 
+### OpenShift or Kubernetes
+Kubernetes
+  * Run local scripts with -k or k8s or kubernetes
+  * Set the ansible variable 'cluster' to 'kubernetes'
+OpenShift
+  * OpenShift doesn't require any flags to run
+
+
 ### Local and EC-2 deployment options
   * To view individual Readme documents for these options click below
+  * [Kubernetes setup](kubernetes/README.md)
   * [Local Linux deployment](local/linux/README.md)
   * [Local macOS deployment](local/mac/README.md)
   * [EC-2 deployment](ec2/README.md)
