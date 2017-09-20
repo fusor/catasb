@@ -40,23 +40,6 @@
     register: new_asb_project
     when: project.stdout.find( asb_project ) == -1
 
-  - name: Update broker settings if not using ssl
-    set_fact:
-      asb_scheme: http
-      broker_endpoint_termination: edge
-      broker_insecure_mode: true
-      broker_insecure_edge: Allow
-    when: not broker_ssl
-
-  - name: Check that termination and insecure settings will work
-    fail:
-      msg: "The current configuration of termination: {{ broker_endpoint_termination|lower }}
-      and insecure: {{ broker_insecure_mode|lower }} is not valid must change one of them."
-    when: (not broker_insecure_mode|bool and broker_endpoint_termination|lower == "edge") or
-          (broker_insecure_mode|bool and broker_endpoint_termination == "reencrypt") or
-          (broker_insecure_mode|bool and broker_endpoint_termination == "passthrough")
-
-
   #####
   # Remember that 'rcm' builds are using an older branch of the broker
   # Some features in the deployment template may not be available, such as
@@ -88,13 +71,9 @@
     set_fact:
       cmd_process_asb_template: >-
         {{ cmd_process_asb_template }}
-        -p ASB_SCHEME={{ asb_scheme }}
         -p ROUTING_SUFFIX={{ openshift_routing_suffix }}
         -p REGISTRY_NAME={{ broker_registry_name }}
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
-        -p INSECURE={{ broker_insecure_mode|lower }}
-        -p INSECURE_EDGE={{ broker_insecure_edge }}
-        -p TERMINATION={{ broker_endpoint_termination }}
         -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
         -p TAG={{ apbtag | default('latest') }}
         -p SANDBOX_ROLE={{ broker_sandbox_role }}
