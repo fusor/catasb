@@ -1,0 +1,23 @@
+reset_cluster: False
+
+service_catalog_path: "/tmp/service-catalog"
+catalog_charts_path: "{{ service_catalog_path }}/charts/catalog"
+catalog_git: "https://github.com/kubernetes-incubator/service-catalog"
+
+helm_release_name: "catalog"
+catalog_version: "canary"
+controllerManager_container: "controller-manager"
+apiserver_container: "apiserver"
+ca_name: ca
+
+svccat_ca_cert: "{{ ca_name }}.pem"
+
+svccat_namespace:  "catalog"
+svccat_service_NAME: "{{ helm_release_name }}-catalog-apiserver"
+
+svccat_ca_setup: "svc-cat-ca.json"
+sc_serving_ca: "{{ svccat_ca_cert }}"
+sc_serving_cert: "apiserver.pem"
+sc_serving_key: "apiserver-key.pem"
+
+kubectl_min_version: 1.7

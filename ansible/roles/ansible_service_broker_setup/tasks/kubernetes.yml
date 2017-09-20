@@ -1,0 +1,51 @@
+---
+  - name: Curling ansible-service-broker-all.yaml
+    get_url:
+      url: "{{ k8s_asb_template_url }}"
+      force: yes
+      dest: "{{ local_target_asb_template }}"
+    become: true
+
+  - name: Render k8s-ansible-service-broker.yaml.j2
+    template:
+      src: "{{ local_target_asb_template }}"
+      dest: "{{ template_dest }}"
+      owner: "{{ ansible_env.USER }}"
+      mode: 0644
+
+  - name: Running kubectl create on processed template
+    shell: "{{ kubectl_cmd }} create -f /tmp/k8s-ansible-service-broker.yaml"
+
+  - name: Switch project to {{ asb_project }}
+    shell: "{{ kubectl_cmd }} config set-context $(kubectl config current-context) --namespace={{ asb_project }}"
+
+  - name: Waiting 10 minutes for ASB pod
+    action:
+      shell "{{ kubectl_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy
+    register: wait_for_asb_pod
+    until: wait_for_asb_pod.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Get endpoint for ansible-service-broker
+    shell: "'{{ kubectl_cmd }}' get endpoints | grep asb | awk '{print $2}'"
+    register: result_get_endpoint_asb
+    retries: 6
+    delay: 10
+
+  - set_fact:
+      ansible_service_broker_address:  "http://{{ result_get_endpoint_asb.stdout }}"
+
+  - set_fact:
+      ansible_service_broker_resource_file: "ansible_service_broker.yaml.j2"
+
+  - name: Creating /tmp/ansible_service_broker.yaml
+    template:
+      src: "{{ ansible_service_broker_resource_file }}"
+      dest: /tmp/ansible_service_broker.yaml
+      owner: "{{ ansible_env.USER }}"
+      mode: 0644
+    register: ansible_service_broker_template
+
+  - name: Create Broker resource in Service Catalog
+    shell: "{{ kubectl_cmd }} create -f /tmp/ansible_service_broker.yaml"

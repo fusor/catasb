@@ -115,9 +115,9 @@
       mode: 0755
     register: get_kubernetes_client_release
 
-  - name: Wait, up to 20 minutes, till we can SSH into the host with the DNS name '{{ openshift_hostname }}'
+  - name: Wait, up to 20 minutes, till we can SSH into the host with the DNS name '{{ hostname }}'
     wait_for:
-      host: "{{ openshift_hostname }}"
+      host: "{{ hostname }}"
       port: 22
       delay: 0
       timeout: 1200
@@ -205,7 +205,7 @@
       oc_cluster_up_cmd: >-
         {{ oc_cmd }} cluster up
         --routing-suffix={{ openshift_routing_suffix }}
-        --public-hostname={{ openshift_hostname }}
+        --public-hostname={{ hostname }}
         --host-pv-dir={{ persistedvol_mount_point }}
         --image={{ origin_image_name }}
         --version={{ origin_image_tag }}
@@ -281,7 +281,7 @@
     lineinfile:
       dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
       regexp: "namedCertificates: null"
-      line: "  namedCertificates:\n    - certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem\n      keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem\n      names:\n      - \"{{ openshift_hostname }}\"\n"
+      line: "  namedCertificates:\n    - certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem\n      keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem\n      names:\n      - \"{{ hostname }}\"\n"
     when: generate_config and use_ssl == True
     become: 'true'
 
@@ -373,3 +373,5 @@
     fail:
       msg: "Failed to get the service-catalog project"
     when: oc_service_catalog == ""
+
+  - include: env_hacks.yml

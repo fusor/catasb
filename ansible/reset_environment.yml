@@ -27,30 +27,29 @@
     - name: dockerhub_user_password
       prompt: "Enter your dockerhub password: "
       private: yes
-    - name: dockerhub_org_name
+    - name: dockerhub_org
       prompt: "Enter the dockerhub organization you'd like to pull images from: "
       private: no
   roles:
     - { role: ssl_setup, when: use_ssl == True }
-    - { role: openshift_setup, reset_cluster: True }
-    - env_hacks
+    - { role: "{{ cluster }}_setup", reset_cluster: True }
     - ansible_service_broker_setup
     - demo_prep
   post_tasks:
     - set_fact:
         msg: |
             EC-2 Instance Tags:        Name={{ instance_name }}
-            Hostname:                  {{ openshift_hostname }}
+            Hostname:                  {{ hostname }}
             SSH Key Name:              {{ ssh_key_name }}
             Region:                    {{ aws_region }}
             Next steps:
-            1) Visit https://{{ openshift_hostname }}:8443 for the console
+            1) Visit https://{{ hostname }}:8443 for the console
             2) Provision a RDS APB into awsdemo project
             3) Add to the aws-demo project a Python 3.5 project based off of https://github.com/thesteve0/awsdemo.git
             4) Click on the python project and select creating binding to the RDS APB
             5) Redeploy the python project
             OR
             For CLI access:
-            oc login --insecure-skip-tls-verify {{ openshift_hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+            oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
     - debug:
         msg: "{{ msg.split('\n') }}"

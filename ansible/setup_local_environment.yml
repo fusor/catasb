@@ -10,22 +10,27 @@
     - name: dockerhub_user_password
       prompt: "Enter your dockerhub password"
       private: yes
-    - name: dockerhub_org_name
+    - name: dockerhub_org
       prompt: "Enter the dockerhub organization you'd like to pull images from"
       private: no
   roles:
-    - openshift_setup
-    - env_hacks
+    - "{{ cluster }}_setup"
     - { role: ansible_service_broker_setup, when: not broker_ci }
     - { role: local_demo_prep, when: demo }
   post_tasks:
     - set_fact:
         msg: |
-            Hostname:                  {{ openshift_hostname }}
+            Hostname:                  {{ hostname }}
             Next steps:
-            Visit https://{{ openshift_hostname }}:8443 for the web console
+            Visit https://{{ hostname }}:8443 for the web console
             OR
             For CLI access:
-            oc login --insecure-skip-tls-verify {{ openshift_hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+            oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+      when: "'{{ cluster }}' == 'openshift'"
+    - set_fact:
+        msg: |
+            Hostname:                  {{ hostname }}
+            Kubernetes Cluster is running at http://{{ hostname }}:6443
+      when: "'{{ cluster }}' == 'kubernetes'"
     - debug:
         msg: "{{ msg.split('\n') }}"

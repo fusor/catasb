@@ -1,0 +1,5 @@
+---
+  - name: Checking if kubectl version is >= "{{ kubectl_min_version }}"
+    shell: kubectl version --short 2>/dev/null | head -1 | awk '{ print $3 }' | cut -f 2 -d "v"
+    register: ver
+    failed_when: "ver.stdout <= {{ kubectl_min_version }}"

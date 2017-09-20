@@ -1,6 +1,15 @@
 extra_args=''
 export relpath="../../"
 
+if [[ "${1}" == "-k" ]] ||
+   [[ "${1}" == "k8s" ]] ||
+   [[ "${1}" == "kubernetes" ]]; then
+   shift
+   export CLUSTER="kubernetes"
+else
+   export CLUSTER="openshift"
+fi
+
 if [ "$(pwd | awk -F '/' '{ print $NF }')" == "ec2" ]; then
   relpath="../"
   source "${relpath}config/ec2_env_vars"

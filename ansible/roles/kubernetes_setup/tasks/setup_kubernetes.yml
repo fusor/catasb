@@ -1,0 +1,96 @@
+---
+  - name: Setting iptables rules for CNI
+    shell: sudo iptables -t nat -I POSTROUTING ! -o weave -s 10.32.0.1/12 -j MASQUERADE
+
+  - name: Setting iptables rules for CNI
+    shell: sudo iptables -I FORWARD -o weave -j ACCEPT
+
+  - name: Setting iptables rules for CNI
+    shell: sudo iptables -I FORWARD -i weave ! -o weave -j ACCEPT
+
+  - name: Setting iptables rules docker
+    shell: "sudo iptables -t nat -I POSTROUTING ! -o docker0 -s {{ hostname }}/16 -j MASQUERADE"
+
+  - name: Setting iptables rules for docker
+    shell: sudo iptables -I FORWARD -o docker0 -j ACCEPT
+
+  - name: Setting iptables rules for docker
+    shell: sudo iptables -I FORWARD -i docker0 ! -o docker0 -j ACCEPT
+
+  - name: Resetting cluster
+    shell: kubeadm reset
+    become: true
+    when: reset_cluster
+
+  - name: Create command line for kubeadm init
+    set_fact:
+      kubeadm_command: "kubeadm init --apiserver-advertise-address={{ hostname }}"
+
+  - debug:
+      msg: "Kubeadm start command: '{{ kubeadm_command }}'"
+
+  - name: Run kubeadm init
+    shell: "{{ kubeadm_command }}"
+    become: true
+
+  - name: Ensure config directory exists
+    file:
+      path: "{{ ansible_env.HOME }}/.kube"
+      group: "{{ ansible_env.USER }}"
+      owner: "{{ ansible_env.USER }}"
+      mode: 0775
+      state: directory
+
+  # Can't use 'become: true' or admin.conf will not be found because the file
+  # is owned by root and not by $USER
+  - name: Copying '/etc/kubernetes/admin.conf' to '$HOME/.kube/config'
+    shell: "sudo cp /etc/kubernetes/admin.conf {{ ansible_env.HOME }}/.kube/config"
+
+  - name: Setting ~/.kube/config permissions
+    file:
+       path: "{{ ansible_env.HOME }}/.kube/config"
+       group: "{{ ansible_env.USER }}"
+       owner: "{{ ansible_env.USER }}"
+       mode: 0664
+    become: true
+
+  - name: Allow pods to spawn on the Master node
+    shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+
+  - name: Saving Kubernetes version in base64
+    set_fact:
+      kube_version: "$(kubectl version | base64 | tr -d '\n')"
+
+  - name: Use Weave Net for CNI
+    shell: "kubectl apply -f https://cloud.weave.works/k8s/net?k8s-version={{ kube_version }}"
+
+  - name: Starting Helm Tiller server
+    shell: helm init
+
+  - name: Wait for etcd to be up
+    action: shell kubectl get pods -n kube-system | grep etcd | grep Running
+    register: wait_for_cni
+    until: wait_for_cni.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Wait for Weave CNI pod to be up
+    action: shell kubectl get pods -n kube-system | grep weave-net | grep Running
+    register: wait_for_cni
+    until: wait_for_cni.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Wait for tiller server to be up
+    action: shell kubectl get pods -n kube-system | grep tiller | grep Running
+    register: wait_for_tiller
+    until: wait_for_tiller.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Wait for tiller service to be up
+    action: shell kubectl get svc -n kube-system | grep tiller
+    register: wait_for_tiller
+    until: wait_for_tiller.rc == 0
+    retries: 60
+    delay: 10

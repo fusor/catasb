@@ -1,2 +1,13 @@
 my_vars.yml
 ansible/roles/ansible_service_broker_setup/templates/ansible-service-broker-all.yaml.j2
+
+# service-catalog ssl junk
+ansible/apiserver-key.pem
+ansible/apiserver.csr
+ansible/apiserver.pem
+ansible/ca-key.pem
+ansible/ca.csr
+ansible/ca.pem
+ansible/helm-install.sh
+ansible/server-ca-config.json
+ansible/svc-cat-ca.json

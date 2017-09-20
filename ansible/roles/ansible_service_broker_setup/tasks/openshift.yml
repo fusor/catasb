@@ -1,0 +1,156 @@
+---
+  - name: Waiting 1 minutes for service-catalog
+    action: >-
+      shell "{{ oc_cmd }}" get deployments -n {{ oc_service_catalog }} apiserver
+      -o go-template={% raw %}'{{ .status.availableReplicas }}'{% endraw %}
+    register: apiserver_deployment
+    until: apiserver_deployment.stdout == '1'
+    retries: 6
+    delay: 10
+
+  - name: Curling ansible-service-broker-all.yaml
+    get_url:
+      url: "{{ asb_template_url }}"
+      force: yes
+      dest: "{{ local_target_asb_template }}"
+
+  - name: Setting facts for rendering ansible-service-broker-all.yaml template
+    set_fact:
+      dockerhub_pass: "{{ dockerhub_user_password }}"
+      dockerhub_user: "{{ dockerhub_user_name }}"
+      dockerhub_org: "{{ dockerhub_org_name }}"
+      openshift_pass: "{{ cluster_user_password }}"
+      openshift_user: "{{ cluster_user }}"
+      openshift_target: "{{ cluster_url }}"
+
+  - name: check if the {{ asb_project }} project exists
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ asb_project }}( |$)' | cat"
+    register: project
+
+  - name: retrieve cert for cluster
+    shell: "{{ oc_cmd}} get secret --no-headers=true -n kube-service-catalog | grep -m 1 service-catalog-apiserver-token | {{ oc_cmd}} get secret $(awk '{ print $1 }') -n kube-service-catalog -o yaml | grep service-ca.crt | awk '{ print $2 }' | cat"
+    register: cluster_ca_cert
+
+  - debug:
+      msg: "Service Broker must have a CA Bundle set for the Ansible Service Broker and Service Catalog to be able to communicate"
+    when: cluster_ca_cert.stdout == "" and openshift_client_version != "3.6"
+
+  - name: Create a new project for the {{ asb_project }}
+    shell: "{{ oc_cmd }} new-project {{ asb_project }}"
+    register: new_asb_project
+    when: project.stdout.find( asb_project ) == -1
+
+  - name: Update broker settings if not using ssl
+    set_fact:
+      asb_scheme: http
+      broker_endpoint_termination: edge
+      broker_insecure_mode: true
+      broker_insecure_edge: Allow
+    when: not broker_ssl
+
+  - name: Check that termination and insecure settings will work
+    fail:
+      msg: "The current configuration of termination: {{ broker_endpoint_termination|lower }}
+      and insecure: {{ broker_insecure_mode|lower }} is not valid must change one of them."
+    when: (not broker_insecure_mode|bool and broker_endpoint_termination|lower == "edge") or
+          (broker_insecure_mode|bool and broker_endpoint_termination == "reencrypt") or
+          (broker_insecure_mode|bool and broker_endpoint_termination == "passthrough")
+
+
+  #####
+  # Remember that 'rcm' builds are using an older branch of the broker
+  # Some features in the deployment template may not be available, such as
+  #     REGISTRY_NAME
+  # Goal is to build up a common command, then modify it as needed for newer
+  # features.
+  #####
+  - name: Create command line for processing template
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ oc_cmd }}
+        process
+        -f {{ local_target_asb_template }}
+        -n {{ asb_project }}
+        -p BROKER_IMAGE={{ broker_image }}
+        -p ETCD_IMAGE={{ etcd_image }}
+        -p ETCD_PATH={{ etcd_path }}
+        -p REGISTRY_TYPE={{ broker_registry_type }}
+        -p REGISTRY_URL={{ broker_registry_url }}
+        -p DEV_BROKER={{ broker_dev_broker }}
+        -p DOCKERHUB_ORG='{{ dockerhub_org_name }}'
+        -p DOCKERHUB_PASS='{{ dockerhub_user_password }}'
+        -p DOCKERHUB_USER='{{ dockerhub_user_name }}'
+        -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
+        -p OUTPUT_REQUEST={{ broker_output_request }}
+        -p RECOVERY={{ broker_recovery }}
+
+  - name: Modify command if running a non-rcm build to use newer features
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ cmd_process_asb_template }}
+        -p ASB_SCHEME={{ asb_scheme }}
+        -p ROUTING_SUFFIX={{ openshift_routing_suffix }}
+        -p REGISTRY_NAME={{ broker_registry_name }}
+        -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
+        -p INSECURE={{ broker_insecure_mode|lower }}
+        -p INSECURE_EDGE={{ broker_insecure_edge }}
+        -p TERMINATION={{ broker_endpoint_termination }}
+        -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
+        -p TAG={{ apbtag | default('latest') }}
+        -p SANDBOX_ROLE={{ broker_sandbox_role }}
+        -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
+        -p BROKER_CA_CERT='{{ cluster_ca_cert.stdout }}'
+        {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
+        {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
+    when: "not rcm"
+
+  - name: Update Broker Kind and Auth when using coalmine
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ cmd_process_asb_template }}
+        -p BROKER_KIND='Broker'
+        -p BROKER_AUTH='{ "basicAuthSecret": { "namespace": "ansible-service-broker", "name": "asb-auth-secret" }}'
+    when: (coalmine is undefined or not coalmine) and (openshift_client_version == '3.6')
+
+  - name: Process template "{{ local_target_asb_template }}"
+    shell: >
+      {{ cmd_process_asb_template }}
+      &> {{ local_target_asb_template_processed }}
+
+  - name: Running oc create on processed template
+    shell: "{{ oc_cmd }} create -f {{ local_target_asb_template_processed }}"
+
+  - name: Switch project to {{ asb_project }}
+    shell: "{{ oc_cmd }} project {{ asb_project }}"
+
+  - name: Waiting 10 minutes for ASB pod
+    action:
+      shell "{{ oc_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy
+    register: wait_for_asb_pod
+    until: wait_for_asb_pod.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Get route for ansible-service-broker
+    shell: "'{{ oc_cmd }}' get routes | grep ansible-service-broker | awk '{print $2}'"
+    register: result_get_route_asb
+    retries: 6
+    delay: 10
+
+  # When using RCM, we'll have to create the broker resource
+  - set_fact:
+      ansible_service_broker_address:  "{{ asb_scheme }}://{{ result_get_route_asb.stdout }}"
+    when: "rcm"
+
+  - name: Creating /tmp/ansible_service_broker.yaml
+    template:
+      src: "rcm_ansible_service_broker.yaml.j2"
+      dest: /tmp/ansible_service_broker.yaml
+      owner: "{{ ansible_env.USER }}"
+      mode: 0644
+    register: ansible_service_broker_template
+    when: "rcm"
+
+  - name: Create Broker resource in Service Catalog
+    shell: "{{ oc_cmd }} create -f /tmp/ansible_service_broker.yaml"
+    when: "rcm"

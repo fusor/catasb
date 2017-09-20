@@ -1,0 +1,13 @@
+---
+
+- include: package_install.yml
+  when: not reset_cluster
+
+- include: setup_helm.yml
+  when: not reset_cluster
+
+- include: validations.yml
+
+- include: setup_kubernetes.yml
+
+- include: setup_catalog.yml

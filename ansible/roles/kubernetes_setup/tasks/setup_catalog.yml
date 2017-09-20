@@ -1,0 +1,67 @@
+---
+  - name: Creating RoleBinding for the Service Catalog
+    shell: kubectl create clusterrolebinding tiller-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
+
+  - name: Remove /tmp/service-catalog if it exists
+    file:
+      path: "{{ service_catalog_path }}"
+      state: absent
+    become: true
+
+  - name: Clone Service Catalog Repo
+    shell: "git clone {{ catalog_git }} {{ service_catalog_path }}"
+
+  - name: Sourcing SSL certs
+    shell: "{{ service_catalog_path }}/contrib/svc-cat-apiserver-aggregation-tls-setup.sh"
+
+  - name: Building Latest Canary Images
+    shell: "pushd {{ service_catalog_path}} && make images && popd"
+    become: true
+
+  - name: Gathering sc_serving_ca
+    shell: "base64 --wrap 0 {{ sc_serving_ca }}"
+    register: base64_sc_serving_ca
+
+  - name: Gathering sc_serving_cert
+    shell: "base64 --wrap 0 {{ sc_serving_cert }}"
+    register: base64_sc_serving_cert
+
+  - name: Gathering sc_serving_key
+    shell: "base64 --wrap 0 {{ sc_serving_key }}"
+    register: base64_sc_serving_key
+
+  - name: Create service-catalog start command
+    set_fact:
+      kubernetes_start: >-
+        helm install {{ service_catalog_path }}/charts/catalog
+        --name {{ helm_release_name }}
+        --namespace {{ svccat_namespace }}
+        --set apiserver.image="{{ apiserver_container }}:{{ catalog_version }}"
+        --set apiserver.imagePullPolicy="Never"
+        --set controllerManager.image="{{ controllerManager_container }}:{{ catalog_version }}"
+        --set controllerManager.imagePullPolicy="Never"
+        --set apiserver.auth.enabled=true
+        --set useAggregator=true
+        --set apiserver.tls.ca={{ base64_sc_serving_ca.stdout }}
+        --set apiserver.tls.cert={{ base64_sc_serving_cert.stdout }}
+        --set apiserver.tls.key={{ base64_sc_serving_key.stdout }}
+
+  - debug:
+      msg: "Start Command:  '{{ kubernetes_start }}'"
+
+  - name: Starting Service Catalog
+    shell: "{{ kubernetes_start }}"
+
+  - name: Wait for Service Catalog API to be up
+    action: shell kubectl get pods -n catalog | grep catalog-apiserver | grep Running
+    register: wait_for_apiserver
+    until: wait_for_apiserver.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Wait for Service Catalog Controller Manager to be up
+    action: shell kubectl get pods -n catalog | grep catalog-controller-manager | grep Running
+    register: wait_for_controller
+    until: wait_for_controller.rc == 0
+    retries: 60
+    delay: 10

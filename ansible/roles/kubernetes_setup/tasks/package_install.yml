@@ -1,0 +1,101 @@
+---
+  - name: Selecting kubernetes release
+    shell: curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt
+    register: release
+
+  - name: Remove {{ oc_client_install_path }}/kubectl if it exists
+    file:
+      path: "{{ oc_client_install_path }}/kubectl"
+      state: absent
+    become: true
+
+  - name: Curling latest kubectl for Linux
+    get_url:
+      url: "https://storage.googleapis.com/kubernetes-release/release/{{ release.stdout }}/bin/linux/amd64/kubectl"
+      dest: "{{ oc_client_install_path }}/kubectl"
+      group: "{{ ansible_env.USER }}"
+      owner: "{{ ansible_env.USER }}"
+      mode: 0775
+    when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+    become: true
+
+  - name: Curling latest kubectl for Mac
+    get_url:
+      url: "https://storage.googleapis.com/kubernetes-release/release/{{ release }}/bin/darwin/amd64/kubectl"
+      dest: "{{ oc_client_install_path }}/kubectl"
+      group: "{{ ansible_env.USER }}"
+      owner: "{{ ansible_env.USER }}"
+      mode: 0775
+    when: ansible_os_family == "Darwin"
+    become: true
+
+  - name: Create Kubeadm repo
+    shell:
+      cmd: |
+        cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+        [kubernetes]
+        name=Kubernetes
+        baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        enabled=1
+        gpgcheck=1
+        repo_gpgcheck=1
+        gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+        https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+        EOF
+    become: true
+    when: ansible_os_family == "RedHat"
+
+  - name: Install Kubelet
+    package:
+      name: kubelet
+      state: installed
+    become: true
+    when: ansible_os_family == "RedHat"
+
+  - name: Install Kubeadm
+    package:
+      name: kubeadm
+      state: installed
+    become: true
+    when: ansible_os_family == "RedHat"
+
+  - name: Turn off SELinux
+    shell: setenforce 0
+    become: true
+    when: ansible_os_family == "RedHat"
+
+  - name: Install cfssl go binary
+    shell: "curl -s -L -o {{ oc_client_install_path }}/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64"
+    when: ansible_os_family == "RedHat"
+    become: true
+
+  - name: Install cfssljson go binary
+    shell: "curl -s -L -o {{ oc_client_install_path }}/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64"
+    when: ansible_os_family == "RedHat"
+    become: true
+
+  - name: Install cfssl go binary
+    shell: "curl -s -L -o {{ oc_client_install_path }}/cfssl https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64"
+    when: ansible_os_family == "Darwin"
+    become: true
+
+  - name: Install cfssljson go binary
+    shell: "curl -s -L -o {{ oc_client_install_path }}/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64"
+    when: ansible_os_family == "Darwin"
+    become: true
+
+  - name: Setup cfssl go binary
+    file:
+      path: "{{ oc_client_install_path }}/cfssl"
+      mode: 0755
+    become: true
+
+  - name: Setup cfssljson go binary
+    file:
+      path: "{{ oc_client_install_path }}/cfssljson"
+      mode: 0755
+    become: true
+
+  - name: Starting systemd kubelet process
+    shell: systemctl enable kubelet && systemctl start kubelet
+    become: true

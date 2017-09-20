@@ -1,9 +1,9 @@
 apiVersion: servicecatalog.k8s.io/v1alpha1
-kind: Broker
+kind: ServiceBroker
 metadata:
   name: ansible-service-broker
 spec:
-  url: {{ asb_scheme }}://{{ ansible_service_broker_route }}
+  url: {{ ansible_service_broker_address }}
   authInfo:
     basicAuthSecret:
       namespace: ansible-service-broker

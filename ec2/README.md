@@ -84,7 +84,7 @@ These playbooks will:
 
           dockerhub_user_name: foo@bar.com
           dockerhub_user_password: changeme
-          dockerhub_org_name: ansibleplaybookbundle
+          dockerhub_org: ansibleplaybookbundle
   * Create our infrastructure in ec2 if it doesn't exist
     ```bash
     $ ./run_create_infrastructure.sh

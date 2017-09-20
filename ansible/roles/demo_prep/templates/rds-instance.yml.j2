@@ -10,7 +10,7 @@ spec:
     aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
     aws_secret_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
     namespace: "{{ demo_project_name }}"
-    openshift_target: "https://{{ openshift_hostname }}:8443"
+    openshift_target: "https://{{ hostname }}:8443"
     subnet: "{{ rds_subnet_group_name }}"
     vpc_security_groups: "{{ my_security_group_id }}"
     backup_retention: 0

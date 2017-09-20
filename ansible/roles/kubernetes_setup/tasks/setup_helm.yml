@@ -1,0 +1,46 @@
+---
+  - name: Gather Helm Latest Version
+    shell: curl https://github.com/kubernetes/helm/releases/latest -s -L -I -o /dev/null -w '%{url_effective}' | xargs basename
+    register: helm_version
+
+  - name: Remove /tmp/helm.tgz if it exists
+    file:
+      path: /tmp/helm.tgz
+      state: absent
+    become: true
+
+  - name: Curling latest Helm for Mac
+    get_url:
+      url: "https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_version.stdout }}-darwin-amd64.tar.gz"
+      dest: /tmp/helm.tgz
+      mode: 0660
+    when: ansible_os_family == "Darwin"
+
+  - name: Curling latest kubectl for Linux
+    get_url:
+      url: "https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_version.stdout }}-linux-amd64.tar.gz"
+      dest: /tmp/helm.tgz
+      mode: 0660
+    when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+
+  - set_fact:
+      tar_dir: "linux-amd64"
+    when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+
+  - set_fact:
+      tar_dir: "darwin-amd64"
+    when: ansible_os_family == "Darwin"
+
+  - name: Untaring helm
+    unarchive:
+      src: /tmp/helm.tgz
+      dest: /tmp
+
+  - name: Copying helm binary to "{{ oc_client_install_path }}"
+    copy:
+      src: "/tmp/{{ tar_dir }}/helm"
+      dest: "{{ oc_client_install_path }}"
+      group: "{{ ansible_env.USER }}"
+      owner: "{{ ansible_env.USER }}"
+      mode: 0775
+    become: true
