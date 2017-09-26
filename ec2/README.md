@@ -37,19 +37,19 @@ These playbooks will:
     * On Fedora and EL7 it is recommended that you use ansible in a python virtualenv.
      * This is due to a couple reasons:
        - boto rpms are not sufficiently new enough
-       - pip is not sudo safe on Fedora and EL7 
+       - pip is not sudo safe on Fedora and EL7
      * To setup and active a virtualenv do the following;
      ```
-     sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv 
+     sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv
      virtualenv /tmp/ansible
      source /tmp/ansible/bin/activate
      pip install ansible
      ```
    * Continue with the next step:
 
-    ```bash
-    $ pip install boto boto3 six
-    ```
+      ```bash
+      $ pip install boto boto3 six
+      ```
   * Configure a SSH Key in your AWS EC-2 account for the given region
   * Create a hosted zone in Route53
   * Set these environment variables:
@@ -60,23 +60,19 @@ These playbooks will:
     ```
 
 ### Execute
-  * Navigate to the `ec2` folder
-    ```bash
-    $ cd catasb/ec2
-    ```
-  * Edit the variables file `ec2/common_vars`
+  * Edit the variables file `../config/ec2_env_vars`
     * Note the following and update:
       ```bash
       AWS_SSH_KEY_NAME="splice"
       TARGET_DNS_ZONE="ec2.dog8code.com"
       ```
       Needs to match a hosted zone entry in your Route53 account, we will create a subdomain under it for the ec2 instance
-  * To make re-runs easy, create a `my_vars.yml` with your dockerhub credentials
-    * `cp my_vars.yml.example my_vars.yml`
+  * To make re-runs easy, create a `catasb/config/my_vars.yml` with your dockerhub credentials
+    * `cp catasb/config/my_vars.yml.example catasb/config/my_vars.yml`
     * Replace with your dockerhub username/password
-     * Valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
+      * A valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
     * For dockerhub organization you may use your own if you pushed APBs to it or you may use: `ansibleplaybookbundle`
-       * https://hub.docker.com/u/ansibleplaybookbundle/
+      * https://hub.docker.com/u/ansibleplaybookbundle/
     * Example `my_vars.yml`
 
           $ cat my_vars.yml
@@ -84,7 +80,11 @@ These playbooks will:
 
           dockerhub_user_name: foo@bar.com
           dockerhub_user_password: changeme
-          dockerhub_org: ansibleplaybookbundle
+          dockerhub_org: ansibleplaybookbundle 
+  * Navigate to the `ec2` folder
+    ```bash
+    $ cd catasb/ec2
+    ```
   * Create our infrastructure in ec2 if it doesn't exist
     ```bash
     $ ./run_create_infrastructure.sh

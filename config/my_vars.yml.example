@@ -8,7 +8,7 @@ dockerhub_org: example_org
 # Omit this unless you want to store your password in plain text to skip prompts.
 # dockerhub_user_password: example_password
 
-# To use openshift origin latest, uncomment these lines
+# To use openshift origin latest, uncomment these lines:
 # origin_image_tag: latest
 # openshift_client_version: latest
 
@@ -17,16 +17,41 @@ dockerhub_org: example_org
 # openshift_hostname: 172.17.0.1
 # openshift_routing_suffix: 172.17.0.1.nip.io
 
-# Default to the "anyuid" scc for pod deployments
-# scc_anyuid: True
+# Default to the "anyuid" scc for pod deployments.
+# scc_anyuid: true
 
-# Use the quay.io canary images for bleeding edge development
+# Use the quay.io canary images for bleeding edge development.
 # coalmine: true
 
-# Override the service-catalog's apiserver + controller images
+# Override the service-catalog's apiserver + controller images.
 # coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 # coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
 
-# The default tag to use for apb's is latest. To change that you can set this option
-#apbtag: nightly
-#apbtag: canary
+# The default tag to use for apb's is latest. To change that you can set this option.
+# apbtag: nightly
+# apbtag: canary
+
+# Ansible service broker configuration settings. Enable to allow local APB deployments
+# via `apb push`:
+# broker_enable_basic_auth: false
+# broker_bootstrap_refresh_interval: 31536000s
+
+# Disable SSL.
+# use_ssl: false
+
+# Select AWS region and AMI for EC2 deployments.
+# us-east-1
+# aws_region: us-east-1
+# aws_ami_id: ami-b63769a1
+# us-east-2
+# aws_region: us-east-2
+# aws_ami_id: ami-0932686c
+# us-west-1
+# aws_region: us-west-1
+# aws_ami_id: ami-2cade64c
+# us-west-2
+# aws_region: us-west-2
+# aws_ami_id: ami-6f68cf0f
+# ca-central-1
+# aws_region: ca-central-1
+# aws_ami_id: ami-9062d0f4
