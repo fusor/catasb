@@ -109,7 +109,7 @@ broker_dev_broker: false
 broker_launch_apb_on_bind: false
 broker_output_request: false
 broker_recovery: true
-broker_enable_basic_auth: true
+broker_enable_basic_auth: false
 broker_bootstrap_refresh_interval: 600s
 broker_sandbox_role: edit
 broker_pull_policy: "IfNotPresent"

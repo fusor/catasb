@@ -40,6 +40,10 @@
     register: new_asb_project
     when: project.stdout.find( asb_project ) == -1
 
+  - name: Update Broker Kind and Auth when using coalmine
+    set_fact:
+      broker_enable_basic_auth: true
+    when: openshift_client_version == '3.6'
   #####
   # Remember that 'rcm' builds are using an older branch of the broker
   # Some features in the deployment template may not be available, such as
