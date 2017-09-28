@@ -39,8 +39,8 @@ These playbooks will:
        - boto rpms are not sufficiently new enough
        - pip is not sudo safe on Fedora and EL7 
      * To setup and activate a virtualenv do the following;
-     ```
-     sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv 
+     ```bash
+     sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv
      virtualenv /tmp/ansible
      source /tmp/ansible/bin/activate
      pip install ansible
@@ -74,17 +74,17 @@ These playbooks will:
   * To make re-runs easy, create a `my_vars.yml` with your dockerhub credentials
     * `cp my_vars.yml.example my_vars.yml`
     * Replace with your dockerhub username/password
-     * Valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
+     * A valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
     * For dockerhub organization you may use your own if you pushed APBs to it or you may use: `ansibleplaybookbundle`
        * https://hub.docker.com/u/ansibleplaybookbundle/
     * Example `my_vars.yml`
 
           $ cat my_vars.yml
           ---
-
           dockerhub_user_name: foo@bar.com
           dockerhub_user_password: changeme
-          dockerhub_org_name: ansibleplaybookbundle
+          dockerhub_org: ansibleplaybookbundle
+
   * Navigate back to the [ec2/minimal](./) folder
     ```bash
     $ cd catasb/ec2/minimal
@@ -124,3 +124,7 @@ These playbooks will:
 ## Tested with
   * ansible 2.3.0.0
     * Problems were seen using ansible 2.2 and lower
+    * Installs [OpenShift Container Platform](https://www.openshift.com/container-platform/index.html) or [Origin](https://www.openshift.org/) via [OpenShift Ansible](https://github.com/openshift/openshift-ansible)
+    * Configurable Contents
+        * RH CDN
+        * Latest Mirror Repos

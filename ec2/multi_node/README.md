@@ -38,16 +38,16 @@ These playbooks will:
        - boto rpms are not sufficiently new enough
        - pip is not sudo safe on Fedora and EL7 
      * To setup and activate a virtualenv do the following;
-     ```
-     sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv 
-     virtualenv /tmp/ansible
-     source /tmp/ansible/bin/activate
-     pip install ansible
-     ```
+        ```bash
+        sudo dnf install python-virtualenv #or EL7: sudo yum install python-virtualenv
+        virtualenv /tmp/ansible
+        source /tmp/ansible/bin/activate
+        pip install ansible
+        ```
    * Continue with the next step:
-    ```bash
-    $ pip install boto boto3 six
-    ```
+      ```bash
+      $ pip install boto boto3 six
+      ```
   * Configure a SSH Key in your AWS EC-2 account for the given region
   * Create a hosted zone in Route53
   * Set these environment variables:
@@ -74,7 +74,6 @@ enable_ops_mirror_repo: true
 ops_mirror_dir: /git/aos-ansible
 ```
 Note: The ops_mirror_dir folder MUST be valid and exist when configuring this scenario.
-
 
 ### Origin
 To deploy Origin in Centos, set the following
@@ -109,7 +108,7 @@ If the variable `enable_ops_mirror_repo=true`, the scripts can be configured to 
 Please note that you MUST have access to the `aos-ansible` private repository files, locally cloned on the machine where the ansible playbooks are running from.  The repo path is defined in the `ops_mirror_dir` variable, which defaults to `/git/aos-ansible`.
 
 ### 'my_vars.yml' file
-All configurable variables are contained in the [`all.yml`](../../ansible/group_vars/all.yml) under the [`group_vars`](../../ansible/group_vars/) folder. Any of these may be overwritten, if they're specified in the *`my_vars.yml`* file.
+All configurable variables are contained in the [`all.yml`](../../ansible/group_vars/all.yml) under the [`group_vars`](../../ansible/group_vars/) folder. Any of these may be *overwritten*, if they're specified in the *`my_vars.yml`* file.
 
 Review the example [`my_vars.yml.example`](../../config/my_vars.yml.example) file, and make a copy of it as `my_vars.yml` in the same [location](../../config).  The following are some of the example values that you may want to have in your `my_vars.yml`
   * Use the latest packages from private Ops Repo
@@ -222,3 +221,8 @@ To distroy your cluster, and to terminate the ec2 instance and cleanup the assoc
 ## Tested with
   * ansible 2.3.0.0
     * Problems were seen using ansible 2.2 and lower
+    * Multiple EC-2 Instances
+    * Installs [OpenShift Container Platform](https://www.openshift.com/container-platform/index.html) or [Origin](https://www.openshift.org/) via [OpenShift Ansible](https://github.com/openshift/openshift-ansible)
+    * Configurable Contents
+        * RH CDN
+        * Latest Mirror Repos
