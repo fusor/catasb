@@ -36,7 +36,7 @@ export EXTRA_VARS="{\
 \"openshift_ansible_repo_dir\":\"${OPENSHIFT_ANSIBLE_DIR}\", \
 \"instance_name\":\"${INSTANCE_NAME}\", \
 \"instance_lookup_value\":\"${INSTANCE_LOOKUP_VALUE}\", \
-\"cluster\":\"${CLUSTER}\"}", \
+\"cluster\":\"${CLUSTER}\", \
 \"owners_name\":${OWNERS_NAME} \
 }"
 
