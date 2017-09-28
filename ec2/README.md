@@ -8,7 +8,6 @@ OpenShift with the Service Catalog and the Ansible Service Broker can be deploye
 
 * [Multi-Node](./multi_node)
 
-<<<<<<< 2c493fc7ed3b9a7522cdcfb534b07257cc1b7f9e
       brew uninstall ansible
       pip install ansible
 
@@ -103,10 +102,8 @@ OpenShift with the Service Catalog and the Ansible Service Broker can be deploye
 ### Tested with
   * ansible 2.3.0.0
     * Problems were seen using ansible 2.2 and lower
-=======
     * Multiple EC-2 Instances
     * Installs [OpenShift Container Platform](https://www.openshift.com/container-platform/index.html) or [Origin](https://www.openshift.org/) via [OpenShift Ansible](https://github.com/openshift/openshift-ansible)
     * Configurable Contents
         * RH CDN
         * Latest Mirror Repos
->>>>>>> update
