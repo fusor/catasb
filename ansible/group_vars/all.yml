@@ -97,7 +97,7 @@ asb_project: ansible-service-broker
 # remember to use a file:// path as in:
 # asb_template_url: file:///path/to/file/deploy.yaml.j2
 asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml
-k8s_asb_template_url: https://raw.githubusercontent.com/rthallisey/ansible-service-broker/kube-template/templates/k8s-ansible-service-broker.yaml.j2
+k8s_asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/k8s-ansible-service-broker.yaml.j2
 
 broker_registry_type: dockerhub
 broker_registry_url: docker.io
