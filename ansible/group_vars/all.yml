@@ -170,3 +170,4 @@ docker_images_group2:
 
 coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
+

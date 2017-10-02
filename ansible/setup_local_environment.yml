@@ -1,7 +1,6 @@
 - hosts: localhost
   gather_facts: True
   vars:
-    demo: False
     broker_ci: False
   vars_prompt:
     - name: dockerhub_user_name
@@ -16,16 +15,12 @@
   roles:
     - "{{ cluster }}_setup"
     - { role: ansible_service_broker_setup, when: not broker_ci }
-    - { role: local_demo_prep, when: demo }
   post_tasks:
     - set_fact:
         msg: |
             Hostname:                  {{ hostname }}
-            Next steps:
-            Visit https://{{ hostname }}:8443 for the web console
-            OR
-            For CLI access:
-            oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+            Web: https://{{ hostname }}:8443
+            CLI: oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
       when: "'{{ cluster }}' == 'openshift'"
     - set_fact:
         msg: |
