@@ -14,7 +14,7 @@ dockerhub_org: ansibleplaybookbundle
 
 # You can override other variables as needed.  For example to change your OpenShift hostname
 # you can modify the hostname and suffix here:
-# openshift_hostname: 172.17.0.1
+# hostname: 172.17.0.1
 # openshift_routing_suffix: 172.17.0.1.nip.io
 
 # Default to the "anyuid" scc for pod deployments.
