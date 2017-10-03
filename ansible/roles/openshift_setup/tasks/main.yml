@@ -355,7 +355,7 @@
     when: oc_cluster_up.changed and scc_anyuid == True
 
   - name: Login as {{ cluster_user }}
-    shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }}"
+    shell: "{{ oc_cmd }} login -u {{ cluster_user }} -p {{ cluster_user_password }} {{ cluster_url }} --insecure-skip-tls-verify=true"
     when: oc_cluster_up.changed
 
   - name: Get the name for service-catalog project
