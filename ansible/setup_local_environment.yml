@@ -21,11 +21,11 @@
             Hostname:                  {{ hostname }}
             Web: https://{{ hostname }}:8443
             CLI: oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
-      when: "'{{ cluster }}' == 'openshift'"
+      when: cluster == 'openshift'
     - set_fact:
         msg: |
             Hostname:                  {{ hostname }}
             Kubernetes Cluster is running at http://{{ hostname }}:6443
-      when: "'{{ cluster }}' == 'kubernetes'"
+      when: cluster == 'kubernetes'
     - debug:
         msg: "{{ msg.split('\n') }}"
