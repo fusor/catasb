@@ -45,6 +45,11 @@
       openshift_client_release_url: "{{ openshift_release_url }}/{{ openshift_client_release_file }}"
       kube_ctl_url: "https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/{{ kube_build_type }}/amd64/kubectl"
 
+  - package:
+      name: "libselinux-python"
+      state: installed
+    when: ansible_os_family == "RedHat" and ansible_selinux.mode == "enforcing"
+
   - file:
       path: "{{ oc_tools_dir }}"
       state: directory
