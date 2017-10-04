@@ -48,7 +48,8 @@
   - package:
       name: "libselinux-python"
       state: installed
-    when: ansible_os_family == "RedHat" and ansible_selinux.mode == "enforcing"
+    become: true
+    when: ansible_os_family == "RedHat"
 
   - file:
       path: "{{ oc_tools_dir }}"
