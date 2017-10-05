@@ -156,6 +156,7 @@ asb_scheme: https
 # These docker images we want to remove and fetch on each setup
 docker_images_group1:
   - { img: "{{ broker_image_name }}", tag: "{{ broker_tag }}" }
+  - { img: "{{ origin_image_name }}-service-catalog", tag: "{{ origin_image_tag }}" }
 
 # These docker images change less frequently, we are OK pulling them once and reusing
 docker_images_group2:
@@ -166,7 +167,6 @@ docker_images_group2:
   - { img: "{{ origin_image_name }}-docker-registry", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-pod", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-haproxy-router", tag: "{{ origin_image_tag }}" }
-  - { img: "{{ origin_image_name }}-service-catalog", tag: "{{ origin_image_tag }}" }
 
 coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
