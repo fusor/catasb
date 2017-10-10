@@ -1,0 +1,8 @@
+---
+
+  - set_fact:
+      aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+      aws_secret_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+
+  - include: helios.yml
+    when: (deploy_helios) and (aws_access_key != "" and aws_secret_key != "") 

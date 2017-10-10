@@ -1,0 +1,142 @@
+---
+  - debug: var=helios_dockerhub_org
+
+  - name: Download the Helios Broker Template File to "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
+    get_url:
+      url: "{{ helios_asb_template_s3_url }}"
+      dest: "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
+
+  # Verify that the template file 'helios_asb_template_filename' exists
+  - stat:
+      path: "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
+    register: stat_result
+  - name: Check that the Helios Broker Template File '{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}' exists
+    fail:
+      msg: Missing Helios Broker Template File '{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}'
+    when: stat_result.stat.exists == False
+
+  - name: Set the name for 'oc_service_catalog' if not already defined
+    set_fact:
+      oc_service_catalog: "kube-service-catalog"
+    when: oc_service_catalog is not defined
+
+  - name: Waiting 1 minutes for service-catalog
+    action: >-
+      shell "{{ oc_cmd }}" get deployments -n {{ oc_service_catalog }} apiserver
+      -o go-template={% raw %}'{{ .status.availableReplicas }}'{% endraw %}
+    register: apiserver_deployment
+    until: apiserver_deployment.stdout == '1'
+    retries: 6
+    delay: 10
+
+  - name: Curling aws-service-broker-all.yaml
+    get_url:
+      url: "{{ helios_asb_template_url }}"
+      force: yes
+      dest: "{{ helios_local_target_asb_template }}"
+
+  - name: Setting facts for rendering aws-service-broker-all.yaml template
+    set_fact:
+      dockerhub_pass: "{{ dockerhub_user_password }}"
+      dockerhub_user: "{{ dockerhub_user_name }}"
+      dockerhub_org: "{{ helios_dockerhub_org }}"
+
+  - debug: var=dockerhub_org
+
+  - name: check if the {{ helios_asb_project }} project exists
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ helios_asb_project }}( |$)' | cat"
+    register: project
+
+  - name: retrieve cert for cluster
+    shell: "{{ oc_cmd}} get secret --no-headers=true -n kube-service-catalog | grep -m 1 service-catalog-apiserver-token | {{ oc_cmd}} get secret $(awk '{ print $1 }') -n kube-service-catalog -o yaml | grep service-ca.crt | awk '{ print $2 }' | cat"
+    register: cluster_ca_cert
+
+  - debug:
+      msg: "Service Broker must have a CA Bundle set for the Helios Service Broker and Service Catalog to be able to communicate"
+    when: cluster_ca_cert.stdout == "" and openshift_client_version != "3.6"
+
+  - name: Create a new project for the {{ helios_asb_project }}
+    shell: "{{ oc_cmd }} new-project {{ helios_asb_project }}"
+    register: new_helios_asb_project
+    when: project.stdout.find( helios_asb_project ) == -1
+
+  - name: Update Broker Kind and Auth when using coalmine
+    set_fact:
+      broker_enable_basic_auth: true
+    when: openshift_client_version == '3.6'
+  #####
+  # Remember that 'rcm' builds are using an older branch of the broker
+  # Some features in the deployment template may not be available, such as
+  #     REGISTRY_NAME
+  # Goal is to build up a common command, then modify it as needed for newer
+  # features.
+  #####
+  - name: Create command line for processing template
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ oc_cmd }}
+        process
+        -f {{ helios_local_target_asb_template }}
+        -n {{ helios_asb_project }}
+        -p BROKER_IMAGE={{ helios_broker_image }}
+        -p ETCD_IMAGE={{ etcd_image }}
+        -p ETCD_PATH={{ etcd_path }}
+        -p REGISTRY_TYPE={{ broker_registry_type }}
+        -p REGISTRY_URL={{ broker_registry_url }}
+        -p DEV_BROKER={{ broker_dev_broker }}
+        -p DOCKERHUB_ORG='{{ helios_dockerhub_org }}'
+        -p DOCKERHUB_PASS='{{ dockerhub_user_password }}'
+        -p DOCKERHUB_USER='{{ dockerhub_user_name }}'
+        -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
+        -p OUTPUT_REQUEST={{ broker_output_request }}
+        -p RECOVERY={{ broker_recovery }}
+
+  - name: Modify command if running a non-rcm build to use newer features
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ cmd_process_asb_template }}
+        -p ROUTING_SUFFIX={{ openshift_routing_suffix }}
+        -p REGISTRY_NAME={{ broker_registry_name }}
+        -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
+        -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
+        -p TAG={{ helios_apbtag | default('latest') }}
+        -p SANDBOX_ROLE={{ broker_sandbox_role }}
+        -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
+        -p BROKER_CA_CERT='{{ cluster_ca_cert.stdout }}'
+        -p AUTO_ESCALATE={{ broker_auto_escalate|bool }}
+        {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
+        {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
+    when: "not rcm"
+
+  - name: Update Broker Kind and Auth when using coalmine
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ cmd_process_asb_template }}
+        -p BROKER_KIND='Broker'
+        -p BROKER_AUTH='{ "basicAuthSecret": { "namespace": "aws-service-broker", "name": "asb-auth-secret" }}'
+    when: (coalmine is undefined or not coalmine) and (openshift_client_version == '3.6')
+
+  - name: Process template "{{ helios_local_target_asb_template }}"
+    shell: >
+      {{ cmd_process_asb_template }}
+      &> {{ helios_local_target_asb_template_processed }}
+
+  - name: Running oc create on processed template
+    shell: "{{ oc_cmd }} create -f {{ helios_local_target_asb_template_processed }}"
+
+  - name: Switch project to {{ helios_asb_project }}
+    shell: "{{ oc_cmd }} project {{ helios_asb_project }}"
+
+  - name: Waiting 10 minutes for ASB pod
+    action:
+      shell "{{ oc_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy
+    register: wait_for_asb_pod
+    until: wait_for_asb_pod.rc == 0
+    retries: 60
+    delay: 10
+
+  - name: Get route for aws-service-broker
+    shell: "'{{ oc_cmd }}' get routes | grep aws-service-broker | awk '{print $2}'"
+    register: result_get_route_asb
+    retries: 6
+    delay: 10

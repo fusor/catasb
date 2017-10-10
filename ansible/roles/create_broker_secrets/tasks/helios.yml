@@ -1,0 +1,36 @@
+---
+  - name: Download the 'create_broker_secret.py' script to "{{ create_broker_secret_script }}"
+    get_url:
+      url: "{{ create_broker_secret_file_url }}"
+      dest: "{{ create_broker_secret_script }}"
+      mode: 0755
+
+  - name: Create the Helios Parameters file "{{ helios_parameters_file }}"
+    template:
+      src: parameters.j2
+      dest: "{{ helios_parameters_file }}"
+
+  - name: Create Helios ASB Secrets for all AWS APBs
+    shell: "{{ create_broker_secret_script }} {{ helios_asb_secret_name }} {{ helios_asb_project }} {{ helios_broker_registry_url }}/{{ helios_dockerhub_org }}/{{ item }} @{{ helios_parameters_file }}"
+    with_items:
+      - sqs-apb
+      - sns-apb
+      - r53-apb
+      - rds-mysql-apb
+      - emr-apb
+      - redshift-apb
+      - elasticache-apb
+      - dynamodb-apb
+    register: command_result
+    failed_when: "'FAILED' in command_result.stderr"
+
+  - name: Restarting the ASB pod
+    shell: "{{ oc_cmd }} rollout latest aws-asb"
+
+  - name: Waiting the ASB pod to restart ...
+    action:
+      shell "{{ oc_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy
+    register: wait_for_asb_pod
+    until: wait_for_asb_pod.rc == 0
+    retries: 10
+    delay: 10

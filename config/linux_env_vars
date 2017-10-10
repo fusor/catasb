@@ -3,4 +3,12 @@ export PUBLIC_IP="$(ip addr show docker0 | grep -Po 'inet \K[\d.]+')"
 export HOSTNAME="${PUBLIC_IP}"
 export OPENSHIFT_ROUTING_SUFFIX="${PUBLIC_IP}.nip.io"
 
-export EXTRA_VARS="{\"hostname\":\"${HOSTNAME}\", \"openshift_routing_suffix\":\"${OPENSHIFT_ROUTING_SUFFIX}\", \"cluster\":\"${CLUSTER}\"}"
+DEPLOY_HELIOS="${DEPLOY_HELIOS:-False}"
+export DEPLOY_HELIOS
+
+export EXTRA_VARS="{\
+\"hostname\":\"${HOSTNAME}\", \
+\"openshift_routing_suffix\":\"${OPENSHIFT_ROUTING_SUFFIX}\", \
+\"cluster\":\"${CLUSTER}\", \
+\"deploy_helios\":\"${DEPLOY_HELIOS}\" \
+}"

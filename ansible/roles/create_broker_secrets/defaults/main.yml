@@ -1,0 +1,5 @@
+
+helios_asb_secret_name: helios-asb-secret
+helios_asb_project: aws-service-broker
+helios_broker_registry_url: docker.io
+helios_dockerhub_org: projecthelios

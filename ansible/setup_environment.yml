@@ -38,7 +38,9 @@
     - { role: ssl_setup, when: use_ssl == True }
     - openshift_setup
     - env_hacks
-    - ansible_service_broker_setup
+    - { role: ansible_service_broker_setup, when: deploy_asb == True}
+    - { role: helios_broker_setup, when: deploy_helios == True}
+    - create_broker_secrets
   post_tasks:
     - set_fact:
         msg: |

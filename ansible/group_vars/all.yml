@@ -119,6 +119,29 @@ broker_image_name: docker.io/ansibleplaybookbundle/origin-ansible-service-broker
 broker_tag: "latest"
 broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
 
+# Helios Broker 
+deploy_asb: True
+deploy_helios: False
+helios_dockerhub_org: projecthelios
+helios_asb_project: aws-service-broker
+helios_apbtag: latest
+
+helios_broker_registry_url: docker.io
+helios_broker_image_name: "{{ helios_broker_registry_url }}/{{ helios_dockerhub_org }}/aws-service-broker"
+helios_broker_tag: "latest"
+helios_broker_image: "{{ helios_broker_image_name }}:{{ helios_broker_tag }}"
+
+helios_broker_template_dir: "/tmp"
+helios_asb_template_filename: "deploy-helios-broker.template.yaml"
+helios_asb_template_s3_url: "https://s3.amazonaws.com/heliosbroker/scripts/deploy-helios-broker.template.yaml"
+helios_asb_template_url: "file://{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
+helios_local_target_asb_template: /tmp/deploy-helios-broker.template.yaml.local
+helios_local_target_asb_template_processed: /tmp/deploy-helios-broker.template.yaml.local.processed
+
+helios_parameters_file: "/tmp/parameters.yml"
+create_broker_secret_file_url: "https://s3.amazonaws.com/heliosbroker/scripts/create_broker_secret.py"
+create_broker_secret_script: "/tmp/create_broker_secret.py"
+
 
 etcd_tag: "latest"
 etcd_image_name: "quay.io/coreos/etcd"
@@ -157,6 +180,7 @@ asb_scheme: https
 docker_images_group1:
   - { img: "{{ broker_image_name }}", tag: "{{ broker_tag }}" }
   - { img: "{{ origin_image_name }}-service-catalog", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ helios_broker_image_name }}", tag: "{{ helios_broker_tag }}" }
 
 # These docker images change less frequently, we are OK pulling them once and reusing
 docker_images_group2:
@@ -170,4 +194,3 @@ docker_images_group2:
 
 coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
-
