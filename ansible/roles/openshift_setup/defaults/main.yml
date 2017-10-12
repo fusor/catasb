@@ -11,7 +11,7 @@ openshift_clients:
     url: https://apb-oc.s3.amazonaws.com/apb-oc
     release_ver: oc
 
-openshift_client_version: '3.6'
+openshift_client_version: 'latest'
 oc_tools_dir: /usr/local/bin
 
 # Temporary fix until release version of oc client works with latest images.
