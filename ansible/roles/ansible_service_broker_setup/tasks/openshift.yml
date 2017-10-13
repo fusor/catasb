@@ -84,6 +84,8 @@
         -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
         -p BROKER_CA_CERT='{{ cluster_ca_cert.stdout }}'
         -p AUTO_ESCALATE={{ broker_auto_escalate|bool }}
+        -p KEEP_NAMESPACE={{ broker_keep_namespace|bool }}
+        -p KEEP_NAMESPACE_ON_ERROR={{ broker_keep_namespace_on_error|bool }}
         {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
         {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
     when: "not rcm"

@@ -118,6 +118,9 @@ broker_auto_escalate: true
 broker_image_name: docker.io/ansibleplaybookbundle/origin-ansible-service-broker
 broker_tag: "latest"
 broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
+# Used to determine if the APB namespace should be kept
+broker_keep_namespace: false
+broker_keep_namespace_on_error: true
 
 # Helios Broker 
 deploy_asb: True
