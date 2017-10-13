@@ -5,6 +5,7 @@
     get_url:
       url: "{{ helios_asb_template_s3_url }}"
       dest: "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
+      force: True
 
   # Verify that the template file 'helios_asb_template_filename' exists
   - stat:
