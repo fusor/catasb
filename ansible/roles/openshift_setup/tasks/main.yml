@@ -90,7 +90,7 @@
     - name: Install oc
       copy:
         remote_src: True
-        src: /tmp/oc
+        src: "/tmp/{{ openshift_client_release }}/oc"
         dest: "{{ oc_tools_dir }}/oc"
         mode: 0755
       when: openshift_release_ext == "zip"
