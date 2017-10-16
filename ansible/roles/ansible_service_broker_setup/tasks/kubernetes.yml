@@ -19,6 +19,12 @@
   - name: Switch project to {{ asb_project }}
     shell: "{{ kubectl_cmd }} config set-context $(kubectl config current-context) --namespace={{ asb_project }}"
 
+  - name: Creating asb-tls secret
+    shell: kubectl create secret tls asb-tls --cert="{{ catalog_tls_cert }}" --key="{{ catalog_tls_key }}"
+  - name: retrieve cert for cluster
+    shell: "{{ kubectl_cmd }} get secret --no-headers=true -n catalog | grep -m 1 service-catalog-apiserver-token | {{ kubectl_cmd }} get secret $(awk '{ print $1 }') -n catalog -o yaml | grep ca.crt | awk '{ print $2 }' | cat"
+    register: cluster_ca_cert
+
   - name: Waiting 10 minutes for ASB pod
     action:
       shell "{{ kubectl_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy
@@ -34,10 +40,13 @@
     delay: 10
 
   - set_fact:
-      ansible_service_broker_address:  "http://{{ result_get_endpoint_asb.stdout }}"
+      ansible_service_broker_resource_file: "ansible_service_broker.yaml.j2"
 
   - set_fact:
-      ansible_service_broker_resource_file: "ansible_service_broker.yaml.j2"
+      broker_ca_cert: "{{ cluster_ca_cert.stdout }}"
+
+  - set_fact:
+      broker_auth: '{ "bearer": { "secretRef": { "kind": "Secret", "namespace": "ansible-service-broker", "name": "ansibleservicebroker-client" } } }'
 
   - name: Creating /tmp/ansible_service_broker.yaml
     template:

@@ -25,12 +25,6 @@ etcd_path: /usr/local/bin/etcd
 # Configuration filepath for Ansible Service Broker
 broker_config: /etc/ansible-service-broker/config.yaml
 
-# SSL enabled: insecure="false", termination=Reencrypt
-# Insecure enabled: insecure="true", termination=edge
-# Run in insecure mode
-insecure: "false"
-termination: Reencrypt
-
 # APB Image Tag
 tag: latest
 
@@ -46,6 +40,19 @@ registry_url: https://registry.hub.docker.com
 
 # Include Broker Development Endpoint
 dev_broker: "true"
+
+# Sandbox Permissions
+sandbox_role: "edit"
+auto_escalate: "true"
+keep_namespace: "false"
+keep_namespace_on_error: "true"
+
+# Url Prefix
+broker_url_prefix: "/ansible-service-broker"
+
+# Use the catalog TLS certs for the broker
+catalog_tls_cert: "{{ playbook_dir }}/apiserver.pem"
+catalog_tls_key: "{{ playbook_dir }}/apiserver-key.pem"
 
 # Launch APB on bind
 launch_apb_on_bind: "false"
