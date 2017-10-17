@@ -88,15 +88,15 @@
       cmd_process_asb_template: >-
         {{ oc_cmd }}
         process
-        -f {{ local_target_asb_template }}
-        -n {{ asb_project }}
-        -p BROKER_IMAGE={{ broker_image }}
+        -f {{ helios_local_target_asb_template }}
+        -n {{ helios_asb_project }}
+        -p BROKER_IMAGE={{ helios_broker_image }}
         -p ETCD_IMAGE={{ etcd_image }}
         -p ETCD_PATH={{ etcd_path }}
         -p REGISTRY_TYPE={{ broker_registry_type }}
         -p REGISTRY_URL={{ broker_registry_url }}
         -p DEV_BROKER={{ broker_dev_broker }}
-        -p DOCKERHUB_ORG='{{ dockerhub_org }}'
+        -p DOCKERHUB_ORG='{{ helios_dockerhub_org }}'
         -p DOCKERHUB_PASS='{{ dockerhub_user_password }}'
         -p DOCKERHUB_USER='{{ dockerhub_user_name }}'
         -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
@@ -106,7 +106,7 @@
         -p REGISTRY_NAME={{ broker_registry_name }}
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
         -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
-        -p TAG={{ apbtag | default('latest') }}
+        -p TAG={{ helios_apbtag | default('latest') }}
         -p SANDBOX_ROLE={{ broker_sandbox_role }}
         -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
         -p BROKER_CA_CERT='{{ cluster_ca_cert.stdout }}'
