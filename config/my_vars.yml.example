@@ -57,7 +57,7 @@ dockerhub_org: ansibleplaybookbundle
 # aws_ami_id: ami-9062d0f4
 
 #
-# Deploy Helios Broker 
+# Deploy Helios Broker
 # Note: You may set BOTH 'deploy_helios' AND 'deploy_asb' to 'True'
 #       However, if both are set to 'True', besure that
 #       'dockerhub_org' and 'helios_dockerhub_org' are NOT the same

@@ -44,14 +44,14 @@
     set_fact:
       broker_enable_basic_auth: true
     when: openshift_client_version == '3.6'
-  #####
-  # Remember that 'rcm' builds are using an older branch of the broker
-  # Some features in the deployment template may not be available, such as
-  #     REGISTRY_NAME
-  # Goal is to build up a common command, then modify it as needed for newer
-  # features.
-  #####
-  - name: Create command line for processing template
+
+  #################################################################
+  # 'rcm' builds usually use an older branch of the broker
+  # Some features in the deployment template may not be available
+  # If so, do NOT put those commands in this task.
+  # Only use 'rcm' compatible command args here
+  #################################################################
+  - name: Create command line for processing template (rcm compliant)
     set_fact:
       cmd_process_asb_template: >-
         {{ oc_cmd }}
@@ -70,11 +70,6 @@
         -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
         -p OUTPUT_REQUEST={{ broker_output_request }}
         -p RECOVERY={{ broker_recovery }}
-
-  - name: Modify command if running a non-rcm build to use newer features
-    set_fact:
-      cmd_process_asb_template: >-
-        {{ cmd_process_asb_template }}
         -p ROUTING_SUFFIX={{ openshift_routing_suffix }}
         -p REGISTRY_NAME={{ broker_registry_name }}
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
@@ -88,7 +83,17 @@
         -p KEEP_NAMESPACE_ON_ERROR={{ broker_keep_namespace_on_error|bool }}
         {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
         {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
-    when: "not rcm"
+
+  ############################################################
+  # Add any commands that aren't compatible with 'rcm here
+  # to use newer features available in newer broker images
+  ############################################################
+  #- name: Modify command if running a non-rcm build to use newer features
+  #  set_fact:
+  #    cmd_process_asb_template: >-
+  #      {{ cmd_process_asb_template }}
+  #      insert new commands that don't work on rcm here
+  #  when: "not rcm"
 
   - name: Update Broker Kind and Auth when using coalmine
     set_fact:
@@ -122,21 +127,3 @@
     register: result_get_route_asb
     retries: 6
     delay: 10
-
-  # When using RCM, we'll have to create the broker resource
-  - set_fact:
-      ansible_service_broker_address:  "{{ asb_scheme }}://{{ result_get_route_asb.stdout }}"
-    when: "rcm"
-
-  - name: Creating /tmp/ansible_service_broker.yaml
-    template:
-      src: "rcm_ansible_service_broker.yaml.j2"
-      dest: /tmp/ansible_service_broker.yaml
-      owner: "{{ ansible_env.USER }}"
-      mode: 0644
-    register: ansible_service_broker_template
-    when: "rcm"
-
-  - name: Create Broker resource in Service Catalog
-    shell: "{{ oc_cmd }} create -f /tmp/ansible_service_broker.yaml"
-    when: "rcm"

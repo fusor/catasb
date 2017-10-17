@@ -76,49 +76,54 @@
     set_fact:
       broker_enable_basic_auth: true
     when: openshift_client_version == '3.6'
-  #####
-  # Remember that 'rcm' builds are using an older branch of the broker
-  # Some features in the deployment template may not be available, such as
-  #     REGISTRY_NAME
-  # Goal is to build up a common command, then modify it as needed for newer
-  # features.
-  #####
-  - name: Create command line for processing template
+
+  #################################################################
+  # 'rcm' builds usually use an older branch of the broker
+  # Some features in the deployment template may not be available
+  # If so, do NOT put those commands in this task.
+  # Only use 'rcm' compatible command args here
+  #################################################################
+  - name: Create command line for processing template (rcm compliant)
     set_fact:
       cmd_process_asb_template: >-
         {{ oc_cmd }}
         process
-        -f {{ helios_local_target_asb_template }}
-        -n {{ helios_asb_project }}
-        -p BROKER_IMAGE={{ helios_broker_image }}
+        -f {{ local_target_asb_template }}
+        -n {{ asb_project }}
+        -p BROKER_IMAGE={{ broker_image }}
         -p ETCD_IMAGE={{ etcd_image }}
         -p ETCD_PATH={{ etcd_path }}
         -p REGISTRY_TYPE={{ broker_registry_type }}
         -p REGISTRY_URL={{ broker_registry_url }}
         -p DEV_BROKER={{ broker_dev_broker }}
-        -p DOCKERHUB_ORG='{{ helios_dockerhub_org }}'
+        -p DOCKERHUB_ORG='{{ dockerhub_org }}'
         -p DOCKERHUB_PASS='{{ dockerhub_user_password }}'
         -p DOCKERHUB_USER='{{ dockerhub_user_name }}'
         -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
         -p OUTPUT_REQUEST={{ broker_output_request }}
         -p RECOVERY={{ broker_recovery }}
-
-  - name: Modify command if running a non-rcm build to use newer features
-    set_fact:
-      cmd_process_asb_template: >-
-        {{ cmd_process_asb_template }}
         -p ROUTING_SUFFIX={{ openshift_routing_suffix }}
         -p REGISTRY_NAME={{ broker_registry_name }}
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
         -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
-        -p TAG={{ helios_apbtag | default('latest') }}
+        -p TAG={{ apbtag | default('latest') }}
         -p SANDBOX_ROLE={{ broker_sandbox_role }}
         -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
         -p BROKER_CA_CERT='{{ cluster_ca_cert.stdout }}'
         -p AUTO_ESCALATE={{ broker_auto_escalate|bool }}
         {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
         {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
-    when: "not rcm"
+
+  ############################################################
+  # Add any commands that aren't compatible with 'rcm here
+  # to use newer features available in newer broker images
+  ############################################################
+  #- name: Modify command if running a non-rcm build to use newer features
+  #  set_fact:
+  #    cmd_process_asb_template: >-
+  #      {{ cmd_process_asb_template }}
+  #      insert new commands that don't work on rcm here
+  #  when: "not rcm"
 
   - name: Update Broker Kind and Auth when using coalmine
     set_fact:
