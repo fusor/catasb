@@ -1,6 +1,17 @@
 ---
   - debug: var=helios_dockerhub_org
 
+  - set_fact:
+      oc_tools_dir: /usr/bin
+    when: ec2_install
+
+  - set_fact:
+      oc_tools_dir: "{{ ansible_env.HOME }}/bin"
+    when: not ec2_install
+
+  - set_fact:
+      oc_cmd: "{{ oc_tools_dir }}/oc"
+
   - name: Download the Helios Broker Template File to "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
     get_url:
       url: "{{ helios_asb_template_s3_url }}"
@@ -141,3 +152,10 @@
     register: result_get_route_asb
     retries: 6
     delay: 10
+
+  - set_fact:
+      aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+      aws_secret_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+
+  - include: create_secrets.yml
+    when: (deploy_helios == True) and (aws_access_key != "" and aws_secret_key != "")

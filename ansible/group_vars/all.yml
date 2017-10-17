@@ -144,7 +144,8 @@ helios_local_target_asb_template_processed: /tmp/deploy-helios-broker.template.y
 helios_parameters_file: "/tmp/parameters.yml"
 create_broker_secret_file_url: "https://s3.amazonaws.com/heliosbroker/scripts/create_broker_secret.py"
 create_broker_secret_script: "/tmp/create_broker_secret.py"
-
+refresh_broker_resoure_file_url: "https://s3.amazonaws.com/heliosbroker/scripts/refresh_broker_resource.py"
+refresh_broker_resoure_script: "/tmp/refresh_broker_resoure.py"
 
 etcd_tag: "latest"
 etcd_image_name: "quay.io/coreos/etcd"

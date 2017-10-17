@@ -73,3 +73,6 @@ dockerhub_org: ansibleplaybookbundle
 # The default tag to use for Helios apb's is latest. To change that you can set this option.
 # helios_apbtag: nightly
 # helios_apbtag: canary
+
+# EC-2 Instance Type - 't2.medium' or higher is recommended
+# instance_type: c4.4xlarge

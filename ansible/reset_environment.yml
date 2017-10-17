@@ -35,7 +35,6 @@
     - { role: "{{ cluster }}_setup", reset_cluster: True }
     - { role: ansible_service_broker_setup, when: deploy_asb == True}
     - { role: helios_broker_setup, when: deploy_helios == True}
-    - create_broker_secrets
   post_tasks:
     - set_fact:
         msg: |
