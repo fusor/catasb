@@ -3,7 +3,7 @@
 rcm: true
 
 # when 3.7 stabilizes on a client, we'll change these to set these to the downstream release, but for now we have to use latest.
-origin_image_tag: latest
+origin_image_tag: v3.7
 openshift_client_version: latest
 
 # Need to use the template from the release branch of ansible-service-broker
@@ -12,10 +12,9 @@ openshift_client_version: latest
 broker_registry_type: rhcc
 broker_image_name: "{{ origin_image_name }}-ansible-service-broker"
 broker_tag: "{{ origin_image_tag }}"
+apbtag: "{{ origin_image_tag }}"
 etcd_image_name: registry.access.redhat.com/rhel7/etcd
 etcd_path: "/bin/etcd"
-
-asb_scheme: http
 
 ##########################################
 # Use Staged Images for RCM
