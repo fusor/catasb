@@ -12,6 +12,11 @@ dockerhub_org: ansibleplaybookbundle
 # origin_image_tag: latest
 # openshift_client_version: latest
 
+# broker_tag controls what version of ansible broker to deploy
+# defaults to "latest", use "canary" if you want to test latest built code from master
+# broker_tag: "latest"
+# broker_tag: "canary"
+
 # You can override other variables as needed.  For example to change your OpenShift hostname
 # you can modify the hostname and suffix here:
 # hostname: 172.17.0.1
@@ -26,6 +31,7 @@ dockerhub_org: ansibleplaybookbundle
 # Override the service-catalog's apiserver + controller images.
 # coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 # coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
+
 
 # The default tag to use for apb's is latest. To change that you can set this option.
 # apbtag: nightly
