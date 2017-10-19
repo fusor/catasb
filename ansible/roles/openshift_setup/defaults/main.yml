@@ -12,7 +12,7 @@ openshift_clients:
     release_ver: oc
 
 openshift_client_version: 'latest'
-oc_tools_dir: /usr/local/bin
+oc_client_install_path: /usr/local/bin
 
 # Temporary fix until release version of oc client works with latest images.
 openshift_client_url: https://s3.amazonaws.com/catasb/linux/amd64/oc

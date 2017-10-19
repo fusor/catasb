@@ -81,9 +81,9 @@ cluster_user_password: admin
 cluster_system_admin: "system:admin"
 scc_anyuid: False
 
-oc_client_install_path: "/usr/local/bin"
+oc_client_install_path: "{{ ansible_env.HOME }}/bin"
 oc_cmd: "{{ oc_client_install_path }}/oc"
-oadm_cmd: "{{ oc_client_install_path }}/oadm"
+oadm_cmd: "{{ oc_cmd }} oadm"
 kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 
 origin_image_name: docker.io/openshift/origin
@@ -122,7 +122,7 @@ broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
 broker_keep_namespace: false
 broker_keep_namespace_on_error: true
 
-# Helios Broker 
+# Helios Broker
 deploy_asb: True
 deploy_helios: False
 helios_dockerhub_org: projecthelios

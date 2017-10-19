@@ -13,23 +13,6 @@
           (ansible_distribution == "Ubuntu")
 
   - set_fact:
-      oc_tools_dir: /usr/bin
-    when: ec2_install
-
-  - set_fact:
-      oc_tools_dir: "{{ ansible_env.HOME }}/bin"
-    when: not ec2_install
-
-  - set_fact:
-      oc_cmd: "{{ oc_tools_dir }}/oc"
-
-  - set_fact:
-      oadm_cmd: "{{ oc_tools_dir }}/oc adm"
-
-  - set_fact:
-      kubectl_cmd: "{{ oc_tools_dir }}/kubectl"
-
-  - set_fact:
       openshift_client: "{{ openshift_clients[openshift_client_version] }}"
 
   - set_fact:
@@ -51,13 +34,13 @@
     become: true
     when: ansible_os_family == "RedHat"
 
-  - file:
-      path: "{{ oc_tools_dir }}"
-      state: directory
-      mode: 0755
 
   # Download oc client from release
   - block:
+    - file:
+        path: "{{ oc_client_install_path }}"
+        state: directory
+        mode: 0755
 
     - debug:
         var: openshift_client_release_url
@@ -79,6 +62,13 @@
         mode: 0440
         force: yes
 
+    - name: Download kube_ctl, "{{ kube_ctl_url }}"
+      get_url:
+        url: "{{ kube_ctl_url }}"
+        dest: "{{ oc_client_install_path }}/kubectl"
+        mode: 0755
+      register: get_kubernetes_client_release
+
     - name: Extract zip archive
       unarchive: src=/tmp/{{ openshift_client_release_file }} dest=/tmp copy=no
       when: openshift_release_ext == "zip"
@@ -91,7 +81,7 @@
       copy:
         remote_src: True
         src: "/tmp/{{ openshift_client_release }}/oc"
-        dest: "{{ oc_tools_dir }}/oc"
+        dest: "{{ oc_client_install_path }}/oc"
         mode: 0755
       when: openshift_release_ext == "zip"
 
@@ -99,12 +89,45 @@
       copy:
         remote_src: True
         src: /tmp/{{ openshift_client_release }}/oc
-        dest: "{{ oc_tools_dir }}/oc"
+        dest: "{{ oc_client_install_path }}/oc"
         mode: 0755
       when: openshift_release_ext == "tar.gz"
 
-    when: not local_oc_client
-  # end block
+    when: not local_oc_client and not rcm
+    # end block for downloading oc binary from latest upstream builds
+
+  - block:
+      - debug:
+          msg: "Setting up repo to download latest RPM with oc binary from puddle"
+
+      - name: Create OSE Puddle repo
+        yum_repository:
+          name: "ose-puddle"
+          description: "OSE Puddle"
+          baseurl: "{{ puddle_repo }}"
+          enabled: no
+          gpgcheck: no
+        become: true
+        when: (ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat' or ansible_distribution == 'Fedora' )
+
+      - name: Uninstall origin-clients
+        yum:
+          name: "{{ item }}"
+          state: absent
+        with_items:
+          - "origin-clients"
+        become: true
+
+      - name: Install atomic-openshift-clients
+        yum:
+          name: "{{ item }}"
+          enablerepo: "ose-puddle"
+          state: installed
+        with_items:
+          - "atomic-openshift-clients"
+        become: true
+    when: rcm
+    # end block for downloading latest oc from a downstream puddle
 
   - name: Checking version of oc client
     shell: "{{ oc_cmd }} version"
@@ -112,14 +135,10 @@
     ignore_errors: yes
 
   - debug:
-      msg: "{{ oc_version_output.stdout_lines }}"
+      msg: |
+        {{ oc_cmd }}
+        {{ oc_version_output.stdout_lines }}ls /u
 
-  - name: Download kube_ctl, "{{ kube_ctl_url }}"
-    get_url:
-      url: "{{ kube_ctl_url }}"
-      dest: "{{ oc_tools_dir }}/kubectl"
-      mode: 0755
-    register: get_kubernetes_client_release
 
   - name: Wait, up to 20 minutes, till we can SSH into the host with the DNS name '{{ hostname }}'
     wait_for:

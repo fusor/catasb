@@ -6,6 +6,9 @@ rcm: true
 origin_image_tag: v3.7
 openshift_client_version: latest
 
+# RCM will install atomic-openshift-clients RPM, that will populate /usr/bin/oc
+oc_client_install_path: /usr/bin
+
 # Need to use the template from the release branch of ansible-service-broker
 # Using latest templates for now.  Will use matching template when 'rcm' code is frozen in a release
 #asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/release-0.9/templates/deploy-ansible-service-broker.template.yaml
@@ -21,9 +24,12 @@ etcd_path: "/bin/etcd"
 ##########################################
 ## Override and use latest images pushed to developer servers to mimic stage
 #
-# broker_registry_url: http://registry.access.redhat.com
-# origin_image_name: registry.ops.openshift.com/openshift3/ose
+#broker_registry_url: http://registry.access.redhat.com
+#origin_image_name: registry.ops.openshift.com/openshift3/ose
 #
 # - Dev Staging
 broker_registry_url: http://asb-registry.usersys.redhat.com:5000
 origin_image_name: asb-registry.usersys.redhat.com:5000/openshift3/ose
+
+
+puddle_repo: http://download-node-02.eng.bos.redhat.com/rcm-guest/puddles/RHAOS/AtomicOpenShift/3.7/latest/x86_64/os

@@ -1,17 +1,6 @@
 ---
   - debug: var=helios_dockerhub_org
 
-  - set_fact:
-      oc_tools_dir: /usr/bin
-    when: ec2_install
-
-  - set_fact:
-      oc_tools_dir: "{{ ansible_env.HOME }}/bin"
-    when: not ec2_install
-
-  - set_fact:
-      oc_cmd: "{{ oc_tools_dir }}/oc"
-
   - name: Download the Helios Broker Template File to "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
     get_url:
       url: "{{ helios_asb_template_s3_url }}"
