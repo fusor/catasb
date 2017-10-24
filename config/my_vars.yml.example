@@ -1,84 +1,43 @@
 ---
-# Override any and all Ansible variables when running catasb setup scripts.
-
+####################################################
+# Dockerhub Settings
+####################################################
 # For convenience you can skip being prompted for these vars by storing them here.
-dockerhub_user_name: example_user
-dockerhub_org: ansibleplaybookbundle
-
-# Omit this unless you want to store your password in plain text to skip prompts.
-# dockerhub_user_password: example_password
-
-# To use openshift origin latest, uncomment these lines:
-# origin_image_tag: latest
-# openshift_client_version: latest
-
-# broker_tag controls what version of ansible broker to deploy
-# defaults to "latest", use "canary" if you want to test latest built code from master
-# broker_tag: "latest"
-# broker_tag: "canary"
-
-# You can override other variables as needed.  For example to change your OpenShift hostname
-# you can modify the hostname and suffix here:
-# hostname: 172.17.0.1
-# openshift_routing_suffix: 172.17.0.1.nip.io
-
-# Default to the "anyuid" scc for pod deployments.
-# scc_anyuid: true
-
-# Use the quay.io canary images for bleeding edge development.
-# coalmine: true
-
-# Override the service-catalog's apiserver + controller images.
-# coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
-# coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
+dockerhub_user_name: changeme
+dockerhub_user_password: changeme
+dockerhub_org: apbdemo
 
 
-# The default tag to use for apb's is latest. To change that you can set this option.
-# apbtag: nightly
-# apbtag: canary
+####################################################
+# Broker Settings
+####################################################
+# use frozen image of asb from apbdemo org
+broker_image_name: docker.io/apbdemo/origin-ansible-service-broker
 
-# Ansible service broker configuration settings. Enable to allow local APB deployments
-# via `apb push`:
-# broker_enable_basic_auth: false
-# broker_bootstrap_refresh_interval: 31536000s
+# really only necessary when using the ansibleplaybookbundle org, but works in apbdemo as well, so I left it
+broker_tag: canary
 
-# Disable SSL.
-# use_ssl: false
+# keep pods around
+broker_keep_namespace: true
 
-# Select AWS region and AMI for EC2 deployments.
-# us-east-1
-# aws_region: us-east-1
-# aws_ami_id: ami-b63769a1
-# us-east-2
-# aws_region: us-east-2
-# aws_ami_id: ami-0932686c
-# us-west-1
-# aws_region: us-west-1
-# aws_ami_id: ami-2cade64c
-# us-west-2
-# aws_region: us-west-2
-# aws_ami_id: ami-6f68cf0f
-# ca-central-1
-# aws_region: ca-central-1
-# aws_ami_id: ami-9062d0f4
 
-#
-# Deploy Helios Broker
-# Note: You may set BOTH 'deploy_helios' AND 'deploy_asb' to 'True'
-#       However, if both are set to 'True', besure that
-#       'dockerhub_org' and 'helios_dockerhub_org' are NOT the same
-#
-# helios_broker_template_dir: "/git/Project-Helios/deploy_scripts"
-# deploy_asb: False    # True/False
-# deploy_helios: True  # True/False
-# helios_dockerhub_org: projecthelios
-# helios_broker_image_name: "docker.io/{{ helios_dockerhub_org }}/aws-service-broker"
-# helios_broker_tag: "latest"
-# helios_asb_template_s3_url: "https://s3.amazonaws.com/heliosbroker/scripts/deploy-helios-broker.template.yaml"
+####################################################
+# Origin Settings
+####################################################
+# use the origin images we've uploaded to apbdemo.  Omit to use the latest origin images from openshift
+origin_image_name: docker.io/apbdemo/origin
 
-# The default tag to use for Helios apb's is latest. To change that you can set this option.
-# helios_apbtag: nightly
-# helios_apbtag: canary
+# locks down the oc client to the same version from the images we uploaded to apbdemo
+openshift_clients:
+  latest:
+    url: https://s3.amazonaws.com/apb-oc/apbdemo
+    release_ver: oc
 
-# EC-2 Instance Type - 't2.medium' or higher is recommended
-# instance_type: c4.4xlarge
+
+####################################################
+# AWS Settings
+####################################################
+# for Sydney, Australia
+# aws_region: ap-southeast-2
+# aws_ami_id: ami-39ac915a
+
