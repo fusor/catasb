@@ -35,7 +35,7 @@
       msg: "Service Broker must have a CA Bundle set for the Ansible Service Broker and Service Catalog to be able to communicate"
     when: cluster_ca_cert.stdout == "" and openshift_client_version != "3.6"
 
-  - name: crate etcd-cert tmp directory
+  - name: create etcd-cert tmp directory
     file:
       path: /tmp/etcd-cert
       state: directory
