@@ -116,6 +116,7 @@
         -p ETCD_TRUESTED_CA='{{ etcd_ca_cert | b64encode }}'
         -p BROKER_CLIENT_CERT='{{ etcd_client_cert | b64encode }}'
         -p BROKER_CLIENT_KEY='{{ etcd_client_key | b64encode }}'
+        -p NAMESPACE='{{ asb_project }}'
     when: etcd_ca_cert is defined and etcd_client_cert is defined and etcd_client_key is defined
 
   # to use newer features available in newer broker images
