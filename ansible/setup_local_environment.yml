@@ -3,12 +3,6 @@
   vars:
     broker_ci: False
   vars_prompt:
-    - name: dockerhub_user_name
-      prompt: "Enter your dockerhub username"
-      private: no
-    - name: dockerhub_user_password
-      prompt: "Enter your dockerhub password"
-      private: yes
     - name: dockerhub_org
       prompt: "Enter the dockerhub organization you'd like to pull images from"
       private: no
