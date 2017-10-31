@@ -335,6 +335,7 @@
     register: oc_cluster_up
     retries: 5
     delay: 10
+    until: oc_cluster_up.rc == 0
   #
   # Add permissions to desired openshift user
   # Would be nice if we looked at existing users and permissions and made decisions of what to run
