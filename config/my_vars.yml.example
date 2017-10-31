@@ -14,6 +14,9 @@ dockerhub_org: apbdemo
 # use frozen image of asb from apbdemo org
 broker_image_name: docker.io/apbdemo/origin-ansible-service-broker
 
+# use old template we know works with the frozen image
+asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/701d51f384a744e7eca659118c25742ec9d1215e/templates/deploy-ansible-service-broker.template.yaml
+
 # really only necessary when using the ansibleplaybookbundle org, but works in apbdemo as well, so I left it
 broker_tag: canary
 

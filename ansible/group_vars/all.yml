@@ -184,7 +184,6 @@ asb_scheme: https
 docker_images_group1:
   - { img: "{{ broker_image_name }}", tag: "{{ broker_tag }}" }
   - { img: "{{ origin_image_name }}-service-catalog", tag: "{{ origin_image_tag }}" }
-  - { img: "{{ helios_broker_image_name }}", tag: "{{ helios_broker_tag }}" }
 
 # These docker images change less frequently, we are OK pulling them once and reusing
 docker_images_group2:
