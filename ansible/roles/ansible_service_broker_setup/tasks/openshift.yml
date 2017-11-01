@@ -39,6 +39,28 @@
       msg: "Service Broker must have a CA Bundle set for the Ansible Service Broker and Service Catalog to be able to communicate"
     when: cluster_ca_cert.stdout == "" and openshift_client_version != "3.6"
 
+  - name: create etcd-cert tmp directory
+    file:
+      path: /tmp/etcd-cert
+      state: directory
+    when: etcd_ca_cert is not defined and etcd_client_cert is not defined and etcd_client_key is not defined
+
+  - name: Create self signing ca cert
+    shell: 'openssl req -nodes -x509 -newkey rsa:4096 -keyout /tmp/etcd-cert/key.pem -out /tmp/etcd-cert/cert.pem -days 365 -subj "/CN=asb-etcd.ansible-service-broker.svc"'
+    when: etcd_ca_cert is not defined and etcd_client_cert is not defined and etcd_client_key is not defined
+
+  - name: Create self signed client cert
+    shell: 'openssl genrsa -out /tmp/etcd-cert/MyClient1.key 2048 \
+    && openssl req -new -key /tmp/etcd-cert/MyClient1.key -out /tmp/etcd-cert/MyClient1.csr -subj "/CN=client" \
+    && openssl x509 -req -in /tmp/etcd-cert/MyClient1.csr -CA /tmp/etcd-cert/cert.pem -CAkey /tmp/etcd-cert/key.pem -CAcreateserial -out /tmp/etcd-cert/MyClient1.pem -days 1024'
+    when: etcd_ca_cert is not defined and etcd_client_cert is not defined and etcd_client_key is not defined
+
+  - set_fact:
+      etcd_ca_cert: "{{ lookup('file', '/tmp/etcd-cert/cert.pem') }}"
+      etcd_client_cert: "{{ lookup('file', '/tmp/etcd-cert/MyClient1.pem') }}"
+      etcd_client_key: "{{ lookup('file', '/tmp/etcd-cert/MyClient1.key') }}"
+    when: etcd_ca_cert is not defined and etcd_client_cert is not defined and etcd_client_key is not defined
+
   - name: Create a new project for the {{ asb_project }}
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
     register: new_asb_project
@@ -88,8 +110,19 @@
         {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
         {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
 
-  ############################################################
-  # Add any commands that aren't compatible with 'rcm here
+  - name: Add etcd authentication if values are defined
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ cmd_process_asb_template }}
+        -p ETCD_TRUSTED_CA_FILE=/var/run/etcd-auth-secret/ca.crt
+        -p BROKER_CLIENT_CERT_PATH=/var/run/asb-etcd-auth/client.crt
+        -p BROKER_CLIENT_KEY_PATH=/var/run/asb-etcd-auth/client.key
+        -p ETCD_TRUSTED_CA='{{ etcd_ca_cert | b64encode }}'
+        -p BROKER_CLIENT_CERT='{{ etcd_client_cert | b64encode }}'
+        -p BROKER_CLIENT_KEY='{{ etcd_client_key | b64encode }}'
+        -p NAMESPACE='{{ asb_project }}'
+    when: etcd_ca_cert is defined and etcd_client_cert is defined and etcd_client_key is defined
+
   # to use newer features available in newer broker images
   ############################################################
   #- name: Modify command if running a non-rcm build to use newer features
