@@ -27,8 +27,12 @@
     shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ asb_project }}( |$)' | cat"
     register: project
 
+  - name: get service-catalog-apiserver-token secret name
+    shell: "{{ oc_cmd}} get secret --no-headers=true -n kube-service-catalog | grep -m 1 service-catalog-apiserver-token | awk '{ print $1 }' | cat"
+    register: cat_token_secret_name
+
   - name: retrieve cert for cluster
-    shell: "{{ oc_cmd}} get secret --no-headers=true -n kube-service-catalog | grep -m 1 service-catalog-apiserver-token | {{ oc_cmd}} get secret $(awk '{ print $1 }') -n kube-service-catalog -o yaml | grep service-ca.crt | awk '{ print $2 }' | cat"
+    shell: "{{ oc_cmd}} get secret {{ cat_token_secret_name.stdout }} -n kube-service-catalog -o yaml | grep service-ca.crt | awk '{ print $2 }' | cat"
     register: cluster_ca_cert
 
   - debug:
