@@ -55,11 +55,26 @@
     && openssl x509 -req -in /tmp/etcd-cert/MyClient1.csr -CA /tmp/etcd-cert/cert.pem -CAkey /tmp/etcd-cert/key.pem -CAcreateserial -out /tmp/etcd-cert/MyClient1.pem -days 1024'
     when: etcd_ca_cert is not defined and etcd_client_cert is not defined and etcd_client_key is not defined
 
-  - set_fact:
-      etcd_ca_cert: "{{ lookup('file', '/tmp/etcd-cert/cert.pem') }}"
-      etcd_client_cert: "{{ lookup('file', '/tmp/etcd-cert/MyClient1.pem') }}"
-      etcd_client_key: "{{ lookup('file', '/tmp/etcd-cert/MyClient1.key') }}"
-    when: etcd_ca_cert is not defined and etcd_client_cert is not defined and etcd_client_key is not defined
+  - block:
+    - shell: cat /tmp/etcd-cert/cert.pem
+      register: cat_etcd_ca_cert
+    - set_fact:
+        etcd_ca_cert: "{{ cat_etcd_ca_cert.stdout }}"
+    when: etcd_ca_cert is not defined
+
+  - block:
+    - shell: cat /tmp/etcd-cert/MyClient1.pem
+      register: cat_etcd_client_cert
+    - set_fact:
+        etcd_client_cert: "{{ cat_etcd_client_cert.stdout }}"
+    when: etcd_client_cert is not defined
+
+  - block:
+    - shell: cat /tmp/etcd-cert/MyClient1.key
+      register: cat_etcd_client_key
+    - set_fact:
+        etcd_client_key: "{{ cat_etcd_client_key.stdout }}"
+    when: etcd_client_key is not defined
 
   - name: Create a new project for the {{ asb_project }}
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
