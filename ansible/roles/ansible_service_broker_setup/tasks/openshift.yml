@@ -166,13 +166,16 @@
   - name: Switch project to {{ asb_project }}
     shell: "{{ oc_cmd }} project {{ asb_project }}"
 
-  - name: Waiting 10 minutes for ASB pod
+  - name: Waiting 10 minutes for ASB deployment configs
     action:
-      shell "{{ oc_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy
+      shell "{{ oc_cmd }}" get deploymentconfig "{{ item }}" -o go-template={% raw %}'{{if eq .spec.replicas .status.availableReplicas}}good{{end}}'{% endraw %} | grep 'good'
     register: wait_for_asb_pod
     until: wait_for_asb_pod.rc == 0
     retries: 60
     delay: 10
+    with_items:
+      - asb
+      - asb-etcd
 
   - name: Get route for ansible-service-broker
     shell: "'{{ oc_cmd }}' get routes | grep ansible-service-broker | awk '{print $2}'"
