@@ -3,7 +3,7 @@ kind: ClusterServiceBroker
 metadata:
   name: ansible-service-broker
 spec:
-  url: https://asb.ansible-service-broker.svc:1338"{{ broker_url_prefix }}"/
+  url: "https://asb.ansible-service-broker.svc:1338{{ broker_url_prefix }}/"
   authInfo:
     {{ broker_auth }}
   caBundle: "{{ broker_ca_cert }}"

@@ -11,24 +11,9 @@
   - name: Clone Service Catalog Repo
     shell: "git clone {{ catalog_git }} {{ service_catalog_path }}"
 
-  - name: Sourcing SSL certs
-    shell: "{{ service_catalog_path }}/contrib/svc-cat-apiserver-aggregation-tls-setup.sh"
-
   - name: Building Latest Canary Images
     shell: "pushd {{ service_catalog_path}} && make images && popd"
     become: true
-
-  - name: Gathering sc_serving_ca
-    shell: "base64 --wrap 0 {{ sc_serving_ca }}"
-    register: base64_sc_serving_ca
-
-  - name: Gathering sc_serving_cert
-    shell: "base64 --wrap 0 {{ sc_serving_cert }}"
-    register: base64_sc_serving_cert
-
-  - name: Gathering sc_serving_key
-    shell: "base64 --wrap 0 {{ sc_serving_key }}"
-    register: base64_sc_serving_key
 
   - name: Create service-catalog start command
     set_fact:
@@ -40,11 +25,6 @@
         --set apiserver.imagePullPolicy="Never"
         --set controllerManager.image="{{ controllerManager_container }}:{{ catalog_version }}"
         --set controllerManager.imagePullPolicy="Never"
-        --set apiserver.auth.enabled=true
-        --set useAggregator=true
-        --set apiserver.tls.ca={{ base64_sc_serving_ca.stdout }}
-        --set apiserver.tls.cert={{ base64_sc_serving_cert.stdout }}
-        --set apiserver.tls.key={{ base64_sc_serving_key.stdout }}
 
   - debug:
       msg: "Start Command:  '{{ kubernetes_start }}'"

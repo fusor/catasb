@@ -50,10 +50,6 @@ keep_namespace_on_error: "true"
 # Url Prefix
 broker_url_prefix: "/ansible-service-broker"
 
-# Use the catalog TLS certs for the broker
-catalog_tls_cert: "{{ playbook_dir }}/apiserver.pem"
-catalog_tls_key: "{{ playbook_dir }}/apiserver-key.pem"
-
 # Launch APB on bind
 launch_apb_on_bind: "false"
 
@@ -73,7 +69,7 @@ recovery: "true"
 image_pull_policy: "IfNotPresent"
 
 # Will enable basic authentication
-enable_basic_auth: "true"
+enable_basic_auth: "false"
 
 ############################################################
 # NOTE: These values MUST be base64 encoded.
