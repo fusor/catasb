@@ -1,10 +1,9 @@
-apiVersion: servicecatalog.k8s.io/v1alpha1
-kind: ServiceBroker
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ClusterServiceBroker
 metadata:
   name: ansible-service-broker
 spec:
-  url: {{ ansible_service_broker_address }}
+  url: "https://asb.ansible-service-broker.svc:1338{{ broker_url_prefix }}/"
   authInfo:
-    basicAuthSecret:
-      namespace: ansible-service-broker
-      name: asb-auth-secret
+    {{ broker_auth }}
+  caBundle: "{{ broker_ca_cert }}"

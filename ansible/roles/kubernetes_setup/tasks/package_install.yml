@@ -96,6 +96,13 @@
       mode: 0755
     become: true
 
+  - replace:
+      path: "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf"
+      regexp: '/usr/bin/kubelet'
+      replace: '/usr/bin/kubelet --fail-swap-on=false'
+      backup: yes
+    become: true
+
   - name: Starting systemd kubelet process
-    shell: systemctl enable kubelet && systemctl start kubelet
+    shell: systemctl daemon-reload && systemctl enable kubelet && systemctl start kubelet
     become: true

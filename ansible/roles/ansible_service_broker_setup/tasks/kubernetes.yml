@@ -1,4 +1,7 @@
 ---
+  - name: Create "{{ asb_project }}" namespace
+    shell: "{{ kubectl_cmd }} create ns {{ asb_project }}"
+
   - name: Curling ansible-service-broker-all.yaml
     get_url:
       url: "{{ k8s_asb_template_url }}"
@@ -14,10 +17,28 @@
       mode: 0644
 
   - name: Running kubectl create on processed template
-    shell: "{{ kubectl_cmd }} create -f /tmp/k8s-ansible-service-broker.yaml"
+    shell: "{{ kubectl_cmd }} create -f /tmp/k8s-ansible-service-broker.yaml --namespace={{ asb_project }}"
 
   - name: Switch project to {{ asb_project }}
     shell: "{{ kubectl_cmd }} config set-context $(kubectl config current-context) --namespace={{ asb_project }}"
+
+  - name: Create asb-cert tmp directory
+    file:
+      path: /tmp/asb-cert
+      state: directory
+    when: asb_ca_cert is not defined and asb_key is not defined
+
+  - name: Creating asb-tls cert
+    shell: openssl req -nodes -x509 -newkey rsa:4096 -keyout /tmp/asb-cert/key.pem -out /tmp/asb-cert/cert.pem -days 365 -subj "/CN=asb.ansible-service-broker.svc"
+    when: asb_ca_cert is not defined and asb_key is not defined
+
+  - name: Saving broker ca.crt
+    shell: cat /tmp/asb-cert/cert.pem
+    register: ca_cert_data
+    when: asb_ca_cert is not defined
+
+  - name: Creating asb-tls secret
+    shell: kubectl create secret tls asb-tls --cert="/tmp/asb-cert/cert.pem" --key="/tmp/asb-cert/key.pem"
 
   - name: Waiting 10 minutes for ASB pod
     action:
@@ -34,10 +55,13 @@
     delay: 10
 
   - set_fact:
-      ansible_service_broker_address:  "http://{{ result_get_endpoint_asb.stdout }}"
+      ansible_service_broker_resource_file: "ansible_service_broker.yaml.j2"
 
   - set_fact:
-      ansible_service_broker_resource_file: "ansible_service_broker.yaml.j2"
+      broker_ca_cert: "{{ ca_cert_data.stdout | b64encode }}"
+
+  - set_fact:
+      broker_auth: '{ "bearer": { "secretRef": { "kind": "Secret", "namespace": "ansible-service-broker", "name": "ansibleservicebroker-client" } } }'
 
   - name: Creating /tmp/ansible_service_broker.yaml
     template:
