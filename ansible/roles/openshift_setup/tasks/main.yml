@@ -152,7 +152,7 @@
     yum_repository:
       name: "ansible-service-broker"
       description: "Ansible Service Broker"
-      baseurl: "https://copr-be.cloud.fedoraproject.org/results/@ansible-service-broker/ansible-service-broker/epel-7-$basearch/"
+      baseurl: "https://copr-be.cloud.fedoraproject.org/results/@ansible-service-broker/ansible-service-broker-latest/epel-7-$basearch/"
       enabled: yes
       gpgcheck: no
     become: true
@@ -160,7 +160,7 @@
           ansible_distribution_major_version == "7"
 
   - name: Enable ASB repo for Fedora 25
-    shell: dnf -y copr enable @ansible-service-broker/ansible-service-broker
+    shell: dnf -y copr enable @ansible-service-broker/ansible-service-broker-latest
     become: true
     when: ansible_distribution == 'Fedora' and ansible_distribution_major_version == "25"
 
