@@ -25,7 +25,7 @@
       prompt: "Enter the dockerhub organization you'd like to pull images from: "
       private: no
   roles:
-   - { role: helios_prep, when: deploy_helios == True}
+    - { role: helios_prep, when: deploy_helios == True}
     - ebs_volumes
     - aws_repo_setup
     - packages
