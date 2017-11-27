@@ -200,11 +200,11 @@
 
   - name: Check to see if we need to use a custom config
     set_fact:
-      use_custom_config: '{{ use_ssl }}'
+      use_custom_config: "{{ use_ssl or update_cgroup_driver }}"
 
   - name: Check to see if we need to regenerate the custom config because something is missing
     set_fact:
-      generate_config: '{{(use_custom_config or openshift_build_type == "mac") and (not master_config_stat.stat.exists or not console_ssl_stat.stat.exists)}}'
+      generate_config: "{{ use_custom_config and (not master_config_stat.stat.exists or not console_ssl_stat.stat.exists) }}"
 
   - name: Create command line for oc cluster up execution
     set_fact:
@@ -215,7 +215,7 @@
         --host-pv-dir={{ persistedvol_mount_point }}
         --image={{ origin_image_name }}
         --version={{ origin_image_tag }}
-        {% if generate_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
+        {% if use_custom_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
         --service-catalog=true
 
   - debug:
@@ -262,6 +262,7 @@
   # Shut down cluster and use the generated master-config.yaml so we can make edits to it
   - name: Run oc cluster down
     shell: "{{ oc_cmd }} cluster down"
+    when: generate_config
 
   - name: Copy credentials into host dir
     copy:
@@ -297,14 +298,15 @@
       dest: "{{ oc_host_config_dir }}/node-localhost/node-config.yaml"
       regexp: "kubletArguments:\n  fail-swap-on:\n  - \"false\""
       line: "kubeletArguments:\n  fail-swap-on:\n  - \"false\"\n  cgroup-driver:\n  - \"cgroupfs\"\n"
-    when: openshift_build_type == "mac" or broker_ci
+    when: update_cgroup_driver
+    become: true
 
   - name: Install python-passlib
     package:
       name: python-passlib
       state: installed
     become: 'true'
-    when: use_custom_config
+    when: use_ssl == True
 
   - name: Create htpasswd file for cluster user auth
     htpasswd:
@@ -315,7 +317,7 @@
       group: root
       mode: 0640
     become: 'true'
-    when: use_custom_config
+    when: use_ssl == True
 
   - name: Copy update_oauth_provider_to_htpasswd.py
     copy:
@@ -324,16 +326,16 @@
       owner: root
       group: root
       mode: 0755
-    when: use_custom_config
+    when: use_ssl == True
 
   - name: Update master-config.yaml with htpasswd file
     shell: "/tmp/update_oauth_provider_to_htpasswd.py {{ cluster_master_config_file }} {{ cluster_auth_htpasswd_file }}"
-    when: use_custom_config
+    when: use_ssl == True
 
   - name: Update oc cluster up command to use --use-existing-config
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --use-existing-config"
-    when: generate_config
+    when: use_custom_config
 
   - debug:
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"

@@ -3,3 +3,4 @@ demo: True
 
 # Temporary fix until release version of oc client works with latest images.
 openshift_client_url: https://s3.amazonaws.com/catasb/darwin/amd64/oc
+update_cgroup_driver: True
