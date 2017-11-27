@@ -215,7 +215,7 @@
         --host-pv-dir={{ persistedvol_mount_point }}
         --image={{ origin_image_name }}
         --version={{ origin_image_tag }}
-        {% if use_custom_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
+        --host-config-dir={{ oc_host_config_dir }}
         --service-catalog=true
 
   - debug:
@@ -256,12 +256,11 @@
   # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
   - name: Run oc cluster up to generate master-config.yaml
     shell: "{{ oc_cluster_up_cmd }}"
-    when: generate_config
+    ignore_errors: yes
 
   # Shut down cluster and use the generated master-config.yaml so we can make edits to it
   - name: Run oc cluster down
     shell: "{{ oc_cmd }} cluster down"
-    when: generate_config
 
   - name: Copy credentials into host dir
     copy:
@@ -290,6 +289,13 @@
       line: "  namedCertificates:\n    - certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem\n      keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem\n      names:\n      - \"{{ hostname }}\"\n"
     when: generate_config and use_ssl == True
     become: 'true'
+
+  - name: Edit node config cgroup-driver
+    lineinfile:
+      dest: "{{ oc_host_config_dir }}/node-localhost/node-config.yaml"
+      regexp: "kubletArguments:\n  fail-swap-on:\n  - \"false\""
+      line: "kubeletArguments:\n  fail-swap-on:\n  - \"false\"\n  cgroup-driver:\n  - \"cgroupfs\"\n"
+    when: openshift_build_type == "mac"
 
   - name: Install python-passlib
     package:
@@ -325,7 +331,6 @@
   - name: Update oc cluster up command to use --use-existing-config
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --use-existing-config"
-    when: use_custom_config
 
   - debug:
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
