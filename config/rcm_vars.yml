@@ -2,13 +2,11 @@
 # Need to distinguish rcm runs from others so we don't use newer features that aren't in the rcm build
 rcm: true
 
-# when 3.7 stabilizes on a client, we'll change these to set these to the downstream release, but for now we have to use latest.
 origin_image_tag: v3.7
-openshift_client_version: latest
+openshift_client_version: '3.7'
 
 # Need to use the template from the release branch of ansible-service-broker
-# Using latest templates for now.  Will use matching template when 'rcm' code is frozen in a release
-#asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/release-0.9/templates/deploy-ansible-service-broker.template.yaml
+asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/release-1.0/templates/deploy-ansible-service-broker.template.yaml
 broker_registry_type: rhcc
 broker_image_name: "{{ origin_image_name }}-ansible-service-broker"
 broker_tag: "{{ origin_image_tag }}"
@@ -21,8 +19,10 @@ etcd_path: "/bin/etcd"
 ##########################################
 ## Override and use latest images pushed to developer servers to mimic stage
 #
-# broker_registry_url: http://registry.access.redhat.com
-# origin_image_name: registry.ops.openshift.com/openshift3/ose
+# - QA Staging
+#broker_image_name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/openshift3/ose-ansible-service-broker
+#broker_registry_url: http://registry.access.stage.redhat.com
+#origin_image_name: registry.ops.openshift.com/openshift3/ose
 #
 # - Dev Staging
 broker_registry_url: http://asb-registry.usersys.redhat.com:5000
