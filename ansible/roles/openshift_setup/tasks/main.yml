@@ -200,11 +200,11 @@
 
   - name: Check to see if we need to use a custom config
     set_fact:
-      use_custom_config: "{{use_ssl}}"
+      use_custom_config: '{{ use_ssl }}'
 
   - name: Check to see if we need to regenerate the custom config because something is missing
     set_fact:
-      generate_config: "{{use_custom_config and (not master_config_stat.stat.exists or not console_ssl_stat.stat.exists)}}"
+      generate_config: '{{(use_custom_config or openshift_build_type == "mac") and (not master_config_stat.stat.exists or not console_ssl_stat.stat.exists)}}'
 
   - name: Create command line for oc cluster up execution
     set_fact:
@@ -215,7 +215,7 @@
         --host-pv-dir={{ persistedvol_mount_point }}
         --image={{ origin_image_name }}
         --version={{ origin_image_tag }}
-        --host-config-dir={{ oc_host_config_dir }}
+        {% if generate_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
         --service-catalog=true
 
   - debug:
@@ -257,6 +257,7 @@
   - name: Run oc cluster up to generate master-config.yaml
     shell: "{{ oc_cluster_up_cmd }}"
     ignore_errors: yes
+    when: generate_config
 
   # Shut down cluster and use the generated master-config.yaml so we can make edits to it
   - name: Run oc cluster down
@@ -295,7 +296,7 @@
       dest: "{{ oc_host_config_dir }}/node-localhost/node-config.yaml"
       regexp: "kubletArguments:\n  fail-swap-on:\n  - \"false\""
       line: "kubeletArguments:\n  fail-swap-on:\n  - \"false\"\n  cgroup-driver:\n  - \"cgroupfs\"\n"
-    when: openshift_build_type == "mac"
+    when: openshift_build_type == "mac" or broker_ci
 
   - name: Install python-passlib
     package:
@@ -331,6 +332,7 @@
   - name: Update oc cluster up command to use --use-existing-config
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --use-existing-config"
+    when: generate_config
 
   - debug:
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
