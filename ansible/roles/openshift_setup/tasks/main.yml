@@ -292,6 +292,7 @@
     become: 'true'
 
   - name: Edit node config cgroup-driver
+    become: true
     lineinfile:
       dest: "{{ oc_host_config_dir }}/node-localhost/node-config.yaml"
       regexp: "kubletArguments:\n  fail-swap-on:\n  - \"false\""
