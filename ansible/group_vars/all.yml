@@ -55,6 +55,7 @@ openshift_routing_suffix: "{{target_subdomain}}.{{target_dns_zone}}"
 cluster_url: "{{ hostname }}:8443"
 
 use_ssl: True
+update_cgroup_driver: False
 email_address: "foo@bar.com"
 
 var_lib_docker_ebs_device_name: "sdc"
