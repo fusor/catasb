@@ -64,22 +64,22 @@ dockerhub_org: ansibleplaybookbundle
 # aws_ami_id: ami-9062d0f4
 
 #
-# Deploy Helios Broker
-# Note: You may set BOTH 'deploy_helios' AND 'deploy_asb' to 'True'
+# Deploy AWS Broker
+# Note: You may set BOTH 'deploy_awsservicebroker' AND 'deploy_asb' to 'True'
 #       However, if both are set to 'True', besure that
-#       'dockerhub_org' and 'helios_dockerhub_org' are NOT the same
+#       'dockerhub_org' and 'awsservicebroker_dockerhub_org' are NOT the same
 #
-# helios_broker_template_dir: "/git/Project-Helios/deploy_scripts"
+# awsservicebroker_broker_template_dir: "/git/awsservicebroker/deploy_scripts"
 # deploy_asb: False    # True/False
-# deploy_helios: True  # True/False
-# helios_dockerhub_org: projecthelios
-# helios_broker_image_name: "docker.io/{{ helios_dockerhub_org }}/aws-service-broker"
-# helios_broker_tag: "latest"
-# helios_asb_template_s3_url: "https://s3.amazonaws.com/heliosbroker/scripts/deploy-helios-broker.template.yaml"
+# deploy_awsservicebroker: True  # True/False
+# awsservicebroker_dockerhub_org: awsservicebroker
+# awsservicebroker_broker_image_name: "docker.io/{{ awsservicebroker_dockerhub_org }}/aws-service-broker"
+# awsservicebroker_broker_tag: "latest"
+# awsservicebroker_asb_template_s3_url: "https://s3.amazonaws.com/awsservicebroker/scripts/deploy-awsservicebroker.template.yaml"
 
-# The default tag to use for Helios apb's is latest. To change that you can set this option.
-# helios_apbtag: nightly
-# helios_apbtag: canary
+# The default tag to use for AWS apb's is latest. To change that you can set this option.
+# awsservicebroker_apbtag: nightly
+# awsservicebroker_apbtag: canary
 
 # EC-2 Instance Type - 't2.medium' or higher is recommended
 # instance_type: c4.4xlarge

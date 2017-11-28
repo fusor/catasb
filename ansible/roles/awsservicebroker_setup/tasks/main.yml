@@ -1,5 +1,5 @@
 ---
-  - debug: var=helios_dockerhub_org
+  - debug: var=awsservicebroker_dockerhub_org
 
   - set_fact:
       oc_tools_dir: /usr/bin
@@ -12,19 +12,19 @@
   - set_fact:
       oc_cmd: "{{ oc_tools_dir }}/oc"
 
-  - name: Download the Helios Broker Template File to "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
+  - name: Download the AWS Broker Template File to "{{ awsservicebroker_broker_template_dir }}/{{ awsservicebroker_asb_template_filename }}"
     get_url:
-      url: "{{ helios_asb_template_s3_url }}"
-      dest: "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
+      url: "{{ awsservicebroker_asb_template_s3_url }}"
+      dest: "{{ awsservicebroker_broker_template_dir }}/{{ awsservicebroker_asb_template_filename }}"
       force: True
 
-  # Verify that the template file 'helios_asb_template_filename' exists
+  # Verify that the template file 'awsservicebroker_asb_template_filename' exists
   - stat:
-      path: "{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}"
+      path: "{{ awsservicebroker_broker_template_dir }}/{{ awsservicebroker_asb_template_filename }}"
     register: stat_result
-  - name: Check that the Helios Broker Template File '{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}' exists
+  - name: Check that the AWS Broker Template File '{{ awsservicebroker_broker_template_dir }}/{{ awsservicebroker_asb_template_filename }}' exists
     fail:
-      msg: Missing Helios Broker Template File '{{ helios_broker_template_dir }}/{{ helios_asb_template_filename }}'
+      msg: Missing AWS Broker Template File '{{ awsservicebroker_broker_template_dir }}/{{ awsservicebroker_asb_template_filename }}'
     when: stat_result.stat.exists == False
 
   - name: Set the name for 'oc_service_catalog' if not already defined
@@ -43,20 +43,20 @@
 
   - name: Curling aws-service-broker-all.yaml
     get_url:
-      url: "{{ helios_asb_template_url }}"
+      url: "{{ awsservicebroker_asb_template_url }}"
       force: yes
-      dest: "{{ helios_local_target_asb_template }}"
+      dest: "{{ awsservicebroker_local_target_asb_template }}"
 
   - name: Setting facts for rendering aws-service-broker-all.yaml template
     set_fact:
       dockerhub_pass: "{{ dockerhub_user_password }}"
       dockerhub_user: "{{ dockerhub_user_name }}"
-      dockerhub_org: "{{ helios_dockerhub_org }}"
+      dockerhub_org: "{{ awsservicebroker_dockerhub_org }}"
 
   - debug: var=dockerhub_org
 
-  - name: check if the {{ helios_asb_project }} project exists
-    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ helios_asb_project }}( |$)' | cat"
+  - name: check if the {{ awsservicebroker_asb_project }} project exists
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ awsservicebroker_asb_project }}( |$)' | cat"
     register: project
 
   - name: get service-catalog-apiserver-token secret name
@@ -68,7 +68,7 @@
     register: cluster_ca_cert
 
   - debug:
-      msg: "Service Broker must have a CA Bundle set for the Helios Service Broker and Service Catalog to be able to communicate"
+      msg: "Service Broker must have a CA Bundle set for the AWS Service Broker and Service Catalog to be able to communicate"
     when: cluster_ca_cert.stdout == "" and openshift_client_version != "3.6"
 
   - name: create etcd-cert tmp directory
@@ -108,10 +108,10 @@
         etcd_client_key: "{{ cat_etcd_client_key.stdout }}"
     when: etcd_client_key is not defined
 
-  - name: Create a new project for the {{ helios_asb_project }}
-    shell: "{{ oc_cmd }} new-project {{ helios_asb_project }}"
-    register: new_helios_asb_project
-    when: project.stdout.find( helios_asb_project ) == -1
+  - name: Create a new project for the {{ awsservicebroker_asb_project }}
+    shell: "{{ oc_cmd }} new-project {{ awsservicebroker_asb_project }}"
+    register: new_awsservicebroker_asb_project
+    when: project.stdout.find( awsservicebroker_asb_project ) == -1
 
   - name: Update Broker Kind and Auth when using coalmine
     set_fact:
@@ -129,15 +129,15 @@
       cmd_process_asb_template: >-
         {{ oc_cmd }}
         process
-        -f {{ helios_local_target_asb_template }}
-        -n {{ helios_asb_project }}
-        -p BROKER_IMAGE={{ helios_broker_image }}
+        -f {{ awsservicebroker_local_target_asb_template }}
+        -n {{ awsservicebroker_asb_project }}
+        -p BROKER_IMAGE={{ awsservicebroker_broker_image }}
         -p ETCD_IMAGE={{ etcd_image }}
         -p ETCD_PATH={{ etcd_path }}
         -p REGISTRY_TYPE={{ broker_registry_type }}
         -p REGISTRY_URL={{ broker_registry_url }}
         -p DEV_BROKER={{ broker_dev_broker }}
-        -p DOCKERHUB_ORG='{{ helios_dockerhub_org }}'
+        -p DOCKERHUB_ORG='{{ awsservicebroker_dockerhub_org }}'
         -p DOCKERHUB_PASS='{{ dockerhub_user_password }}'
         -p DOCKERHUB_USER='{{ dockerhub_user_name }}'
         -p LAUNCH_APB_ON_BIND={{ broker_launch_apb_on_bind }}
@@ -147,7 +147,7 @@
         -p REGISTRY_NAME={{ broker_registry_name }}
         -p ENABLE_BASIC_AUTH={{ broker_enable_basic_auth }}
         -p REFRESH_INTERVAL={{ broker_bootstrap_refresh_interval }}
-        -p TAG={{ helios_apbtag | default('latest') }}
+        -p TAG={{ awsservicebroker_apbtag | default('latest') }}
         -p SANDBOX_ROLE={{ broker_sandbox_role }}
         -p IMAGE_PULL_POLICY={{ broker_pull_policy }}
         -p BROKER_CA_CERT='{{ cluster_ca_cert.stdout }}'
@@ -167,7 +167,7 @@
         -p ETCD_TRUSTED_CA='{{ etcd_ca_cert | b64encode }}'
         -p BROKER_CLIENT_CERT='{{ etcd_client_cert | b64encode }}'
         -p BROKER_CLIENT_KEY='{{ etcd_client_key | b64encode }}'
-        -p NAMESPACE='{{ helios_asb_project }}'
+        -p NAMESPACE='{{ awsservicebroker_asb_project }}'
     when: etcd_ca_cert is defined and etcd_client_cert is defined and etcd_client_key is defined
 
   ############################################################
@@ -189,16 +189,16 @@
         -p BROKER_AUTH='{ "basicAuthSecret": { "namespace": "aws-service-broker", "name": "aws-asb-auth-secret" }}'
     when: (coalmine is undefined or not coalmine) and (openshift_client_version == '3.6')
 
-  - name: Process template "{{ helios_local_target_asb_template }}"
+  - name: Process template "{{ awsservicebroker_local_target_asb_template }}"
     shell: >
       {{ cmd_process_asb_template }}
-      &> {{ helios_local_target_asb_template_processed }}
+      &> {{ awsservicebroker_local_target_asb_template_processed }}
 
   - name: Running oc create on processed template
-    shell: "{{ oc_cmd }} create -f {{ helios_local_target_asb_template_processed }}"
+    shell: "{{ oc_cmd }} create -f {{ awsservicebroker_local_target_asb_template_processed }}"
 
-  - name: Switch project to {{ helios_asb_project }}
-    shell: "{{ oc_cmd }} project {{ helios_asb_project }}"
+  - name: Switch project to {{ awsservicebroker_asb_project }}
+    shell: "{{ oc_cmd }} project {{ awsservicebroker_asb_project }}"
 
   - name: Waiting 10 minutes for ASB pod
     action:
@@ -219,4 +219,4 @@
       aws_secret_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
 
   - include: create_secrets.yml
-    when: (deploy_helios == True) and (aws_access_key != "" and aws_secret_key != "")
+    when: (deploy_awsservicebroker == True) and (aws_access_key != "" and aws_secret_key != "")

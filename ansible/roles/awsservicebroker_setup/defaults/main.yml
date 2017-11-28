@@ -1,13 +1,13 @@
 
 dockerhub_user_name: changeme
 dockerhub_user_password: changeme
-helios_dockerhub_org: projecthelios
+awsservicebroker_dockerhub_org: awsservicebroker
 
 asb_src_dir: /tmp/aws-service-broker
 
-helios_broker_image_name: "docker.io/{{ helios_dockerhub_org }}/aws-service-broker"
-helios_broker_tag: "latest"
-helios_broker_image: "{{ helios_broker_image_name }}:{{ helios_broker_tag }}"
+awsservicebroker_broker_image_name: "docker.io/{{ awsservicebroker_dockerhub_org }}/aws-service-broker"
+awsservicebroker_broker_tag: "latest"
+awsservicebroker_broker_image: "{{ awsservicebroker_broker_image_name }}:{{ awsservicebroker_broker_tag }}"
 
 #
 # Template defaults
@@ -26,7 +26,7 @@ insecure: "false"
 termination: Reencrypt
 
 # APB Image Tag
-helios_apbtag: latest
+awsservicebroker_apbtag: latest
 
 # OpenShift info
 openshift_pass: admin
@@ -83,8 +83,8 @@ cluster_auth_host: ""
 ############################################################
 # Create Secret Defaults
 ############################################################
-helios_asb_secret_name: helios-asb-secret
-helios_asb_project: aws-service-broker
-helios_broker_registry_url: docker.io
+awsservicebroker_asb_secret_name: awsservicebroker-asb-secret
+awsservicebroker_asb_project: aws-service-broker
+awsservicebroker_broker_registry_url: docker.io
 apb_tools_cmd: apb
-helios_broker_name: aws-service-broker
+awsservicebroker_broker_name: aws-service-broker

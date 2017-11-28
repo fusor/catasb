@@ -7,10 +7,10 @@
       prompt: "Enter the dockerhub organization you'd like to pull images from"
       private: no
   roles:
-    - { role: helios_prep, when: deploy_helios == True}
+    - { role: awsservicebroker_prep, when: deploy_awsservicebroker == True}
     - "{{ cluster }}_setup"
     - { role: ansible_service_broker_setup, when: (not broker_ci) and (deploy_asb == True)}
-    - { role: helios_broker_setup, when: (not broker_ci) and (deploy_helios == True)}
+    - { role: awsservicebroker_setup, when: (not broker_ci) and (deploy_awsservicebroker == True)}
   post_tasks:
     - set_fact:
         msg: |

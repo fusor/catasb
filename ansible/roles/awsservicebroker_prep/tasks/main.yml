@@ -1,0 +1,18 @@
+---
+  - pause:
+      prompt: "Enter the AWS Service Broker Cluster Admin Username (default '{{ cluster_user }}'): "
+    register: awsservicebroker_user
+
+  - set_fact:
+      cluster_user: "{{ awsservicebroker_user.user_input }}"
+    when: awsservicebroker_user.user_input != ""
+
+  - pause:
+        prompt: "Enter the AWS Service Broker Cluster Admin Password (default '{{ cluster_user_password }}''): "
+    register: awsservicebroker_password
+    no_log: true
+
+  - set_fact:
+      cluster_user_password: "{{ awsservicebroker_password.user_input }}"
+    when: awsservicebroker_password.user_input != ""
+
