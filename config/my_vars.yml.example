@@ -83,3 +83,6 @@ dockerhub_org: ansibleplaybookbundle
 
 # EC-2 Instance Type - 't2.medium' or higher is recommended
 # instance_type: c4.4xlarge
+
+# AWS CloudFormation Role ARN Name
+# aws_role_arn_name: "aws-broker-cloudformation"

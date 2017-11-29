@@ -1,0 +1,23 @@
+---
+  - name: Create CloudFormation Stack role '{{ aws_role_arn_name }}'
+    iam_role:
+      name: "{{ aws_role_arn_name }}"
+      state: present
+      managed_policy:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+      assume_role_policy_document:
+        Version: '2012-10-17'
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: cloudformation.amazonaws.com
+    register: cloudformation_stack_role
+    delegate_to: 127.0.0.1
+    become: false
+
+  - name: 
+    set_fact:
+      aws_cloudformation_role_arn: "{{ cloudformation_stack_role.iam_role.arn }}"
+
+  - debug: var=aws_cloudformation_role_arn

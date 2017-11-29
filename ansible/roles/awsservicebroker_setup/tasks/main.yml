@@ -218,5 +218,9 @@
       aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
       aws_secret_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
 
+  - name: Create the shared AWS Role ARN
+    include: create_role_arn.yml
+
   - include: create_secrets.yml
-    when: (deploy_awsservicebroker == True) and (aws_access_key != "" and aws_secret_key != "")
+    when: (deploy_awsservicebroker == True) and (aws_access_key != "" and aws_secret_key != "" and aws_cloudformation_role_arn != "")
+

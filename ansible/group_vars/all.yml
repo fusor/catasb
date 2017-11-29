@@ -10,6 +10,9 @@ ec2_install: true
 #even if shared with multiple IAM users
 aws_tag_prefix: "test_awsdemo"
 
+# AWS Role ARN name
+aws_role_arn_name: "aws-broker-cloudformation"
+
 ##
 # us-east-1
 ##
