@@ -94,3 +94,16 @@
     until: wait_for_tiller.rc == 0
     retries: 60
     delay: 10
+
+  - name: Copy pv-setup.sh
+    copy:
+      src: pv-setup.sh
+      dest: /tmp/pv-setup.sh
+      owner: root
+      group: root
+      mode: 0755
+    become: true
+
+  - name: Create some PVs
+    shell: "/tmp/pv-setup.sh /persistedvolumes {{ item }}"
+    with_sequence: start=0 end=20
