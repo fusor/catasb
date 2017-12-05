@@ -24,7 +24,8 @@ These playbooks will:
      * de-select check for updates
      * Insecure Registry setting needed 172.30.0.0/16
      * Shared Folders (create these folders on your mac owned by your user)
-         * /docker_shared/origin
+         * /docker_shared
+              * Note: With version 3.9.0 of oc client, the 'origin' directory should no longer exist.  
          * /persistedvolumes
   * Networking Setup
       * We will create a static IP aliased to lo0 automatically.  We are using the static IP address to ensure that we can always resolve openshift from the host as well as inside of containers.
