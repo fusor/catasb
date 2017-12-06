@@ -24,9 +24,9 @@ These playbooks will do the following in a local environment:
     $ cp config/my_vars.yml.example config/my_vars.yml
     $ vim config/my_vars.yml
     ```
-    * Set `dockerhub_user_name` (and optionally `dockerhub_user_password`) with your own dockerhub username (and password).  This will skip the prompts during execution and makes re-runs easy. A valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
+    * If using a private repository, set `dockerhub_user_name` (and optionally `dockerhub_user_password`) with your own dockerhub username (and password).  This will skip the prompts during execution and makes re-runs easy. A valid dockerhub login is required for the broker to authenticate to dockerhub to search an organization for APBs.
     * Set `dockerhub_org` to load APB images into your broker from an organization.  For dockerhub organization you may use your own if you pushed your own APBs or you may use the `ansibleplaybookbundle` [organization](https://hub.docker.com/u/ansibleplaybookbundle/) as a sample.
-    * Set `openshift_hostname` and `dockerhub_org` if you want to use a different static IP.
+    * Set `hostname` and `openshift_routing_suffix` if you want to use a different static IP.
     * Example `my_vars.yml`
           $ cat local/config/my_vars.yml
           ---
