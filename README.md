@@ -16,6 +16,7 @@ These playbooks will:
 Kubernetes
   * Run local scripts with -k or k8s or kubernetes
   * Set the ansible variable 'cluster' to 'kubernetes'
+
 OpenShift
   * OpenShift doesn't require any flags to run
 
