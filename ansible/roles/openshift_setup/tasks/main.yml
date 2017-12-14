@@ -10,7 +10,8 @@
       kube_build_type: "linux"
       openshift_release_ext: "tar.gz"
     when: (ansible_os_family == "RedHat") or
-          (ansible_distribution == "Ubuntu")
+          (ansible_distribution == "Ubuntu") or
+          (ansible_distribution == "Archlinux")
 
   - set_fact:
       oc_tools_dir: /usr/bin
@@ -299,7 +300,6 @@
       regexp: "kubletArguments:\n  fail-swap-on:\n  - \"false\""
       line: "kubeletArguments:\n  fail-swap-on:\n  - \"false\"\n  cgroup-driver:\n  - \"cgroupfs\"\n"
     when: update_cgroup_driver
-    become: true
 
   - name: Install python-passlib
     package:
