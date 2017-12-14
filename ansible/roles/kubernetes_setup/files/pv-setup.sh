@@ -35,7 +35,7 @@ function setup_pv_dir() {
     echo "Not setting SELinux content for ${dir}"
   fi
   sudo chmod 777 "${dir}"
-  sudo chown rhallisey: "${dir}"
+  sudo chown $(whoami): "${dir}"
 }
 
 function create_pv() {
