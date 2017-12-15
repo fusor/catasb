@@ -18,12 +18,16 @@ etcd_path: "/bin/etcd"
 # Use Staged Images for RCM
 ##########################################
 ## Override and use latest images pushed to developer servers to mimic stage
-#
+
+# - Production Images
+#broker_registry_url: http://registry.access.redhat.com
+#origin_image_name: registry.access.redhat.com/openshift3/ose
+
 # - QA Staging
 #broker_image_name: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/openshift3/ose-ansible-service-broker
 #broker_registry_url: http://registry.access.stage.redhat.com
 #origin_image_name: registry.ops.openshift.com/openshift3/ose
-#
+
 # - Dev Staging
 broker_registry_url: http://asb-registry.usersys.redhat.com:5000
 origin_image_name: asb-registry.usersys.redhat.com:5000/openshift3/ose
