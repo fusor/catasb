@@ -179,7 +179,7 @@ Jan 10 09:41:08 speed3 dockerd-current[21270]: I0110 14:41:08.651090   23589 hel
 ```
 
 If your usage percentage is more than 85%, you need to free up more disk space.
-I was down to 90% with 49G free. That caused kube to evict pods that were needed
+My usage was up to 90% with 49G free. That caused kube to evict pods that were needed
 to start origin cluster.
 
 ```
