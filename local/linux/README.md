@@ -147,3 +147,59 @@ localhost                  : ok=25   changed=4    unreachable=0    failed=1
 ```
 
 There are several configurations required to run ```oc cluster up```, please be sure to read and follow the ``` oc cluster up``` documentation here:  https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md#linux
+
+#### oc cluster up hangs while starting the cluster
+
+Sometimes catasb will get stuck at starting the cluster phase. It will simply
+sit at this prompt for what seems like years:
+
+```
+TASK [openshift_setup : Run oc cluster up to start the cluster] ***
+```
+
+This usually means `oc cluster up` is failing. There are a number of things you
+need to look at.
+
+* get log output from a stock `oc cluster up`.
+```
+oc cluster up --service-catalog=true --loglevel=10
+```
+
+If this works take note of the origin version it pulled down. You might want to
+use that tag in your `my_vars.yml`. 
+
+* look at your `journalctl -e` output
+
+Any reference to eviction, usually indicates you are in need of more disk space.
+
+```
+Jan 10 09:41:08 speed3 dockerd-current[21270]: W0110 14:41:08.646423   23589 eviction_manager.go:332] eviction manager: attempting to reclaim imagefs
+Jan 10 09:41:08 speed3 dockerd-current[21270]: I0110 14:41:08.646459   23589 helpers.go:1070] eviction manager: attempting to delete unused containers
+Jan 10 09:41:08 speed3 dockerd-current[21270]: I0110 14:41:08.651090   23589 helpers.go:1080] eviction manager: attempting to delete unused images
+```
+
+If your usage percentage is more than 85%, you need to free up more disk space.
+My usage was up to 90% with 49G free. That caused kube to evict pods that were needed
+to start origin cluster.
+
+```
+$ df -h
+Filesystem              Type      Size  Used Avail Use% Mounted on
+devtmpfs                devtmpfs  9.6G     0  9.6G   0% /dev
+tmpfs                   tmpfs     9.6G  100M  9.5G   2% /dev/shm
+tmpfs                   tmpfs     9.6G  2.3M  9.6G   1% /run
+tmpfs                   tmpfs     9.6G     0  9.6G   0% /sys/fs/cgroup
+# exceeds the threshold of 85%
+/dev/mapper/fedora-root ext4      460G  388G   49G  89% /
+tmpfs                   tmpfs     9.6G  258M  9.3G   3% /tmp
+/dev/sda1               ext4      477M  184M  264M  42% /boot
+tmpfs                   tmpfs     2.0G   20K  2.0G   1% /run/user/4
+tmpfs                   tmpfs     2.0G  124K  2.0G   1% /run/user/1000
+```
+
+As can be seen in this origin bug comment:
+
+https://github.com/openshift/origin/issues/18046#issuecomment-358095698
+
+Free up space until you are below the 85%, I went down to 61%. Cluster comes up
+fine.
