@@ -1,4 +1,4 @@
-# CATalogASB EC-2 Deployment
+# CatASB EC-2 Deployment
 
 OpenShift environment with a Service Catalog & Ansible Service Broker in a single EC-2 Instance.
 
