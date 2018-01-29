@@ -24,5 +24,14 @@ export INSTANCE_LOOKUP_VALUE=`echo ${INSTANCE_LOOKUP_VALUE//-/_}`
 
 
 export EC2_USER="ec2-user"
-export EXTRA_VARS="{\"ssh_key_name\":\"${AWS_SSH_KEY_NAME}\", \"target_dns_zone\":\"${TARGET_DNS_ZONE}\", \"target_subdomain\":\"${TARGET_SUBDOMAIN}\", \"instance_name\":\"${INSTANCE_NAME}\", \"instance_lookup_value\":\"${INSTANCE_LOOKUP_VALUE}\", \"cluster\":\"${CLUSTER}\"}"
+
+export EXTRA_VARS="{\
+\"ssh_key_name\":\"${AWS_SSH_KEY_NAME}\", \
+\"target_dns_zone\":\"${TARGET_DNS_ZONE}\", \
+\"target_subdomain\":\"${TARGET_SUBDOMAIN}\", \
+\"instance_name\":\"${INSTANCE_NAME}\", \
+\"instance_lookup_value\":\"${INSTANCE_LOOKUP_VALUE}\", \
+\"cluster\":\"${CLUSTER}\" \
+}"
+
 export ANSIBLE_HOST_KEY_CHECKING=False

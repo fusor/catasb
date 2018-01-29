@@ -11,3 +11,5 @@ ansible/ca.pem
 ansible/helm-install.sh
 ansible/server-ca-config.json
 ansible/svc-cat-ca.json
+
+.vscode
