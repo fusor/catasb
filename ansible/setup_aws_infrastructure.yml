@@ -1,0 +1,30 @@
+- name: Create AWS Infrastructure
+  hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - name: Check that 'aws_custom_prefix' is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'aws_custom_prefix'"
+      when: ( (aws_custom_prefix is undefined) or (aws_custom_prefix is none) or (aws_custom_prefix | trim == '') )
+    - name: Check that instance_name is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'instance_name'"
+      when: ( (instance_name is undefined) or (instance_name is none) or (instance_name | trim == '') )
+    - name: Check that ec2_type is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'ec2_type'"
+      when: ( (ec2_type is undefined) or (ec2_type is none) or (ec2_type | trim == '') )
+  roles:
+    - aws_infrastructure
+  tasks:
+    - set_fact:
+        msg: |
+            EC-2 Instance Tags:        Name={{ instance_name }}
+            EC-2 Instance ID:          {{ ec2_instances.tagged_instances[0].id }}
+            Associated to Elastic IP:  {{ elastic_ip.public_ip }}
+            Hostname:                  {{ host_fqdn }}
+            DNS WildCard Entry:        {{ wildcard_entry }}
+            SSH Key Name:              {{ ssh_key_name }}
+            Region:                    {{ aws_region }}
+    - debug:
+        msg: "{{ msg.split('\n') }}"

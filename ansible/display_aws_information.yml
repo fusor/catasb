@@ -1,0 +1,25 @@
+- name: Display AWS Information
+  hosts: localhost
+  gather_facts: True
+  pre_tasks:
+    - name: Check that 'aws_custom_prefix' is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'aws_custom_prefix'"
+      when: ( (aws_custom_prefix is undefined) or (aws_custom_prefix is none) or (aws_custom_prefix | trim == '') )
+    - name: Check that instance_name is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'instance_name'"
+      when: ( (instance_name is undefined) or (instance_name is none) or (instance_name | trim == '') )
+    - name: Check that ec2_type is defined and not empty
+      fail:
+        msg: "Missing or empty variable 'ec2_type'"
+      when: ( (ec2_type is undefined) or (ec2_type is none) or (ec2_type | trim == '') )
+    - name: Get EC2 Remote Facts
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "*{{ aws_custom_prefix }}*"
+        region: "{{ aws_region }}"
+      register: my_ec2_facts
+  roles:
+    - aws_display_info

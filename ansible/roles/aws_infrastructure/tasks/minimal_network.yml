@@ -1,0 +1,202 @@
+---
+  # Saw a bug with ansible 2.0, appeared VPC was created OK, but couldn't access instances
+  # Upgraded to ansible 2.2 and issue was resolved.
+  # Learned how to configure VPC referring to:
+  # https://github.com/jeremievallee/ansible-aws-vpc/blob/master/1-simple-vpc/roles/vpc/tasks/main.yml
+  - name:               Create VPC - "{{ vpc_name }}"
+    ec2_vpc_net:
+      name:             "{{ vpc_name }}"
+      cidr_block:       "{{ vpc_cidr_block }}"
+      region:           "{{ aws_region }}"
+      state:            "{{ state }}"
+      resource_tags:
+        Name:               "{{ vpc_name }}"
+        KubernetesCluster:  "{{ kubernetes_cluster_tag_value }}"
+    register: my_vpc
+
+  - set_fact:
+      vpc_id:           "{{ my_vpc.vpc.id }}"
+
+  - name:               Create Public Subnet A - "{{ vpc_subnet_a_name }}"
+    ec2_vpc_subnet:
+      state:            "{{ state }}"
+      vpc_id:           "{{ vpc_id }}"
+      cidr:             "{{ vpc_subnet_a_cidr }}"
+      az:               "{{ aws_region }}a"
+      region:           "{{ aws_region }}"
+      resource_tags:
+        Name:           "{{ vpc_subnet_a_name }}"
+    register: my_public_subnet_a
+
+  - set_fact:
+      public_subnet_a_id: "{{ my_public_subnet_a.subnet.id }}"
+    when: my_public_subnet_a
+
+  - name:               Create Public Subnet B - "{{ vpc_subnet_b_name }}"
+    ec2_vpc_subnet:
+      state:            "{{ state }}"
+      vpc_id:           "{{ vpc_id }}"
+      cidr:             "{{ vpc_subnet_b_cidr }}"
+      az:               "{{ aws_region }}b"
+      region:           "{{ aws_region }}"
+      resource_tags:
+        Name:           "{{ vpc_subnet_b_name }}"
+    register: my_public_subnet_b
+
+  - set_fact:
+      public_subnet_b_id: "{{ my_public_subnet_b.subnet.id }}"
+    when: my_public_subnet_b
+
+  - name:               Create Internet Gateway for VPC - "{{ vpc_gateway_name }}"
+    ec2_vpc_igw:
+      vpc_id:           "{{ vpc_id }}"
+      region:           "{{ aws_region }}"
+      state:            "{{ state }}"
+#     resource_tags:
+#       Name:              "{{ vpc_gateway_name }}"
+#       KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
+#
+# TODO: until Ansible v2.4 is released and fully supported, 
+#       cannot use the 'resource_tags:'
+#       Therefore, using the 'ec2_tag' Ansible module below to tag the IGW
+    register: my_vpc_igw
+
+  - name: Ensure the Gateway '{{ vpc_gateway_name }}' is tagged
+    ec2_tag:
+      region:   "{{ aws_region }}"
+      resource: "{{ my_vpc_igw.gateway_id }}"
+      state:    "{{ state }}"
+      tags:
+        Name:               "{{ vpc_gateway_name }}"
+        KubernetesCluster:  "{{ kubernetes_cluster_tag_value }}"
+    when: my_vpc_igw
+
+  - set_fact:
+      igw_id: "{{ my_vpc_igw.gateway_id }}"
+    when: my_vpc_igw
+
+  - name: Set up public subnet route table (for Subnet-A and Subnet-B)
+    ec2_vpc_route_table:
+      vpc_id:           "{{ vpc_id }}"
+      region:           "{{ aws_region }}"
+      tags:
+        Name:           "{{ vpc_route_table_name }}"
+      subnets:
+        - "{{ public_subnet_a_id }}"
+        - "{{ public_subnet_b_id }}"
+      routes:
+        - dest:         "0.0.0.0/0"
+          gateway_id:   "{{ igw_id }}"
+
+  #https://docs.openshift.com/container-platform/latest/install_config/install/prerequisites.html#required-ports
+  - name:               Create Main Security Group - "{{ aws_sec_group_name }}"
+    ec2_group:
+      name:             "{{ aws_sec_group_name }}"
+      description:      "{{ aws_sec_group_name }}"
+      state:            "{{ state }}"
+      vpc_id:           "{{ vpc_id }}"
+      region:           "{{ aws_region }}"
+      rules:
+        - proto:        "tcp"
+          from_port:    "22"
+          to_port:      "22"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "43"
+          to_port:      "43"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "53"
+          to_port:      "53"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "udp"
+          from_port:    "53"
+          to_port:      "53"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "80"
+          to_port:      "80"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "443"
+          to_port:      "443"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "1338"
+          to_port:      "1338"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "1936"
+          to_port:      "1936"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "2049"
+          to_port:      "2049"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "udp"
+          from_port:    "2049"
+          to_port:      "2049"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "2379"
+          to_port:      "2379"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "2380"
+          to_port:      "2380"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "8443"
+          to_port:      "8443"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "5432"
+          to_port:      "5432"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "5000"
+          to_port:      "5000"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "4001"
+          to_port:      "4001"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "udp"
+          from_port:    "4789"
+          to_port:      "4789"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "8053"
+          to_port:      "8053"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "udp"
+          from_port:    "8053"
+          to_port:      "8053"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "9000"
+          to_port:      "9000"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "9200"
+          to_port:      "9200"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "9300"
+          to_port:      "9300"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "10250"
+          to_port:      "10250"
+          cidr_ip:      "0.0.0.0/0"
+    register: my_sec_group
+
+  - name: Ensure the Security Group '{{ aws_sec_group_name }}' is tagged
+    ec2_tag:
+      region:   "{{ aws_region }}"
+      resource: "{{ my_sec_group.group_id }}"
+      state:    "{{ state }}"
+      tags:
+        Name: "{{ aws_sec_group_name }}"
+        KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
+    when: my_sec_group

@@ -26,10 +26,10 @@
       private: no
   roles:
     - { role: awsservicebroker_prep, when: deploy_awsservicebroker == True}
-    - ebs_volumes
+    - aws_ebs_volumes
     - aws_repo_setup
-    - packages
-    - docker_setup
+    - aws_packages
+    - aws_docker_setup
     - { role: ssl_setup, when: use_ssl == True }
     - openshift_setup
     - env_hacks

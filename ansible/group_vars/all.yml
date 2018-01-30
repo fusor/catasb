@@ -1,10 +1,12 @@
 ---
 ssh_key_name: ""
 target_dns_zone: ""
-target_subdomain: ""
+aws_custom_prefix: ""
 instance_name: ""
 instance_lookup_value: ""
+aws_username: "ec2-user"
 ec2_install: true
+ec2_type: ""
 
 #aws_tag_prefix is used to name the various VPC resources so they are only created once per account
 #even if shared with multiple IAM users
@@ -53,8 +55,8 @@ instance_type: c4.4xlarge
 # For ec2 runs this is less important to differentiate and we expect
 # hostname and openshift_routing_suffix to be the same
 #
-hostname: "{{target_subdomain}}.{{target_dns_zone}}"
-openshift_routing_suffix: "{{target_subdomain}}.{{target_dns_zone}}"
+hostname: "{{aws_custom_prefix}}.{{target_dns_zone}}"
+openshift_routing_suffix: "{{aws_custom_prefix}}.{{target_dns_zone}}"
 cluster_url: "{{ hostname }}:8443"
 
 use_ssl: True
@@ -168,10 +170,13 @@ deploy_rds_demo_instance: true
 aws_sec_group_name: "{{ aws_tag_prefix }}_security_group"
 vpc_name: "{{ aws_tag_prefix }}_vpc"
 vpc_cidr_block: "10.0.0.0/16"
+vpc_subnet_cidr: "10.0.0.0/24"
+vpc_subnet_name: "{{ aws_tag_prefix }}_subnet"
 vpc_subnet_a_cidr: "10.0.0.0/24"
 vpc_subnet_a_name: "{{ aws_tag_prefix }}_subnet_a"
 vpc_subnet_b_cidr: "10.0.1.0/24"
 vpc_subnet_b_name: "{{ aws_tag_prefix }}_subnet_b"
+vpc_gateway_name: "{{ aws_tag_prefix }}_igw"
 vpc_route_table_name: "{{ aws_tag_prefix }}_route_table"
 rds_subnet_group_name: "{{ aws_tag_prefix }}_rds_group"
 
