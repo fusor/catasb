@@ -1,22 +1,42 @@
 ---
-- set_fact:
-    msg: |
-        EC-2 Instance Tags:        Name={{ my_ec2_facts.instances[0].tags.Name }}
-        Hostname:                  {{ hostname }}
-        OpenShift URL:             {{ cluster_url }}
-        SSH Key Name:              {{ ssh_key_name }}
-        Region:                    {{ aws_region }}
-        Next steps:
-        1) Visit https://apiserver-service-catalog.{{ openshift_routing_suffix }}
-        2) Accept the certificate
-        3) Visit https://{{ hostname }}:8443 for the console
-        4) Provision a RDS APB into awsdemo project
-        5) Add to the aws-demo project a Python 3.5 project based off of https://github.com/thesteve0/awsdemo.git
-        6) Click on the python project and select creating binding to the RDS APB
-        7) Redeploy the python project
-        OR
-        For CLI access:
-        oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+- debug: var=my_ec2_facts
 
-- debug:
-    msg: "{{ msg.split('\n') }}"
+- block:
+    - set_fact:
+        msg: |
+            EC-2 Instance Tags:        Name={{ my_ec2_facts.instances[0].tags.Name }}
+            EC-2 Instance ID:          ID={{ my_ec2_facts.instances[0].id }}
+            Hostname:                  {{ hostname }}
+            OpenShift URL:             {{ cluster_url }}
+            SSH Key Name:              {{ ssh_key_name }}
+            Region:                    {{ aws_region }}
+            Next steps:
+            If you have not done already, setup OpenShift with the following script 
+              $ ./run_setup_environment.sh' 
+            1) Visit https://apiserver-service-catalog.{{ openshift_routing_suffix }}
+            2) Accept the certificate
+            3) Visit https://{{ hostname }}:8443 for the console
+            4) Provision a RDS APB into awsdemo project
+            5) Add to the aws-demo project a Python 3.5 project based off of https://github.com/thesteve0/awsdemo.git
+            6) Click on the python project and select creating binding to the RDS APB
+            7) Redeploy the python project
+            OR
+            For CLI access:
+            oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+    - debug:
+        msg: "{{ msg.split('\n') }}"
+  when: my_ec2_facts.instances
+
+- block:
+    - set_fact:
+        msg: |
+            No EC-2 Instance Exists with the following attributes
+                EC-2 Instance Tags: {{ instance_name }}
+                Hostname:           {{ hostname }}
+                Region:             {{ aws_region }}
+            Next steps:
+                1) Create the EC-2 Infrastructure via './run_create_infrastructure.sh'
+                2) Setup OpenShift Environment via './run_setup_environment.sh'
+    - debug:
+        msg: "{{ msg.split('\n') }}"
+  when: not my_ec2_facts.instances
