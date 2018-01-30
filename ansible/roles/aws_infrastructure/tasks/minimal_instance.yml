@@ -3,7 +3,7 @@
       host_fqdn: "{{ aws_custom_prefix }}.{{ target_dns_zone }}"
       wildcard_entry: "*.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
 
-  - name:  Create EC-2 Instance
+  - name:  Create EC2 Instance
     ec2:
       key_name: "{{ ssh_key_name }}"
       instance_type: "{{ instance_type }}"
@@ -20,37 +20,29 @@
       region: "{{ aws_region }}"
     register: my_ec2_instances
 
-  - name: Create EBS Volume for /tmp
+  - name: Create EBS volumes for /tmp, docker_vg, /var/lib/docker, /persistedvolumes
+    async: 200
+    register: ebs_volume_creations
+    poll: 0
     ec2_vol:
       instance: "{{ my_ec2_instances.tagged_instances[0].id }}"
-      volume_size: 50
+      volume_size: '{{ item.volume_size }}'
       region: "{{ aws_region }}"
-      device_name: "{{ tmp_ebs_device_name }}"
+      device_name: '{{ item.device_name }}'
       delete_on_termination: yes
+    with_items:
+        - { device_name: '{{ tmp_ebs_device_name }}', volume_size: 50 }
+        - { device_name: '{{ docker_vg_ebs_device_name }}', volume_size: 250 }
+        - { device_name: '{{ var_lib_docker_ebs_device_name }}', volume_size: 100 }
+        - { device_name: '{{ persistedvol_ebs_device_name }}', volume_size: 100 }
 
-  - name: Create EBS Volume for docker_vg
-    ec2_vol:
-      instance: "{{ my_ec2_instances.tagged_instances[0].id }}"
-      volume_size: 250
-      region: "{{ aws_region }}"
-      device_name: "{{ docker_vg_ebs_device_name }}"
-      delete_on_termination: yes
-
-  - name: Create EBS Volume for /var/lib/docker
-    ec2_vol:
-      instance: "{{ my_ec2_instances.tagged_instances[0].id }}"
-      volume_size: 100
-      region: "{{ aws_region }}"
-      device_name: "{{ var_lib_docker_ebs_device_name }}"
-      delete_on_termination: yes
-
-  - name: Create EBS Volume for /persistedvolumes
-    ec2_vol:
-      instance: "{{ my_ec2_instances.tagged_instances[0].id }}"
-      volume_size: 100
-      region: "{{ aws_region }}"
-      device_name: "{{ persistedvol_ebs_device_name }}"
-      delete_on_termination: yes
+  - name: Wait for EBS volumes to finish creating
+    async_status: jid={{ item.ansible_job_id }}
+    register: result
+    until: result.finished
+    retries: 10
+    delay: 10
+    with_items: '{{ ebs_volume_creations.results }}'
 
   - name: Associate Elastic IP
     ec2_eip:
@@ -99,7 +91,7 @@
       state: started
 
   # Setting as a fact so we can read it later out of this role
-  - name: Settings facts of ec2 instance to be read later
+  - name: Setting facts of EC2 instance to be read later
     set_fact:
       ec2_instances:  "{{ my_ec2_instances }}"
       elastic_ip:     "{{ my_eip }}"
