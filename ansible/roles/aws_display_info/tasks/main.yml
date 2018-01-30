@@ -1,0 +1,3 @@
+---
+  - include: minimal.yml
+    when: ec2_type == "minimal"

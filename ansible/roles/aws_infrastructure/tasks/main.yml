@@ -1,0 +1,7 @@
+---
+  - include: minimal_network.yml
+    when: ec2_type == "minimal"
+
+  # Create a single instance for the minimal (single node) cluster
+  - include: minimal_instance.yml
+    when: ec2_type == "minimal"
