@@ -1,0 +1,33 @@
+---
+  - name: Set proxy_private_ip var for OpenShift host
+    set_fact:
+      proxy_private_ip: "{{ hostvars['localhost']['proxy_private_ip'] }}"
+
+  - name: Configure system-wide proxy for OpenShift instance in /etc/environment
+    blockinfile:
+      path: /etc/environment
+      block: |
+          export http_proxy=http://{{ proxy_private_ip }}:3128/
+          export https_proxy=http://{{ proxy_private_ip }}:3128/
+          export no_proxy=.cluster.local,.svc,172.17.0.1,172.17.0.0/24
+          export HTTP_PROXY=http://{{ proxy_private_ip }}:3128/
+          export HTTPS_PROXY=http://{{ proxy_private_ip }}:3128/
+          export NO_PROXY=.cluster.local,.svc,172.17.0.1,172.17.0.0/24
+    become: true
+    register: proxy_update_result
+
+  - name: Restart OpenShift instance to pick up proxy env vars
+    become: yes
+    shell: sleep 2 && /sbin/shutdown -r now
+    async: 1
+    poll: 0
+    when: proxy_update_result|changed
+
+  - name: Pause for 10 seconds so that OpenShift instance can stop
+    pause:
+      seconds: 10
+    when: proxy_update_result|changed
+
+  - name: Wait for SSH to come up on OpenShift instance {{ hostname }}
+    local_action: wait_for host="{{ hostname }}" port=22 delay=0 timeout=320 state=started
+    when: proxy_update_result|changed

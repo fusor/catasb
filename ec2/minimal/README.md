@@ -1,6 +1,6 @@
-# CatASB EC-2 Deployment
+# CatASB EC2 Deployment
 
-OpenShift environment with a Service Catalog & Ansible Service Broker in a single EC-2 Instance.
+OpenShift environment with a Service Catalog & Ansible Service Broker in a single EC2 Instance.
 
 ## Overview
 
@@ -8,7 +8,7 @@ These playbooks will:
 
 * Create a public VPC if it does not exist
 * Create a security group if it does not exist
-* Create a single EC-2 instance with a specific Name if does not exist
+* Create a single EC2 instance with a specific Name if does not exist
 * Associate an elastic ip to instance
 * Configure a hostname with elastic ip through Route53
 * Setup *Origin* through `oc cluster up`
@@ -53,7 +53,7 @@ These playbooks will:
     $ pip install boto boto3 six
     ```
 
-* Configure a SSH Key in your AWS EC-2 account for the given region
+* Configure a SSH Key in your AWS EC2 account for the given region
 * Create a hosted zone in Route53
 * Set these environment variables:
 

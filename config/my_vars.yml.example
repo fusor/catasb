@@ -63,6 +63,11 @@ dockerhub_org: ansibleplaybookbundle
 # aws_region: ca-central-1
 # aws_ami_id: ami-9062d0f4
 
+
+# Enable ec2_use_proxy to tunnel outgoing OpenShift traffic through a squid proxy
+# ec2_use_proxy: True
+# ec2_proxy_instance_type: m4.large
+
 #
 # Deploy AWS Broker
 # Note: You may set BOTH 'deploy_awsservicebroker' AND 'deploy_asb' to 'True'
@@ -81,7 +86,7 @@ dockerhub_org: ansibleplaybookbundle
 # awsservicebroker_apbtag: nightly
 # awsservicebroker_apbtag: canary
 
-# EC-2 Instance Type - 't2.medium' or higher is recommended
+# EC2 Instance Type - 't2.medium' or higher is recommended
 # instance_type: c4.4xlarge
 
 # AWS CloudFormation Role ARN Name

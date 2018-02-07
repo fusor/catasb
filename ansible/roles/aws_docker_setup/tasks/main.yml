@@ -1,3 +1,6 @@
 ---
 - include: minimal.yml
   when: ec2_type == "minimal"
+
+- include: proxy.yml
+  when: ec2_use_proxy

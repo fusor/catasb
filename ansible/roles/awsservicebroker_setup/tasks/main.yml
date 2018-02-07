@@ -200,19 +200,30 @@
   - name: Switch project to {{ awsservicebroker_asb_project }}
     shell: "{{ oc_cmd }} project {{ awsservicebroker_asb_project }}"
 
-  - name: Waiting 10 minutes for ASB pod
+  - name: Set proxied broker vars
+    set_fact:
+      proxied_broker_project: "{{ awsservicebroker_asb_project }}"
+      proxied_broker_container: aws-asb
+    when: ec2_use_proxy
+
+  - name: Configure ASB with outbound proxy
+    include_role:
+      name: broker_proxy_setup
+    when: ec2_use_proxy
+
+  - name: Waiting up to 5 minutes for ASB pod
     action:
-      shell "{{ oc_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy
+      shell "{{ oc_cmd }}" get pods | grep -iEm1 "asb.*?running" | grep -v deploy | grep -v etcd
     register: wait_for_asb_pod
     until: wait_for_asb_pod.rc == 0
     retries: 60
-    delay: 10
+    delay: 5
 
   - name: Get route for aws-service-broker
     shell: "'{{ oc_cmd }}' get routes | grep aws-service-broker | awk '{print $2}'"
     register: result_get_route_asb
-    retries: 6
-    delay: 10
+    retries: 12
+    delay: 5
 
   - set_fact:
       aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
@@ -223,4 +234,3 @@
 
   - include: create_secrets.yml
     when: (deploy_awsservicebroker == True) and (aws_access_key != "" and aws_secret_key != "" and aws_cloudformation_role_arn != "")
-

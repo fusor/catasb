@@ -122,15 +122,6 @@
       mode: 0755
     register: get_kubernetes_client_release
 
-  - name: Wait, up to 20 minutes, till we can SSH into the host with the DNS name '{{ hostname }}'
-    wait_for:
-      host: "{{ hostname }}"
-      port: 22
-      delay: 0
-      timeout: 1200
-      state: started
-    when: ec2_install
-
   - name: Resetting cluster
     shell: "{{ oc_cmd }} cluster down"
     when: reset_cluster
@@ -218,6 +209,11 @@
         --version={{ origin_image_tag }}
         {% if use_custom_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
         --service-catalog=true
+
+  - name: Add proxy options to oc cluster up command
+    set_fact:
+      oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --http-proxy='http://{{ proxy_private_ip }}:3128' --https-proxy='http://{{ proxy_private_ip }}:3128'"
+    when: ec2_use_proxy
 
   - debug:
       var: use_custom_config

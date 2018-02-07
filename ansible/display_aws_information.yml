@@ -21,5 +21,13 @@
           "tag:Name": "*{{ aws_custom_prefix }}*"
         region: "{{ aws_region }}"
       register: my_ec2_facts
+    - name: Get EC2 Remote Facts for proxy instance
+      ec2_remote_facts:
+        filters:
+          instance-state-name: running
+          "tag:Name": "{{ proxy_instance_name }}"
+        region: "{{ aws_region }}"
+      register: proxy_ec2_facts
+      when: ec2_use_proxy
   roles:
     - aws_display_info

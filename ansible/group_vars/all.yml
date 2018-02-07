@@ -7,6 +7,7 @@ instance_lookup_value: ""
 aws_username: "ec2-user"
 ec2_install: true
 ec2_type: ""
+ec2_use_proxy: false
 
 #aws_tag_prefix is used to name the various VPC resources so they are only created once per account
 #even if shared with multiple IAM users
@@ -46,6 +47,7 @@ aws_ami_id: ami-b63769a1
 #aws_ami_id: ami-9062d0f4
 
 instance_type: c4.4xlarge
+proxy_instance_type: m4.large
 
 # For local setup, especially on Mac the hostname will be
 # different from the routing_suffix. We expect the hostname for
@@ -167,7 +169,7 @@ local_target_asb_template_processed: /tmp/deploy-ansible-service-broker.template
 
 deploy_rds_demo_instance: true
 
-aws_sec_group_name: "{{ aws_tag_prefix }}_security_group"
+aws_sec_group_name: "{{ aws_tag_prefix }}_sg"
 vpc_name: "{{ aws_tag_prefix }}_vpc"
 vpc_cidr_block: "10.0.0.0/16"
 vpc_subnet_cidr: "10.0.0.0/24"

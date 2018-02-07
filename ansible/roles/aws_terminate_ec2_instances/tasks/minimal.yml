@@ -3,52 +3,58 @@
     host_fqdn: "{{ aws_custom_prefix }}.{{ target_dns_zone }}"
     wildcard_entry: "*.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
 
-- name: Remove DNS A Record '{{ host_fqdn }}' for {{ my_ec2_facts.instances[0].public_ip_address }}
+- name: Attempt removal of DNS A Record '{{ host_fqdn }}'
   route53: >
     command=delete
     zone="{{ target_dns_zone }}"
     record="{{ host_fqdn }}"
     type=A
     ttl=60
-    value="{{ my_ec2_facts.instances[0].public_ip_address }}"
+    value="{{ item.public_ip_address }}"
   when: my_ec2_facts.instances
+  with_items: "{{ my_ec2_facts.instances }}"
+  ignore_errors: yes
 
-- name: Remove DNS A Record '{{ wildcard_entry }}' to Elastic IP {{ my_ec2_facts.instances[0].public_ip_address }}
+- name: Attempt removal of DNS A Record '{{ wildcard_entry }}'
   route53: >
     command=delete
     zone="{{ target_dns_zone }}"
     record="{{ wildcard_entry }}"
     type=A
     ttl=60
-    value="{{ my_ec2_facts.instances[0].public_ip_address }}"
+    value="{{ item.public_ip_address }}"
   when: my_ec2_facts.instances
+  with_items: "{{ my_ec2_facts.instances }}"
+  ignore_errors: yes
 
-- name: Delete EC-2 Instance {{ my_ec2_facts.instances[0].id }}
+- name: Delete EC2 instances
   ec2:
     state: absent
     wait: yes
     instance_ids:
-      - "{{ my_ec2_facts.instances[0].id }}"
+      - "{{ item.id }}"
     region: "{{ aws_region }}"
   when: my_ec2_facts.instances
+  with_items: "{{ my_ec2_facts.instances }}"
 
-- set_fact:
-    msg: |
-        Deleted Instance.
-        EC-2 Instance Tags:        Name={{ instance_name }}
-        EC-2 Instance ID:          {{ my_ec2_facts.instances[0].id }}
-        Region:                    {{ aws_region }}
-        Removed Route53 DNS:       {{ wildcard_entry }}
-                                   {{ host_fqdn }}
-
-        NOTE:
-          Only the EC2 Instance and its DNS entries listed above have been removed.
-          Common Network Services (i.e. VPC, GW, Subnets, Security groups, etc.)
-          created during the 'aws_infrastructure' setup step/role still remain.
-
-          Visit the AWS WebUI console and remove any other unwanted items manually.
+- debug:
+    msg:
+      -  "Deleted Instance."
+      -  "EC2 Instance Tags:        Name={{ item.tags.Name }}"
+      -  "EC2 Instance ID:          {{ item.id }}"
+      -  "Region:                    {{ aws_region }}"
+  with_items: "{{ my_ec2_facts.instances }}"
   when: my_ec2_facts.instances
 
 - debug:
-    msg: "{{ msg.split('\n') }}"
+    msg:
+      -  "Removed Route53 DNS:       {{ wildcard_entry }}"
+      -  "                           {{ host_fqdn }}"
+      -  ""
+      -  "NOTE:"
+      -  "  Only the EC2 Instances and DNS entries listed above have been removed."
+      -  "  Common Network Services (i.e. VPC, GW, Subnets, Security groups, etc.)"
+      -  "  created during the 'aws_infrastructure' setup step/role still remain."
+      -  ""
+      -  "  Visit the AWS Web Console and remove any other unwanted items manually."
   when: my_ec2_facts.instances

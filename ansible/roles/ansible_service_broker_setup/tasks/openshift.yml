@@ -166,6 +166,17 @@
   - name: Switch project to {{ asb_project }}
     shell: "{{ oc_cmd }} project {{ asb_project }}"
 
+  - name: Set proxied broker vars
+    set_fact:
+      proxied_broker_project: "{{ asb_project }}"
+      proxied_broker_container: asb
+    when: ec2_use_proxy
+
+  - name: Configure ASB with outbound proxy
+    include_role:
+      name: broker_proxy_setup
+    when: ec2_use_proxy
+
   - name: Waiting 10 minutes for ASB deployment configs
     action:
       shell "{{ oc_cmd }}" get deploymentconfig "{{ item }}" -o go-template={% raw %}'{{if eq .spec.replicas .status.availableReplicas}}good{{end}}'{% endraw %} | grep 'good'

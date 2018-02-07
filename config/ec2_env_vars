@@ -22,6 +22,10 @@ export INSTANCE_NAME="${OWNERS_NAME}-${AWS_CUSTOM_PREFIX}.${TARGET_DNS_ZONE}"
 export INSTANCE_LOOKUP_VALUE=`echo ${INSTANCE_NAME//./_}`
 export INSTANCE_LOOKUP_VALUE=`echo ${INSTANCE_LOOKUP_VALUE//-/_}`
 
+export PROXY_INSTANCE_NAME="${OWNERS_NAME}-proxy-${AWS_CUSTOM_PREFIX}.${TARGET_DNS_ZONE}"
+export PROXY_INSTANCE_LOOKUP_VALUE=`echo ${PROXY_INSTANCE_NAME//./_}`
+export PROXY_INSTANCE_LOOKUP_VALUE=`echo ${PROXY_INSTANCE_LOOKUP_VALUE//-/_}`
+
 export EC2_USER="ec2-user"
 
 export EXTRA_VARS="{\
@@ -30,6 +34,8 @@ export EXTRA_VARS="{\
 \"aws_custom_prefix\":\"${AWS_CUSTOM_PREFIX}\", \
 \"instance_name\":\"${INSTANCE_NAME}\", \
 \"instance_lookup_value\":\"${INSTANCE_LOOKUP_VALUE}\", \
+\"proxy_instance_name\":\"${PROXY_INSTANCE_NAME}\", \
+\"proxy_instance_lookup_value\":\"${PROXY_INSTANCE_LOOKUP_VALUE}\", \
 \"cluster\":\"${CLUSTER}\", \
 \"ec2_type\":\"${EC2_TYPE}\" \
 }"

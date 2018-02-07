@@ -3,7 +3,7 @@
       host_fqdn: "{{ aws_custom_prefix }}.{{ target_dns_zone }}"
       wildcard_entry: "*.{{ aws_custom_prefix }}.{{ target_dns_zone }}"
 
-  - name:  Create EC2 Instance
+  - name:  Create EC2 instance for OpenShift
     ec2:
       key_name: "{{ ssh_key_name }}"
       instance_type: "{{ instance_type }}"
@@ -14,11 +14,41 @@
       exact_count: 1
       count_tag:
         Name: "{{ instance_name }}"
-      group_id: "{{ my_sec_group.group_id }}"
+      group_id:
+        - "{{ my_sec_group.group_id }}"
+        - "{{ sec_group_outbound_direct.group_id }}"
       vpc_subnet_id: "{{ public_subnet_a_id }}"
       assign_public_ip: yes
       region: "{{ aws_region }}"
-    register: my_ec2_instances
+    register: instance_result
+    when: not ec2_use_proxy
+
+  - set_fact:
+      my_ec2_instances: "{{ instance_result }}"
+    when: not ec2_use_proxy
+
+  - name:  Create EC2 instance for OpenShift with proxied internet access
+    ec2:
+      key_name: "{{ ssh_key_name }}"
+      instance_type: "{{ instance_type }}"
+      instance_tags:
+        Name: "{{ instance_name }}"
+      image: "{{ aws_ami_id }}"
+      wait: yes
+      exact_count: 1
+      count_tag:
+        Name: "{{ instance_name }}"
+      group_id:
+        - "{{ my_sec_group.group_id }}"
+      vpc_subnet_id: "{{ public_subnet_a_id }}"
+      assign_public_ip: yes
+      region: "{{ aws_region }}"
+    register: proxied_instance_result
+    when: ec2_use_proxy
+
+  - set_fact:
+      my_ec2_instances: "{{ proxied_instance_result }}"
+    when: ec2_use_proxy
 
   - name: Create EBS volumes for /tmp, docker_vg, /var/lib/docker, /persistedvolumes
     async: 200
@@ -26,15 +56,15 @@
     poll: 0
     ec2_vol:
       instance: "{{ my_ec2_instances.tagged_instances[0].id }}"
-      volume_size: '{{ item.volume_size }}'
+      volume_size: "{{ item.volume_size }}"
       region: "{{ aws_region }}"
-      device_name: '{{ item.device_name }}'
+      device_name: "{{ item.device_name }}"
       delete_on_termination: yes
     with_items:
-        - { device_name: '{{ tmp_ebs_device_name }}', volume_size: 50 }
-        - { device_name: '{{ docker_vg_ebs_device_name }}', volume_size: 250 }
-        - { device_name: '{{ var_lib_docker_ebs_device_name }}', volume_size: 100 }
-        - { device_name: '{{ persistedvol_ebs_device_name }}', volume_size: 100 }
+      - { device_name: '{{ tmp_ebs_device_name }}', volume_size: 50 }
+      - { device_name: '{{ docker_vg_ebs_device_name }}', volume_size: 250 }
+      - { device_name: '{{ var_lib_docker_ebs_device_name }}', volume_size: 100 }
+      - { device_name: '{{ persistedvol_ebs_device_name }}', volume_size: 100 }
 
   - name: Wait for EBS volumes to finish creating
     async_status: jid={{ item.ansible_job_id }}

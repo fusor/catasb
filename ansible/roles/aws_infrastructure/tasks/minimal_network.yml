@@ -56,7 +56,7 @@
 #       Name:              "{{ vpc_gateway_name }}"
 #       KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
 #
-# TODO: until Ansible v2.4 is released and fully supported, 
+# TODO: until Ansible v2.4 is released and fully supported,
 #       cannot use the 'resource_tags:'
 #       Therefore, using the 'ec2_tag' Ansible module below to tag the IGW
     register: my_vpc_igw
@@ -96,6 +96,11 @@
       state:            "{{ state }}"
       vpc_id:           "{{ vpc_id }}"
       region:           "{{ aws_region }}"
+      rules_egress:
+        - proto:        "tcp"
+          from_port:    "0"
+          to_port:      "65535"
+          cidr_ip:      "{{ vpc_cidr_block }}"
       rules:
         - proto:        "tcp"
           from_port:    "22"
@@ -191,7 +196,7 @@
           cidr_ip:      "0.0.0.0/0"
     register: my_sec_group
 
-  - name: Ensure the Security Group '{{ aws_sec_group_name }}' is tagged
+  - name: Ensure the security group '{{ aws_sec_group_name }}' is tagged
     ec2_tag:
       region:   "{{ aws_region }}"
       resource: "{{ my_sec_group.group_id }}"
@@ -200,3 +205,27 @@
         Name: "{{ aws_sec_group_name }}"
         KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
     when: my_sec_group
+
+  - name: Create security group allowing OpenShift to connect directly to the internet
+    ec2_group:
+      name:             "{{ aws_sec_group_name }}_outbound"
+      description:      "{{ aws_sec_group_name }}_outbound"
+      vpc_id:           "{{ vpc_id }}"
+      region:           "{{ aws_region }}"
+      rules_egress:
+        - proto:        "tcp"
+          from_port:    "0"
+          to_port:      "65535"
+          cidr_ip:      "0.0.0.0/0"
+    register: sec_group_outbound_direct
+    when: not ec2_use_proxy
+
+  - name: Ensure the security group '{{ aws_sec_group_name }}_outbound' is tagged
+    ec2_tag:
+      region:   "{{ aws_region }}"
+      resource: "{{ sec_group_outbound_direct.group_id }}"
+      state:    "{{ state }}"
+      tags:
+        Name: "{{ aws_sec_group_name }}_outbound"
+        KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
+    when: not ec2_use_proxy

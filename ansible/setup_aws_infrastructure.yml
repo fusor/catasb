@@ -17,10 +17,17 @@
   roles:
     - aws_infrastructure
   tasks:
+    - debug:
+        msg:
+          -  "EC2 Instance Tags:        Name={{ item.tags.Name }}"
+          -  "EC2 Instance ID:          {{ item.id }}"
+          -  "Region:                    {{ aws_region }}"
+      with_items: "{{ ec2_instances.instances }}"
+
     - set_fact:
         msg: |
-            EC-2 Instance Tags:        Name={{ instance_name }}
-            EC-2 Instance ID:          {{ ec2_instances.tagged_instances[0].id }}
+            EC2 Instance Tags:        Name={{ instance_name }}
+            EC2 Instance ID:          {{ ec2_instances.tagged_instances[0].id }}
             Associated to Elastic IP:  {{ elastic_ip.public_ip }}
             Hostname:                  {{ host_fqdn }}
             DNS WildCard Entry:        {{ wildcard_entry }}

@@ -1,6 +1,11 @@
 ---
+  # Create minimal AWS network components
   - include: minimal_network.yml
     when: ec2_type == "minimal"
+
+  # Create proxy infrastructure
+  - include: proxy.yml
+    when: ec2_use_proxy
 
   # Create a single instance for the minimal (single node) cluster
   - include: minimal_instance.yml

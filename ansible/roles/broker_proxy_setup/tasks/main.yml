@@ -1,0 +1,39 @@
+---
+  - name: Copy broker-proxy-config template to OpenShift host
+    template:
+      src: broker-proxy-config.yml.j2
+      dest: /tmp/broker-proxy-config.yml
+
+  - name: Create broker-proxy-config object
+    shell: "{{ oc_cmd }} create -f /tmp/broker-proxy-config.yml -n {{ proxied_broker_project }}"
+
+  - name: Get name of latest RC for broker
+    shell: "{{ oc_cmd }} get rc --no-headers --sort-by=\".metadata.name\" -n {{ proxied_broker_project }} | grep -v etcd | tail -n1|awk '{print $1}'"
+    register: rc_latest_name
+
+  - name: Patch broker DC to reference broker-proxy-configmap
+    shell: "{{ oc_cmd }} patch dc {{ proxied_broker_container}} -p '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"{{ proxied_broker_container}}\",\"envFrom\":[{\"configMapRef\":{\"name\":\"broker-proxy-config\"}}]}]}}}}' -n {{ proxied_broker_project }}"
+
+  - name: Waiting up a minute for the broker pod to terminate ...
+    shell: "{{ oc_cmd }} get pods -n {{ proxied_broker_project }} | grep  {{ rc_latest_name.stdout }} | grep -v deploy | grep -v etcd | grep -iEm1 'asb.*?running'"
+    register: wait_for_asb_pod
+    until: wait_for_asb_pod.rc == 1
+    retries: 20
+    delay: 5
+    failed_when: wait_for_asb_pod.rc > 1
+
+  - name: Wait 5 seconds for new broker RC to show up
+    pause:
+      seconds: 5
+
+  - name: Get name of latest RC for broker
+    shell: "{{ oc_cmd }} get rc --no-headers --sort-by=\".metadata.name\" -n {{ proxied_broker_project }} | grep -v etcd | tail -n1|awk '{print $1}'"
+    register: rc_latest_name
+
+  - name: Waiting up a minute for the broker deploy pod to finish executing ...
+    shell: "{{ oc_cmd }} get pods -n {{ proxied_broker_project }} | grep  {{ rc_latest_name.stdout }}-deploy | grep -iEm1 'asb.*?running'"
+    register: wait_for_asb_pod
+    until: wait_for_asb_pod.rc == 1
+    retries: 20
+    delay: 5
+    failed_when: wait_for_asb_pod.rc > 1

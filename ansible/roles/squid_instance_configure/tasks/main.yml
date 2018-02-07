@@ -1,0 +1,19 @@
+---
+
+  - name: Install squid proxy package
+    yum:
+      name: squid
+      state: installed
+
+  - name: Copy squid.conf to OpenShift host
+    template:
+      src: squid.conf.j2
+      dest: /etc/squid/squid.conf
+    become: true
+
+  - name: Restart and enable squid proxy service
+    systemd:
+      name: squid
+      state: restarted
+      daemon_reload: yes
+      enabled: yes
