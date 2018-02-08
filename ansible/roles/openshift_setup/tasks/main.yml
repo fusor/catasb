@@ -213,7 +213,7 @@
   - name: Add proxy options to oc cluster up command
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --http-proxy='http://{{ proxy_private_ip }}:3128' --https-proxy='http://{{ proxy_private_ip }}:3128'"
-    when: ec2_use_proxy
+    when: ec2_use_proxy and ec2_install
 
   - debug:
       var: use_custom_config

@@ -170,12 +170,12 @@
     set_fact:
       proxied_broker_project: "{{ asb_project }}"
       proxied_broker_container: asb
-    when: ec2_use_proxy
+    when: ec2_use_proxy and ec2_install
 
   - name: Configure ASB with outbound proxy
     include_role:
       name: broker_proxy_setup
-    when: ec2_use_proxy
+    when: ec2_use_proxy and ec2_install
 
   - name: Waiting 10 minutes for ASB deployment configs
     action:
