@@ -5,7 +5,7 @@
       block: |
           HTTP_PROXY="http://{{ hostvars['localhost']['proxy_private_ip'] }}:3128"
           HTTPS_PROXY="http://{{ hostvars['localhost']['proxy_private_ip'] }}:3128"
-          NO_PROXY=".cluster.local,.svc,172.17.0.1,172.17.0.0/24,172.30.1.1"
+          NO_PROXY="localhost,127.0.0.1,.cluster.local,.svc,172.17.0.1,172.17.0.0/24,172.30.1.1"
     become: true
 
   - name: Restart docker service to pick up proxy changes

@@ -9,10 +9,10 @@
       block: |
           export http_proxy=http://{{ proxy_private_ip }}:3128/
           export https_proxy=http://{{ proxy_private_ip }}:3128/
-          export no_proxy=.cluster.local,.svc,172.17.0.1,172.17.0.0/24
+          export no_proxy=localhost,127.0.0.1,.cluster.local,.svc,172.17.0.1,172.17.0.0/24
           export HTTP_PROXY=http://{{ proxy_private_ip }}:3128/
           export HTTPS_PROXY=http://{{ proxy_private_ip }}:3128/
-          export NO_PROXY=.cluster.local,.svc,172.17.0.1,172.17.0.0/24
+          export NO_PROXY=localhost,127.0.0.1,.cluster.local,.svc,172.17.0.1,172.17.0.0/24
     become: true
     register: proxy_update_result
 
