@@ -2,7 +2,7 @@ apiVersion: v1
 data:
   HTTP_PROXY: http://{{ hostvars['localhost']['proxy_private_ip'] }}:3128
   HTTPS_PROXY: http://{{ hostvars['localhost']['proxy_private_ip'] }}:3128
-  NO_PROXY: .cluster.local,.svc,172.30.0.0/16,172.30.0.1
+  NO_PROXY: localhost,127.0.0.1,.cluster.local,.svc,172.30.0.0/16,172.30.0.1
 kind: ConfigMap
 metadata:
   creationTimestamp: null
