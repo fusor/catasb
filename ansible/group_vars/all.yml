@@ -201,11 +201,14 @@ docker_images_group1:
 docker_images_group2:
   - { img: "{{ etcd_image_name }}", tag: "{{ etcd_tag }}" }
   - { img: "{{ origin_image_name }}", tag: "{{ origin_image_tag }}" }
-  - { img: "{{ origin_image_name }}-sti-builder", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-deployer", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-docker-registry", tag: "{{ origin_image_tag }}" }
-  - { img: "{{ origin_image_name }}-pod", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-haproxy-router", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-pod", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-recycler", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-sti-builder", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-template-service-broker", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-web-console", tag: "{{ origin_image_tag }}" }
 
 coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
 coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
