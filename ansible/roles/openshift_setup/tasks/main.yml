@@ -182,6 +182,16 @@
       - "{{ docker_images_group1 }}"
       - "{{ docker_images_group2 }}"
 
+  - name: Pull additional docker images for 3.9+
+    docker_image:
+      name: "{{ item.img }}"
+      state: present
+      tag: "{{ item.tag }}"
+    with_items:
+      - "{{ docker_images_group3 }}"
+    when:
+    - not(rcm) and (origin_image_tag == "latest" or "v3.9" in origin_image_tag)
+
   - stat:
       path: "{{ oc_host_config_dir }}/master/master-config.yaml"
     register: master_config_stat

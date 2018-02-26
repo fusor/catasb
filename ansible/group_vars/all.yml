@@ -207,6 +207,8 @@ docker_images_group2:
   - { img: "{{ origin_image_name }}-pod", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-recycler", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-sti-builder", tag: "{{ origin_image_tag }}" }
+
+docker_images_group3:
   - { img: "{{ origin_image_name }}-template-service-broker", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-web-console", tag: "{{ origin_image_tag }}" }
 
