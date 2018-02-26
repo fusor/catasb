@@ -30,4 +30,5 @@
 
   - name: Wait for SSH to come up on OpenShift instance {{ hostname }}
     local_action: wait_for host="{{ hostname }}" port=22 delay=0 timeout=320 state=started
+    become: false
     when: proxy_update_result|changed
