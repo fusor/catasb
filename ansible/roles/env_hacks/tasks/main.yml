@@ -38,14 +38,14 @@
             register: arglist
 
           - name: Use canary apiserver
-            shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/apiserver -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"apiserver\",\"image\":\"{{ coalmine_apiserver }}\", \"command\": [\"/opt/services/apiserver\"], \"args\": {{ arglist.stdout }} }]}}}}'"
+            shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/apiserver -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"apiserver\",\"image\":\"{{ coalmine_svc_catalog }}\", \"command\": [\"/opt/services/service-catalog\"], \"args\": {{ arglist.stdout }} }]}}}}'"
 
           - name: Get current controller-manager args and update them
             shell: "{{ oc_cmd }} export -n {{ oc_service_catalog }} deployment controller-manager -o json | python -c 'import json, sys; args=json.load(sys.stdin)[\"spec\"][\"template\"][\"spec\"][\"containers\"][0][\"args\"]; args.remove(\"--service-catalog-api-server-url\"); args.remove(\"http://$(APISERVER_SERVICE_HOST):$(APISERVER_SERVICE_PORT)\"); args.append(\"--service-catalog-api-server-url\"); args.append(\"https://$(APISERVER_SERVICE_HOST):$(APISERVER_PORT_443_TCP_PORT)\"); args.append(\"--service-catalog-insecure-skip-verify\"); print json.dumps(args)'"
             register: arglist
 
           - name: Use canary controller-manager
-            shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/controller-manager -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"controller-manager\",\"image\":\"{{ coalmine_controller }}\", \"command\": [\"/opt/services/controller-manager\"], \"args\": {{ arglist.stdout }} }]}}}}'"
+            shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/controller-manager -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"controller-manager\",\"image\":\"{{ coalmine_svc_catalog }}\", \"command\": [\"/opt/services/service-catalog\"], \"args\": {{ arglist.stdout }} }]}}}}'"
         when: openshift_client_version == '3.6'
 
       - name: Update service-catalog (OpenShift 3.7)
@@ -54,10 +54,10 @@
           shell: "{{ oc_cmd }} adm policy add-cluster-role-to-user cluster-admin system:anonymous"
 
         - name: Use canary apiserver
-          shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/apiserver -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"apiserver\",\"image\":\"{{ coalmine_apiserver }}\", \"command\": [\"/opt/services/apiserver\"] }]}}}}'"
+          shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/apiserver -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"apiserver\",\"image\":\"{{ coalmine_svc_catalog }}\", \"command\": [\"/opt/services/service-catalog\"] }]}}}}'"
 
         - name: Use canary controller-manager
-          shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/controller-manager -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"controller-manager\",\"image\":\"{{ coalmine_controller }}\", \"command\": [\"/opt/services/controller-manager\"]}]}}}}'"
+          shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/controller-manager -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"controller-manager\",\"image\":\"{{ coalmine_svc_catalog }}\", \"command\": [\"/opt/services/service-catalog\"]}]}}}}'"
         when: openshift_client_version == '3.7' or openshift_client_version == 'latest'
       when: coalmine
     when: coalmine is defined

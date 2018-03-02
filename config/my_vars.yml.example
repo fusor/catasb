@@ -29,9 +29,8 @@ dockerhub_org: ansibleplaybookbundle
 # Use the quay.io canary images for bleeding edge development.
 # coalmine: true
 
-# Override the service-catalog's apiserver + controller images.
-# coalmine_apiserver: quay.io/kubernetes-service-catalog/apiserver:canary
-# coalmine_controller: quay.io/kubernetes-service-catalog/controller-manager:canary
+# Override the service-catalog's images.
+# coalmine_svc_catalog: quay.io/kubernetes-service-catalog/service-catalog:canary
 
 
 # The default tag to use for apb's is latest. To change that you can set this option.
