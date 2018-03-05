@@ -129,6 +129,8 @@ broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
 # Used to determine if the APB namespace should be kept
 broker_keep_namespace: false
 broker_keep_namespace_on_error: true
+# crd is also valid
+broker_dao_type: "etcd"
 
 # AWS Broker
 deploy_asb: True
