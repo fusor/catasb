@@ -83,7 +83,7 @@
       register: oc_download_binary
       retries: 5
       delay: 10
-      until: oc_download_binary.status_code == 200
+      until: oc_download_binary.status_code is defined and oc_download_binary.status_code == 200
 
     - debug: var=oc_download_binary
 
