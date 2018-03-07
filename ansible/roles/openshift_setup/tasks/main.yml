@@ -78,7 +78,14 @@
         url: "{{ openshift_client_release_url }}"
         dest: /tmp/{{ openshift_client_release_file }}
         mode: 0440
+        timeout: 10
         force: yes
+      register: oc_download_binary
+      retries: 5
+      delay: 10
+      until: oc_download_binary.status_code == 200
+
+    - debug: var=oc_download_binary
 
     - name: Extract zip archive
       unarchive: src=/tmp/{{ openshift_client_release_file }} dest=/tmp copy=no
