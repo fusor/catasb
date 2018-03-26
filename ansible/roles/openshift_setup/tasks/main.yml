@@ -223,7 +223,7 @@
         --public-hostname={{ hostname }}
         --host-pv-dir={{ persistedvol_mount_point }}
         --image={{ origin_image_name }}
-        --version={{ origin_image_tag }}
+        --tag={{ origin_image_tag }}
         {% if use_custom_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
         --service-catalog=true
 
