@@ -404,4 +404,4 @@
       msg: "Failed to get the service-catalog project"
     when: oc_service_catalog == ""
 
-  - include: env_hacks.yml
+  - include_tasks: env_hacks.yml

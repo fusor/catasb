@@ -9,6 +9,7 @@ These playbooks will:
   * Install Ansible Service Broker on Origin
 
 ### Pre-Reqs
+  * Ansible 2.4.0+ installed.
   * ```socat``` needs to be installed
 
         	brew install socat
@@ -48,7 +49,7 @@ These playbooks will:
                         pip install ansible
 
                         $ python -c "import ansible;print(ansible.__version__)"
-                        2.3.0.0
+                        2.4.1.0
 
 ### Notes
   * Accessing the VM on OSX running docker:
@@ -109,5 +110,5 @@ To reset the environment to a clean instance of origin with ASB and Service Cata
     * `./reset_environment.sh --rcm`
 
 ### Tested with
-  * ansible 2.3.0.0
+  * ansible 2.4.1.0
     * Problems were seen using ansible 2.2 and lower

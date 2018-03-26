@@ -231,7 +231,7 @@
       aws_secret_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
 
   - name: Create the shared AWS Role ARN
-    include: create_role_arn.yml
+    include_tasks: create_role_arn.yml
 
-  - include: create_secrets.yml
+  - include_tasks: create_secrets.yml
     when: (deploy_awsservicebroker == True) and (aws_access_key != "" and aws_secret_key != "" and aws_cloudformation_role_arn != "")

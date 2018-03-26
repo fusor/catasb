@@ -7,7 +7,7 @@ These playbooks will do the following in a local environment:
   * Install [Ansible Service Broker](https://github.com/openshift/ansible-service-broker) on Origin
 
 ### Pre-Reqs
-  * Ansible 2.3.0+ installed.
+  * Ansible 2.4.0+ installed.
   * Docker installed and configured
     * Suggestion, to ease usage we allow our regular user to access the docker server by doing the below:
 
@@ -65,9 +65,8 @@ These playbooks will do the following in a local environment:
     * `./reset_environment.sh --rcm`
 
 ### Tested with
-  * ansible 2.3.0.0
+  * ansible 2.4.1.0
     * Problems were seen using ansible 2.2 and lower
-
 
 ### Troubleshooting
 

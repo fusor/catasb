@@ -1,2 +1,2 @@
 ---
-  - include: "{{ cluster }}.yml"
+  - include_tasks: "{{ cluster }}.yml"

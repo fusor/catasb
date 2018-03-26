@@ -16,12 +16,12 @@ These playbooks will:
 * Install Ansible Service Broker on *Origin*
 
 ## Pre-Reqs
-
+* Ansible 2.4.0+ installed.
 * Ansible needs to be installed so its source code is available to Python.
   * Check to see if Ansible modules are available to Python
     ```bash
     $ python -c "import ansible;print(ansible.__version__)"
-    2.3.0.0
+    2.4.1.0
     ```
   * MacOS requires Ansible to be installed from `pip` and not `brew`
     ```bash
@@ -34,7 +34,7 @@ These playbooks will:
     pip install ansible
 
     $ python -c "import ansible;print(ansible.__version__)"
-    2.3.0.0
+    2.4.1.0
     ```
 * Install python dependencies (This is needed for python2. Use pip2 if using python3)
   * On Fedora and EL7 it is recommended that you use ansible in a python virtualenv.
@@ -118,5 +118,5 @@ These playbooks will:
     * `./reset_environmet.sh --rcm`
 
 ## Tested with
-  * ansible 2.3.0.0
+  * ansible 2.4.1.0
     * Problems were seen using ansible 2.2 and lower

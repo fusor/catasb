@@ -1,13 +1,13 @@
 ---
 
-- include: package_install.yml
+- include_tasks: package_install.yml
   when: not reset_cluster
 
-- include: setup_helm.yml
+- include_tasks: setup_helm.yml
   when: not reset_cluster
 
-- include: validations.yml
+- include_tasks: validations.yml
 
-- include: setup_kubernetes.yml
+- include_tasks: setup_kubernetes.yml
 
-- include: setup_catalog.yml
+- include_tasks: setup_catalog.yml
