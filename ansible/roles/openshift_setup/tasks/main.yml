@@ -221,7 +221,6 @@
         {{ oc_cmd }} cluster up
         --routing-suffix={{ openshift_routing_suffix }}
         --public-hostname={{ hostname }}
-        --host-pv-dir={{ persistedvol_mount_point }}
         --image={{ origin_image_name }}
         --tag={{ origin_image_tag }}
         {% if use_custom_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
@@ -354,7 +353,7 @@
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
 
   - name: Run oc cluster up to start the cluster
-    shell: "{{ oc_cmd }} cluster down && {{ oc_cluster_up_cmd }}"
+    shell: "pushd /tmp && for i in $(df -h | grep cluster | awk '{ print $6 }'); do umount $i; done && rm -rf /tmp/openshift.local.clusterup && {{ oc_cmd }} cluster down && {{ oc_cluster_up_cmd }} && popd"
     register: oc_cluster_up
     retries: 5
     delay: 10
