@@ -129,17 +129,6 @@
       mode: 0755
     register: get_kubernetes_client_release
 
-  - name: Resetting cluster
-    shell: "{{ oc_cmd }} cluster down"
-    when: reset_cluster
-
-  - name: Remove {{ oc_host_config_dir }} when resetting cluster
-    file:
-      path: "{{ oc_host_config_dir }}"
-      state: absent
-    become: true
-    when: reset_cluster
-
   - name: Install docker through pip as it's a requirement of ansible docker module
     pip:
       name: docker
@@ -170,20 +159,11 @@
     become: 'true'
     when: ansible_os_family == "RedHat"
 
-  - name: Removing certain docker images if they exist so we are sure we are pulling latest
-    docker_image:
-      name: "{{ item.img }}"
-      state: absent
-      tag: "{{ item.tag }}"
-      force: true
-    with_items:
-      - "{{ docker_images_group1 }}"
-    when: remove_docker_images
-
   - name: Pulling all docker images we require
     docker_image:
       name: "{{ item.img }}"
       state: present
+      force: yes
       tag: "{{ item.tag }}"
     with_items:
       - "{{ docker_images_group1 }}"
@@ -193,11 +173,12 @@
     docker_image:
       name: "{{ item.img }}"
       state: present
+      force: yes
       tag: "{{ item.tag }}"
     with_items:
       - "{{ docker_images_group3 }}"
     when:
-    - not(rcm) and (origin_image_tag == "latest" or "v3.9" in origin_image_tag)
+    - origin_image_tag == "latest" or "v3.9" or "v3.10" in origin_image_tag
 
   - stat:
       path: "{{ oc_host_config_dir }}/master/master-config.yaml"
@@ -220,10 +201,9 @@
       oc_cluster_up_cmd: >-
         {{ oc_cmd }} cluster up
         --routing-suffix={{ openshift_routing_suffix }}
-        --public-hostname={{ hostname }}
         --image={{ origin_image_name }}
         --tag={{ origin_image_tag }}
-        {% if use_custom_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
+        --base-dir={{ oc_cluster_up_base_dir }}
         --service-catalog=true
 
   - name: Add proxy options to oc cluster up command
@@ -240,30 +220,11 @@
   - debug:
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
 
-  - name: Ensure {{ persistedvol_mount_point }} directory exists if running in local mode
-    file:
-      path: "{{ persistedvol_mount_point }}"
-      state: directory
-      mode: 0755
-    become: 'true'
-    when: not ec2_install
+  - name: stop old cluster
+    shell: oc cluster down
 
-  # Below is intended to help with re-runs and cleaning up
-  # Note for macOS we can not just delete the persistent volume directory and recreate
-  # For mac, the persistent volume directory is shared into the vm running docker
-  # deleting the persistent volume directory interferes and breaks the share to the VM
-  - name: clear out persistent volumes if they exist
-    shell: |
-      for dir in `ls {{ persistedvol_mount_point }}/ | grep 'pv\|registry'`; do
-        rm -rf {{ persistedvol_mount_point}}/$dir/* ; done
-    when: persistedvol_mount_point != "/"
-    become: true
-
-  - name: Adjust any existing directories under persistent volume to have permissions 777
-    file:
-      path: "{{ persistedvol_mount_point }}"
-      mode: 0777
-      recurse: true
+  - name: clean up old cluster
+    shell: for i in $(mount | grep openshift | awk '{ print $3}'); do umount "$i"; done && rm -rf /tmp/openshift.local.clusterup
     become: true
 
   # Intent of this oc cluster up is generate the master-config.yaml so we can make edits to it
@@ -353,9 +314,9 @@
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
 
   - name: Run oc cluster up to start the cluster
-    shell: "pushd /tmp && for i in $(df -h | grep cluster | awk '{ print $6 }'); do umount $i; done && rm -rf /tmp/openshift.local.clusterup && {{ oc_cmd }} cluster down && {{ oc_cluster_up_cmd }} && popd"
+    shell: "{{ oc_cmd }} cluster down && {{ oc_cluster_up_cmd }}"
     register: oc_cluster_up
-    retries: 5
+    retries: "{{ oc_cluster_up_retries }}"
     delay: 10
     until: oc_cluster_up.rc == 0
   #

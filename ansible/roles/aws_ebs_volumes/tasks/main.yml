@@ -1,6 +1,6 @@
 ---
 
-  - name: Create ext4 filesystems for /var/lib/docker, /tmp, persistedvolumes
+  - name: Create ext4 filesystems for /var/lib/docker, /tmp, persistent volumes
     async: 200
     register: filesystem_creations
     poll: 0
@@ -11,7 +11,7 @@
     with_items:
       - "{{ var_lib_docker_block_device }}"
       - "{{ tmp_block_device }}"
-      - "{{ persistedvol_block_device }}"
+      - "{{ persistent_vol_block_device }}"
 
   - name: Wait for ext4 filesystems to finish creating
     async_status: jid={{ item.ansible_job_id }}
@@ -46,9 +46,9 @@
   - name: Restorecon /tmp
     shell: restorecon -R /tmp
 
-  - name: Mount persistedvolumes filesystem
+  - name: Mount persistent volumes filesystem
     mount:
-      name: "{{ persistedvol_mount_point }}"
-      src:  "{{ persistedvol_block_device }}"
+      name: "{{ persistent_vol_mount_point }}"
+      src:  "{{ persistent_vol_block_device }}"
       fstype: ext4
       state: mounted

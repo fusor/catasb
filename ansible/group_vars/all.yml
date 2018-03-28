@@ -73,17 +73,14 @@ docker_vg_ebs_device_name: "sdd"
 docker_vg_block_device: "/dev/xvdd"
 docker_vg_name: "docker_vg"
 
-persistedvol_ebs_device_name: "sde"
-persistedvol_block_device: "/dev/xvde"
-persistedvol_mount_point: "/persistedvolumes"
+persistent_vol_ebs_device_name: "sde"
+persistent_vol_block_device: "/dev/xvde"
 
 tmp_ebs_device_name: "sdf"
 tmp_block_device: "/dev/xvdf"
 tmp_mount_point: "/tmp"
 
 
-cluster_master_config_file: /var/lib/origin/openshift.local.config/master/master-config.yaml
-cluster_auth_htpasswd_file: /var/lib/origin/openshift.local.config/master/catasb_auth_htpasswd
 cluster_user: admin
 cluster_user_password: admin
 cluster_system_admin: "system:admin"
@@ -96,7 +93,12 @@ kubectl_cmd: "{{ oc_client_install_path }}/kubectl"
 
 origin_image_name: docker.io/openshift/origin
 origin_image_tag: latest
-oc_host_config_dir: /var/lib/origin/openshift.local.config
+oc_cluster_up_retries: 0
+oc_cluster_up_base_dir: /tmp/openshift.local.clusterup
+oc_host_config_dir: "{{ oc_cluster_up_base_dir }}"
+cluster_master_config_file: "{{ oc_host_config_dir }}/master/master-config.yaml"
+cluster_auth_htpasswd_file: "{{ oc_host_config_dir }}/master/catasb_auth_htpasswd"
+persistent_vol_mount_point: "{{ oc_cluster_up_base_dir }}/openshift.local.pv"
 
 asb_project: ansible-service-broker
 
@@ -215,3 +217,4 @@ docker_images_group3:
   - { img: "{{ origin_image_name }}-web-console", tag: "{{ origin_image_tag }}" }
 
 coalmine_svc_catalog: quay.io/kubernetes-service-catalog/service-catalog:canary
+

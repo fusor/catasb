@@ -50,7 +50,7 @@
       my_ec2_instances: "{{ proxied_instance_result }}"
     when: ec2_use_proxy
 
-  - name: Create EBS volumes for /tmp, docker_vg, /var/lib/docker, /persistedvolumes
+  - name: Create EBS volumes for /tmp, docker_vg, /var/lib/docker, persistent volumes
     async: 200
     register: ebs_volume_creations
     poll: 0
@@ -64,7 +64,7 @@
       - { device_name: '{{ tmp_ebs_device_name }}', volume_size: 50 }
       - { device_name: '{{ docker_vg_ebs_device_name }}', volume_size: 250 }
       - { device_name: '{{ var_lib_docker_ebs_device_name }}', volume_size: 100 }
-      - { device_name: '{{ persistedvol_ebs_device_name }}', volume_size: 100 }
+      - { device_name: '{{ persistent_vol_ebs_device_name }}', volume_size: 100 }
 
   - name: Wait for EBS volumes to finish creating
     async_status: jid={{ item.ansible_job_id }}

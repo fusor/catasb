@@ -18,7 +18,7 @@
 
   - name: Adjust persistent volume permissions to be 777 to make testing easier
     file:
-      path: "{{ persistedvol_mount_point }}"
+      path: "{{ persistent_vol_mount_point }}"
       mode: 0777
       recurse: true
     become: true
