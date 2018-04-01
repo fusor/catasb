@@ -202,6 +202,7 @@
         {{ oc_cmd }} cluster up
         --routing-suffix={{ openshift_routing_suffix }}
         --image={{ origin_image_name }}
+        --public-hostname={{ hostname }}
         --tag={{ origin_image_tag }}
         --base-dir={{ oc_cluster_up_base_dir }}
         --service-catalog=true
