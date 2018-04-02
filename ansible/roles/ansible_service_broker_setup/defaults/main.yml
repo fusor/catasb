@@ -88,3 +88,17 @@ broker_user: YWRtaW4=
 ca_file: ""
 bearer_token_file: ""
 cluster_auth_host: ""
+
+# playbook will use the value of 'broker_version' to index into this map
+# normally broker_version is set from 'broker_tag' yet for custom images
+# user may want to run an arbitray tag,
+# then they must set broker_version correctly
+ansible_broker_deployment_info:
+  'v3.6':
+    template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/release-0.9/templates/deploy-ansible-service-broker.template.yaml
+  'v3.7':
+    template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/release-1.0/templates/deploy-ansible-service-broker.template.yaml
+  'v3.9':
+    template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/release-1.1/templates/deploy-ansible-service-broker.template.yaml
+  latest:
+    template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml
