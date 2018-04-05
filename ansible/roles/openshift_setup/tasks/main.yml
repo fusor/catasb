@@ -231,13 +231,13 @@
       oc_cluster_up_cmd: >-
         {{ oc_cmd }} cluster up
         --routing-suffix={{ openshift_routing_suffix }}
-        --image={{ origin_image_name }}
         --public-hostname={{ hostname }}
-        --tag={{ origin_image_tag }}
         --base-dir={{ oc_cluster_up_base_dir }}
-        --service-catalog=true
-    when:
-    - origin_image_tag == "latest" or "v3.10" in origin_image_tag
+        --image={{ origin_image_name }}
+        --tag={{ origin_image_tag }}
+        --enable=service-catalog
+    when: ("v3.10" in origin_image_tag) or
+          ("latest" in origin_image_tag)
 
   - name: Add proxy options to oc cluster up command
     set_fact:
