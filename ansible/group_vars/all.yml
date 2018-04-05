@@ -106,7 +106,8 @@ asb_project: ansible-service-broker
 # If you want to make changes to deploying the broker, grab a copy of the template and make local changes and update it to point to 'asb_template_url'
 # remember to use a file:// path as in:
 # asb_template_url: file:///path/to/file/deploy.yaml.j2
-asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml
+# asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml
+# only specify asb_template_url if you want to override the lookup behavior using broker_version
 k8s_asb_template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/k8s-ansible-service-broker.yaml.j2
 
 broker_registry_type: dockerhub
@@ -127,11 +128,15 @@ broker_auto_escalate: false
 
 broker_image_name: docker.io/ansibleplaybookbundle/origin-ansible-service-broker
 broker_tag: "latest"
+# Used to look up different behaviors to execute based on the version of the broker
+# broker_version may not always match broker_tag, example testing custom images
+broker_version: "{{ broker_tag }}"
 broker_image: "{{ broker_image_name }}:{{ broker_tag }}"
 # Used to determine if the APB namespace should be kept
 broker_keep_namespace: false
 broker_keep_namespace_on_error: true
-# crd is also valid
+# crd is also valid,
+# broker_dao_type is only for 3.10 and later brokers
 broker_dao_type: "crd"
 
 # AWS Broker
@@ -217,4 +222,3 @@ docker_images_group3:
   - { img: "{{ origin_image_name }}-web-console", tag: "{{ origin_image_tag }}" }
 
 coalmine_svc_catalog: quay.io/kubernetes-service-catalog/service-catalog:canary
-

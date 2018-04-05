@@ -8,6 +8,11 @@
     retries: 6
     delay: 10
 
+  - name: Looking up Ansible Broker template URL for {{ broker_tag }}
+    set_fact:
+      asb_template_url: "{{ ansible_broker_deployment_info[broker_version].template_url }}"
+    when: (asb_template_url is not defined) or (asb_template_url == "")
+
   - name: Curling ansible-service-broker-all.yaml
     get_url:
       url: "{{ asb_template_url }}"
@@ -83,9 +88,21 @@
         -p AUTO_ESCALATE={{ broker_auto_escalate|bool }}
         -p KEEP_NAMESPACE={{ broker_keep_namespace|bool }}
         -p KEEP_NAMESPACE_ON_ERROR={{ broker_keep_namespace_on_error|bool }}
-        -p DAO_TYPE={{ broker_dao_type }}
         {% if broker_kind is defined %}-p BROKER_KIND={{ broker_kind }}{% endif %}
         {% if broker_auth is defined %}-p BROKER_AUTH='{{ broker_auth }}'{% endif %}
+
+  - name: Include deployment steps for etcd when deploying older broker versions
+    include_tasks: broker_etcd_setup.yml
+    when:
+    - '("v3.9" in broker_version) or ("v3.7" in broker_version) or ("v3.6" in broker_version)'
+
+  - name: Update Ansible Broker deployment template command for v3.10 and beyond
+    set_fact:
+      cmd_process_asb_template: >-
+        {{ cmd_process_asb_template }}
+        -p DAO_TYPE={{ broker_dao_type }}
+    when:
+    - '("latest" in broker_version) or ("v3.10" in broker_version)'
 
   # to use newer features available in newer broker images
   ############################################################

@@ -18,6 +18,17 @@ dockerhub_org: ansibleplaybookbundle
 # broker_tag: "latest"
 # broker_tag: "canary"
 
+## WARNING: By default, broker_version will be set from broker_tag
+##          If you set broker_tag to a custom tag, i.e. no v3.9, v3.10, latest
+##          then you need to set broker_version to the version of the broker
+##          version meaning the openshift release the broker was released in
+# broker_version: "v3.10"
+
+# Example using 3.9 images
+# openshift_client_version: '3.9'
+# origin_image_tag: v3.9
+# broker_tag: v3.9
+#
 # You can override other variables as needed.  For example to change your OpenShift hostname
 # you can modify the hostname and suffix here:
 # hostname: 172.17.0.1
