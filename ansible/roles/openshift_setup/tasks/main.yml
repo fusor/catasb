@@ -235,7 +235,7 @@
         --base-dir={{ oc_cluster_up_base_dir }}
         --image={{ origin_image_name }}
         --tag={{ origin_image_tag }}
-        --enable=service-catalog
+        --enable=service-catalog,template-service-broker
     when: ("v3.10" in origin_image_tag) or
           ("latest" in origin_image_tag)
 
