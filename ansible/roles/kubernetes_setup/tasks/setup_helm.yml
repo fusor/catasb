@@ -35,6 +35,7 @@
     unarchive:
       src: /tmp/helm.tgz
       dest: /tmp
+      remote_src: yes
 
   - name: Copying helm binary to "{{ oc_client_install_path }}"
     copy:
@@ -43,4 +44,5 @@
       group: "{{ ansible_env.USER }}"
       owner: "{{ ansible_env.USER }}"
       mode: 0775
+      remote_src: yes
     become: true

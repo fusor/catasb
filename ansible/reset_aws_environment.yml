@@ -39,7 +39,6 @@
 
 - hosts: tag_Name_{{ instance_lookup_value }}
   gather_facts: True
-  become: True
   pre_tasks:
     - name: Setting fact of security group id
       set_fact:
@@ -49,7 +48,7 @@
       prompt: "Enter the dockerhub organization you'd like to pull images from: "
       private: no
   roles:
-    - { role: openshift_proxy_setup, when: ec2_use_proxy == True }
+    - { role: aws_proxy_setup, when: ec2_use_proxy == True }
     - { role: ssl_setup, when: use_ssl == True }
     - { role: "{{ cluster }}_setup", reset_cluster: True }
     - { role: ansible_service_broker_setup, when: deploy_asb == True}
@@ -64,5 +63,16 @@
             Next steps:
             Web: https://{{ hostname }}:8443
             CLI: oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+      when: cluster == 'openshift'
+
+    - set_fact:
+        msg: |
+            EC2 Instance Tags:        Name={{ instance_name }}
+            Hostname:                  {{ hostname }}
+            SSH Key Name:              {{ ssh_key_name }}
+            Region:                    {{ aws_region }}
+            Kubernetes Cluster is running at http://{{ hostname }}:6443
+      when: cluster == 'kubernetes'
+
     - debug:
         msg: "{{ msg.split('\n') }}"

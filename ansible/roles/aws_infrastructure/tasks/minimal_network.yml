@@ -89,10 +89,11 @@
           gateway_id:   "{{ igw_id }}"
 
   #https://docs.openshift.com/container-platform/latest/install_config/install/prerequisites.html#required-ports
-  - name:               Create Main Security Group - "{{ aws_sec_group_name }}"
+  - name:               Create OpenShift Security Group - "{{ aws_openshift_sec_group_name }}"
+    when: cluster == 'openshift'
     ec2_group:
-      name:             "{{ aws_sec_group_name }}"
-      description:      "{{ aws_sec_group_name }}"
+      name:             "{{ aws_openshift_sec_group_name }}"
+      description:      "{{ aws_openshift_sec_group_name }}"
       state:            "{{ state }}"
       vpc_id:           "{{ vpc_id }}"
       region:           "{{ aws_region }}"
@@ -196,20 +197,87 @@
           cidr_ip:      "0.0.0.0/0"
     register: my_sec_group
 
-  - name: Ensure the security group '{{ aws_sec_group_name }}' is tagged
+  - name: Ensure the OpenShift security group '{{ aws_openshift_sec_group_name }}' is tagged
     ec2_tag:
       region:   "{{ aws_region }}"
       resource: "{{ my_sec_group.group_id }}"
       state:    "{{ state }}"
       tags:
-        Name: "{{ aws_sec_group_name }}"
+        Name: "{{ aws_openshift_sec_group_name }}"
         KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
-    when: my_sec_group
+    when: cluster == 'openshift' and my_sec_group
 
-  - name: Create security group allowing OpenShift to connect directly to the internet
+    # https://kubernetes.io/docs/setup/independent/install-kubeadm/#check-required-ports
+  - name:               Create Kubernetes Security Group - "{{ aws_k8s_sec_group_name }}"
+    when: cluster == 'kubernetes'
     ec2_group:
-      name:             "{{ aws_sec_group_name }}_outbound"
-      description:      "{{ aws_sec_group_name }}_outbound"
+      name:             "{{ aws_k8s_sec_group_name }}"
+      description:      "{{ aws_k8s_sec_group_name }}"
+      state:            "{{ state }}"
+      vpc_id:           "{{ vpc_id }}"
+      region:           "{{ aws_region }}"
+      rules_egress:
+        - proto:        "tcp"
+          from_port:    "0"
+          to_port:      "65535"
+          cidr_ip:      "{{ vpc_cidr_block }}"
+      rules:
+        - proto:        "tcp"
+          from_port:    "22"
+          to_port:      "22"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "53"
+          to_port:      "53"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "udp"
+          from_port:    "53"
+          to_port:      "53"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "80"
+          to_port:      "80"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "443"
+          to_port:      "443"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "6443"
+          to_port:      "6443"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "2379"
+          to_port:      "2380"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "10250"
+          to_port:      "10252"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "10255"
+          to_port:      "10255"
+          cidr_ip:      "0.0.0.0/0"
+        - proto:        "tcp"
+          from_port:    "30000"
+          to_port:      "32767"
+          cidr_ip:      "0.0.0.0/0"
+    register: my_k8s_sec_group
+
+  - name: Ensure the security group '{{ aws_k8s_sec_group_name }}' is tagged
+    ec2_tag:
+      region:   "{{ aws_region }}"
+      resource: "{{ my_k8s_sec_group.group_id }}"
+      state:    "{{ state }}"
+      tags:
+        Name: "{{ aws_k8s_sec_group_name }}"
+        KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
+    when: cluster == "kubernetes" and my_k8s_sec_group
+
+  - name: Create security group allowing direct connection to the internet
+    ec2_group:
+      name:             "{{ aws_egress_allow_sec_group_name }}"
+      description:      "{{ aws_egress_allow_sec_group_name }}"
       vpc_id:           "{{ vpc_id }}"
       region:           "{{ aws_region }}"
       rules_egress:
@@ -217,15 +285,15 @@
           from_port:    "0"
           to_port:      "65535"
           cidr_ip:      "0.0.0.0/0"
-    register: sec_group_outbound_direct
+    register: sec_group_egress_allow
     when: not ec2_use_proxy
 
-  - name: Ensure the security group '{{ aws_sec_group_name }}_outbound' is tagged
+  - name: Ensure the security group '{{ aws_egress_allow_sec_group_name }}' is tagged
     ec2_tag:
       region:   "{{ aws_region }}"
-      resource: "{{ sec_group_outbound_direct.group_id }}"
+      resource: "{{ sec_group_egress_allow.group_id }}"
       state:    "{{ state }}"
       tags:
-        Name: "{{ aws_sec_group_name }}_outbound"
+        Name: "{{ aws_egress_allow_sec_group_name }}"
         KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
     when: not ec2_use_proxy

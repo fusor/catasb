@@ -45,7 +45,6 @@
 
 - hosts: tag_Name_{{ instance_lookup_value }}
   gather_facts: True
-  become: True
   pre_tasks:
     - name: Setting fact of security group id
       set_fact:
@@ -56,13 +55,13 @@
       private: no
   roles:
     - aws_ebs_volumes
-    - { role: openshift_proxy_setup, when: ec2_use_proxy == True }
+    - { role: aws_proxy_setup, when: ec2_use_proxy == True }
     - aws_repo_setup
     - aws_packages
     - aws_docker_setup
     - { role: ssl_setup, when: use_ssl == True }
-    - openshift_setup
-    - env_hacks
+    - "{{ cluster }}_setup"
+    - { role: env_hacks, when: cluster == 'openshift' }
     - { role: ansible_service_broker_setup, when: deploy_asb == True}
     - { role: awsservicebroker_setup, when: deploy_awsservicebroker == True}
   post_tasks:
@@ -74,5 +73,15 @@
             Region:                    {{ aws_region }}
             Web: https://{{ hostname }}:8443
             CLI: oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
+
+    - set_fact:
+        msg: |
+            EC2 Instance Tags:        Name={{ instance_name }}
+            Hostname:                  {{ hostname }}
+            SSH Key Name:              {{ ssh_key_name }}
+            Region:                    {{ aws_region }}
+            Kubernetes Cluster is running at http://{{ hostname }}:6443
+      when: cluster == 'kubernetes'
+
     - debug:
         msg: "{{ msg.split('\n') }}"

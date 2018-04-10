@@ -56,6 +56,7 @@
       path: "{{ oc_tools_dir }}"
       state: directory
       mode: 0755
+    when: not ec2_install
 
   # Download oc client from release
   - block:
@@ -100,16 +101,22 @@
         remote_src: True
         src: "/tmp/oc"
         dest: "{{ oc_tools_dir }}/oc"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
         mode: 0755
       when: openshift_release_ext == "zip"
+      become: true
 
     - name: Install oc
       copy:
         remote_src: True
         src: /tmp/{{ openshift_client_release }}/oc
         dest: "{{ oc_tools_dir }}/oc"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
         mode: 0755
       when: openshift_release_ext == "tar.gz"
+      become: true
 
     when: not local_oc_client
   # end block
@@ -126,8 +133,11 @@
     get_url:
       url: "{{ kube_ctl_url }}"
       dest: "{{ oc_tools_dir }}/kubectl"
+      owner: "{{ ansible_user_id }}"
+      group: "{{ ansible_user_id }}"
       mode: 0755
     register: get_kubernetes_client_release
+    become: true
 
   - name: Install docker through pip as it's a requirement of ansible docker module
     pip:
@@ -168,6 +178,7 @@
     with_items:
       - "{{ docker_images_group1 }}"
       - "{{ docker_images_group2 }}"
+    become: true
 
   - name: Pull additional docker images for 3.9+
     docker_image:
@@ -180,6 +191,7 @@
     when: (origin_image_tag == "latest") or
           ("v3.9" in origin_image_tag) or
           ("v3.10" in origin_image_tag)
+    become: true
 
   - stat:
       path: "{{ oc_host_config_dir }}/master/master-config.yaml"
@@ -280,6 +292,7 @@
       group: root
       mode: 0644
     when: generate_config and use_ssl == True
+    become: true
 
   - name: Copy credentials into host dir
     copy:
@@ -290,6 +303,7 @@
       group: root
       mode: 0644
     when: generate_config and use_ssl == True
+    become: true
 
   - name: Edit master-config servingInfo.namedCertificates to use SSL
     lineinfile:
@@ -297,7 +311,7 @@
       regexp: "namedCertificates: null"
       line: "  namedCertificates:\n    - certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem\n      keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem\n      names:\n      - \"{{ hostname }}\"\n"
     when: generate_config and use_ssl == True
-    become: 'true'
+    become: true
 
   - name: Edit node config cgroup-driver
     become: true

@@ -1,8 +1,8 @@
 ---
   - name: Create security group for squid proxy
     ec2_group:
-      name:             "{{ aws_sec_group_name }}_squid_inbound"
-      description:      "{{ aws_sec_group_name }}_squid_inbound"
+      name:             "{{ aws_squid_sec_group_name }}"
+      description:      "{{ aws_squid_sec_group_name }}"
       vpc_id:           "{{ vpc_id }}"
       region:           "{{ aws_region }}"
       rules:
@@ -15,9 +15,9 @@
           to_port:      "22"
           cidr_ip:      "0.0.0.0/0"
       tags:
-        Name: "{{ aws_sec_group_name }}_squid_inbound"
+        Name: "{{ aws_squid_sec_group_name }}"
         KubernetesCluster: "{{ kubernetes_cluster_tag_value }}"
-    register: squid_inbound_sec_group
+    register: squid_sec_group
 
   - name: Create EC2 instance for squid proxy
     ec2:
@@ -30,7 +30,7 @@
       exact_count: 1
       count_tag:
         Name: "{{ proxy_instance_name }}"
-      group_id: "{{ squid_inbound_sec_group.group_id }}"
+      group_id: "{{ squid_sec_group.group_id }}"
       vpc_subnet_id: "{{ public_subnet_a_id }}"
       assign_public_ip: yes
       region: "{{ aws_region }}"

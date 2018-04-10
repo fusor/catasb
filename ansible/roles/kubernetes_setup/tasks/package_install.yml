@@ -1,4 +1,5 @@
 ---
+
   - name: Selecting kubernetes release
     shell: curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt
     register: release
@@ -29,7 +30,21 @@
     when: ansible_os_family == "Darwin"
     become: true
 
-  - name: Create Kubeadm repo
+  - name: Install bash-completion package for Linux
+    yum:
+      name: bash-completion
+      state: installed
+    become: true
+    when: ansible_os_family == "RedHat"
+
+
+  - name: Enable completion for kubectl on Linux
+    lineinfile:
+      path: "{{ ansible_env.HOME }}/.bashrc"
+      line: source <(kubectl completion bash)
+    when: ansible_os_family == "RedHat"
+
+  - name: Create Kubernetes repo
     shell:
       cmd: |
         cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -39,9 +54,13 @@
         enabled=1
         gpgcheck=1
         repo_gpgcheck=1
-        gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
-        https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+        gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
         EOF
+    become: true
+    when: ansible_os_family == "RedHat"
+
+  - name: Force import of Kubernetes repo GPG keys
+    shell: "yum -q makecache -y --disablerepo=* --enablerepo=kubernetes"
     become: true
     when: ansible_os_family == "RedHat"
 

@@ -1,71 +1,75 @@
 ---
-  # Assumes that if console cert exists so does apiserver cert
-  - name: Check if SSL certs have already been generated for this instance
-    stat:
-      path: /etc/letsencrypt/archive/{{ hostname }}
-    register: certsRemote
+  - name: Configure SSL
+    become: true
+    block:
+    # Assumes that if console cert exists so does apiserver cert
+    - name: Check if SSL certs have already been generated for this instance
+      stat:
+        path: /etc/letsencrypt/archive/{{ hostname }}
+      register: certsRemote
 
-  - name: Check if SSL certs have already been generated for this instance locally
-    stat:
-      path: certs/{{ hostname }}-console-cert.pem
-    register: certsLocal
-    delegate_to: localhost
-    become: no
+    - name: Check if SSL certs have already been generated for this instance locally
+      stat:
+        path: certs/{{ hostname }}-console-cert.pem
+      register: certsLocal
+      delegate_to: localhost
+      become: no
 
-  - name: Clone letsencrypt
-    git:
-      repo: https://github.com/letsencrypt/letsencrypt.git
-      dest: "{{ go_path }}/src/github.com/letsencrypt/letsencrypt"
-      version: v0.13.0
-    register: git_clone_le
-    when: certsLocal.stat.exists == False and certsRemote.stat.isdir is not defined
+    - name: Clone letsencrypt
+      git:
+        repo: https://github.com/letsencrypt/letsencrypt.git
+        dest: "{{ go_path }}/src/github.com/letsencrypt/letsencrypt"
+        version: v0.13.0
+        force: yes
+      register: git_clone_le
+      when: certsLocal.stat.exists == False and certsRemote.stat.isdir is not defined
 
-  - name: Make temporary letsencrypt folder
-    shell: "mkdir -p /tmp/letsencrypt"
-    when: certsLocal.stat.exists == False and certsRemote.stat.isdir is not defined
+    - name: Make temporary letsencrypt folder
+      shell: "mkdir -p /tmp/letsencrypt"
+      when: certsLocal.stat.exists == False and certsRemote.stat.isdir is not defined
 
-  - name: Run letsencrypt script for console
-    shell: >
-      {{ go_path }}/src/github.com/letsencrypt/letsencrypt/letsencrypt-auto
-      --renew-by-default
-      -a standalone
-      --webroot-path
-      /tmp/letsencrypt/
-      --server https://acme-v01.api.letsencrypt.org/directory
-      --email {{ email_address }}
-      --text
-      {{ "--test-cert" if use_test_cert else "" }}
-      --agree-tos
-      -d {{ hostname }}
-      auth
-    when: certsLocal.stat.exists == False and certsRemote.stat.isdir is not defined
+    - name: Run letsencrypt script for console
+      shell: >
+        {{ go_path }}/src/github.com/letsencrypt/letsencrypt/letsencrypt-auto
+        --renew-by-default
+        -a standalone
+        --webroot-path
+        /tmp/letsencrypt/
+        --server https://acme-v01.api.letsencrypt.org/directory
+        --email {{ email_address }}
+        --text
+        {{ "--test-cert" if use_test_cert else "" }}
+        --agree-tos
+        -d {{ hostname }}
+        auth
+      when: certsLocal.stat.exists == False and certsRemote.stat.isdir is not defined
 
-  - name: Store SSL certs locally for future instances
-    fetch:
-      src: /etc/letsencrypt/archive/{{ hostname }}/fullchain1.pem
-      dest: certs/{{ hostname}}-console-cert.pem
-      flat: yes
-    when: certsLocal.stat.exists == False
+    - name: Store SSL certs locally for future instances
+      fetch:
+        src: /etc/letsencrypt/archive/{{ hostname }}/fullchain1.pem
+        dest: certs/{{ hostname}}-console-cert.pem
+        flat: yes
+      when: certsLocal.stat.exists == False
 
-  - name: Store SSL certs locally for future instances
-    fetch:
-      src: /etc/letsencrypt/archive/{{ hostname }}/privkey1.pem
-      dest: certs/{{ hostname}}-console-key.pem
-      flat: yes
-    when: certsLocal.stat.exists == False
+    - name: Store SSL certs locally for future instances
+      fetch:
+        src: /etc/letsencrypt/archive/{{ hostname }}/privkey1.pem
+        dest: certs/{{ hostname}}-console-key.pem
+        flat: yes
+      when: certsLocal.stat.exists == False
 
-  - name: Copy credentials into /tmp
-    copy:
-      src: certs/{{ hostname }}-console-cert.pem
-      dest: /tmp/console-fullchain.pem
-      owner: root
-      group: root
-      mode: 0644
+    - name: Copy credentials into /tmp
+      copy:
+        src: certs/{{ hostname }}-console-cert.pem
+        dest: /tmp/console-fullchain.pem
+        owner: root
+        group: root
+        mode: 0644
 
-  - name: Copy credentials into /tmp
-    copy:
-      src: certs/{{ hostname }}-console-key.pem
-      dest: /tmp/console-privkey.pem
-      owner: root
-      group: root
-      mode: 0644
+    - name: Copy credentials into /tmp
+      copy:
+        src: certs/{{ hostname }}-console-key.pem
+        dest: /tmp/console-privkey.pem
+        owner: root
+        group: root
+        mode: 0644

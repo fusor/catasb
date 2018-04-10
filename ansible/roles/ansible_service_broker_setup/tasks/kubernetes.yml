@@ -7,6 +7,7 @@
       url: "{{ k8s_asb_template_url }}"
       force: yes
       dest: "{{ local_target_asb_template }}"
+    delegate_to: localhost
     become: true
 
   - name: Render k8s-ansible-service-broker.yaml.j2

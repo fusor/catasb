@@ -207,7 +207,7 @@
       proxied_broker_container: aws-asb
     when: ec2_use_proxy and ec2_install
 
-  - name: Configure ASB with outbound proxy
+  - name: Configure ASB with egress proxy
     include_role:
       name: broker_proxy_setup
     when: ec2_use_proxy and ec2_install
