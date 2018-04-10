@@ -102,7 +102,6 @@
         src: "/tmp/oc"
         dest: "{{ oc_tools_dir }}/oc"
         owner: "{{ ansible_user_id }}"
-        group: "{{ ansible_user_id }}"
         mode: 0755
       when: openshift_release_ext == "zip"
       become: true
@@ -113,7 +112,6 @@
         src: /tmp/{{ openshift_client_release }}/oc
         dest: "{{ oc_tools_dir }}/oc"
         owner: "{{ ansible_user_id }}"
-        group: "{{ ansible_user_id }}"
         mode: 0755
       when: openshift_release_ext == "tar.gz"
       become: true
@@ -134,7 +132,6 @@
       url: "{{ kube_ctl_url }}"
       dest: "{{ oc_tools_dir }}/kubectl"
       owner: "{{ ansible_user_id }}"
-      group: "{{ ansible_user_id }}"
       mode: 0755
     register: get_kubernetes_client_release
     become: true
