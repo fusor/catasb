@@ -14,12 +14,7 @@
           (ansible_distribution == "Archlinux")
 
   - set_fact:
-      oc_tools_dir: /usr/bin
-    when: ec2_install
-
-  - set_fact:
       oc_tools_dir: "{{ ansible_env.HOME }}/bin"
-    when: not ec2_install
 
   - set_fact:
       oc_cmd: "{{ oc_tools_dir }}/oc"
@@ -56,7 +51,6 @@
       path: "{{ oc_tools_dir }}"
       state: directory
       mode: 0755
-    when: not ec2_install
 
   # Download oc client from release
   - block:
@@ -104,7 +98,6 @@
         owner: "{{ ansible_user_id }}"
         mode: 0755
       when: openshift_release_ext == "zip"
-      become: true
 
     - name: Install oc
       copy:
@@ -114,6 +107,14 @@
         owner: "{{ ansible_user_id }}"
         mode: 0755
       when: openshift_release_ext == "tar.gz"
+
+    - name: Copy oc to /usr/bin/oc
+      copy:
+        remote_src: True
+        src: "{{ oc_tools_dir }}/oc"
+        dest: "/usr/bin/oc"
+        mode: 0755
+      when: ec2_install
       become: true
 
     when: not local_oc_client
@@ -131,10 +132,8 @@
     get_url:
       url: "{{ kube_ctl_url }}"
       dest: "{{ oc_tools_dir }}/kubectl"
-      owner: "{{ ansible_user_id }}"
       mode: 0755
     register: get_kubernetes_client_release
-    become: true
 
   - name: Install docker through pip as it's a requirement of ansible docker module
     pip:
@@ -175,7 +174,6 @@
     with_items:
       - "{{ docker_images_group1 }}"
       - "{{ docker_images_group2 }}"
-    become: true
 
   - name: Pull additional docker images for 3.9+
     docker_image:
@@ -188,7 +186,6 @@
     when: (origin_image_tag == "latest") or
           ("v3.9" in origin_image_tag) or
           ("v3.10" in origin_image_tag)
-    become: true
 
   - stat:
       path: "{{ oc_host_config_dir }}/master/master-config.yaml"
@@ -263,7 +260,7 @@
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"
 
   - name: stop old cluster
-    shell: oc cluster down
+    shell: "{{ oc_cmd }} cluster down"
 
   - name: clean up old cluster
     shell: for i in $(mount | grep openshift | awk '{ print $3}'); do umount "$i"; done && rm -rf /tmp/openshift.local.clusterup
@@ -407,5 +404,12 @@
     fail:
       msg: "Failed to get the service-catalog project"
     when: oc_service_catalog == ""
+
+  - name: "Restrict permissions on docker socket (needed until 'meta: reset_connection' is supported)."
+    file:
+      path: /var/run/docker.sock
+      mode: 0660
+    become: true
+    when: ec2_install
 
   - include_tasks: env_hacks.yml

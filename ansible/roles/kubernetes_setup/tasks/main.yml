@@ -11,3 +11,10 @@
 - include_tasks: setup_kubernetes.yml
 
 - include_tasks: setup_catalog.yml
+
+- name: "Restrict permissions on docker socket (needed until 'meta: reset_connection' is supported)."
+  file:
+    path: /var/run/docker.sock
+    mode: 0660
+  become: true
+  when: ec2_install
