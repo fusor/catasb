@@ -303,13 +303,40 @@
     when: generate_config and use_ssl == True
     become: true
 
-  - name: Edit master-config servingInfo.namedCertificates to use SSL
-    lineinfile:
-      dest: "{{ cluster_master_config_file }}"
-      regexp: "namedCertificates: null"
-      line: "  namedCertificates:\n    - certFile: {{ console_cert_config_ref }}\n      keyFile: {{ console_key_config_ref }}\n      names:\n      - \"{{ hostname }}\"\n"
+  - name: Put base64 contents of {{ cluster_master_config_file }} into master_config
+    slurp:
+      src: "{{ cluster_master_config_file }}"
+    register: master_config
     when: generate_config and use_ssl == True
     become: true
+
+  - name: Parse master_config as YAML
+    set_fact:
+      master_config: "{{ master_config.content | b64decode |from_yaml }}"
+    when: generate_config and use_ssl == True
+
+  - name: Create named_certificates_config var with references to LetsEncrypt cert/key
+    set_fact:
+      named_certificates_config:
+        servingInfo:
+          namedCertificates:
+          - certFile: "{{ console_cert_config_ref }}"
+            keyFile: "{{ console_key_config_ref }}"
+            names:
+              - "{{ hostname }}"
+    when: generate_config and use_ssl == True
+
+  - name: Merge master_config with named_certicates_config
+    set_fact:
+      master_config: "{{ master_config | combine(named_certificates_config, recursive=True) }}"
+    when: generate_config and use_ssl == True
+
+  - name: Copy master_config back to {{ cluster_master_config_file }}
+    copy:
+      content: "{{ master_config }}"
+      dest: "{{ cluster_master_config_file }}"
+    become: true
+    when: generate_config and use_ssl == True
 
   - name: Edit node config cgroup-driver
     become: true
@@ -352,7 +379,7 @@
     when: use_ssl == True
     become: true
 
-  # --use-existing-config is has been removed in 3.10
+  # --use-existing-config has been removed in 3.10
   - name: Update oc cluster up command to use --use-existing-config
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --use-existing-config"
