@@ -212,12 +212,16 @@
       oc_cluster_up_base_dir: /var/lib/origin/openshift.local.config
       oc_host_config_dir: /var/lib/origin/openshift.local.config
       cluster_master_config_file: /var/lib/origin/openshift.local.config/master/master-config.yaml
-      cluster_auth_htpasswd_file: /var/lib/origin/openshift.local.config/master/catasb_auth_htpasswd
+      cluster_auth_htpasswd_dest_path: /var/lib/origin/openshift.local.config/master/{{ cluster_auth_htpasswd_file_name }}
+      cluster_auth_htpasswd_config_ref: /var/lib/origin/openshift.local.config/master/{{ cluster_auth_htpasswd_file_name }}
+      console_cert_dest_path: /var/lib/origin/openshift.local.config/master/{{ console_cert_file_name }}
+      console_key_dest_path: /var/lib/origin/openshift.local.config/master/{{ console_key_file_name }}
+      console_cert_config_ref: /var/lib/origin/openshift.local.config/master/{{ console_cert_file_name }}
+      console_key_config_ref: /var/lib/origin/openshift.local.config/master/{{ console_key_file_name }}
     when:
     - ("v3.9" in origin_image_tag) or
         ("v3.7" in origin_image_tag) or
         ("v3.6" in origin_image_tag)
-
 
   - name: Create command line for oc cluster up execution for older oc clients, up to 3.9
     set_fact:
@@ -280,8 +284,8 @@
   - name: Copy credentials into host dir
     copy:
       remote_src: True
-      src: /tmp/console-fullchain.pem
-      dest: "{{ oc_host_config_dir }}/console-fullchain.pem"
+      src: /tmp/{{ console_cert_file_name }}
+      dest: "{{ console_cert_dest_path }}"
       owner: root
       group: root
       mode: 0644
@@ -291,21 +295,48 @@
   - name: Copy credentials into host dir
     copy:
       remote_src: True
-      src: /tmp/console-privkey.pem
-      dest: "{{ oc_host_config_dir }}/console-privkey.pem"
+      src: /tmp/{{ console_key_file_name }}
+      dest: "{{ console_key_dest_path }}"
       owner: root
       group: root
       mode: 0644
     when: generate_config and use_ssl == True
     become: true
 
-  - name: Edit master-config servingInfo.namedCertificates to use SSL
-    lineinfile:
-      dest: "{{ oc_host_config_dir }}/master/master-config.yaml"
-      regexp: "namedCertificates: null"
-      line: "  namedCertificates:\n    - certFile: /var/lib/origin/openshift.local.config/console-fullchain.pem\n      keyFile: /var/lib/origin/openshift.local.config/console-privkey.pem\n      names:\n      - \"{{ hostname }}\"\n"
+  - name: Put base64 contents of {{ cluster_master_config_file }} into master_config
+    slurp:
+      src: "{{ cluster_master_config_file }}"
+    register: master_config
     when: generate_config and use_ssl == True
     become: true
+
+  - name: Parse master_config as YAML
+    set_fact:
+      master_config: "{{ master_config.content | b64decode |from_yaml }}"
+    when: generate_config and use_ssl == True
+
+  - name: Create named_certificates_config var with references to LetsEncrypt cert/key
+    set_fact:
+      named_certificates_config:
+        servingInfo:
+          namedCertificates:
+          - certFile: "{{ console_cert_config_ref }}"
+            keyFile: "{{ console_key_config_ref }}"
+            names:
+              - "{{ hostname }}"
+    when: generate_config and use_ssl == True
+
+  - name: Merge master_config with named_certicates_config
+    set_fact:
+      master_config: "{{ master_config | combine(named_certificates_config, recursive=True) }}"
+    when: generate_config and use_ssl == True
+
+  - name: Copy master_config back to {{ cluster_master_config_file }}
+    copy:
+      content: "{{ master_config }}"
+      dest: "{{ cluster_master_config_file }}"
+    become: true
+    when: generate_config and use_ssl == True
 
   - name: Edit node config cgroup-driver
     become: true
@@ -319,19 +350,19 @@
     package:
       name: python-passlib
       state: installed
-    become: 'true'
     when: use_ssl == True
+    become: true
 
   - name: Create htpasswd file for cluster user auth
     htpasswd:
-      path: "{{ cluster_auth_htpasswd_file }}"
+      path: "{{ cluster_auth_htpasswd_dest_path }}"
       name: "{{ cluster_user }}"
       password: "{{ cluster_user_password }}"
       owner: root
       group: root
       mode: 0640
-    become: 'true'
     when: use_ssl == True
+    become: true
 
   - name: Copy update_oauth_provider_to_htpasswd.py
     copy:
@@ -341,15 +372,21 @@
       group: root
       mode: 0755
     when: use_ssl == True
+    become: true
 
   - name: Update master-config.yaml with htpasswd file
-    shell: "/tmp/update_oauth_provider_to_htpasswd.py {{ cluster_master_config_file }} {{ cluster_auth_htpasswd_file }}"
+    shell: "/tmp/update_oauth_provider_to_htpasswd.py {{ cluster_master_config_file }} {{ cluster_auth_htpasswd_config_ref }}"
     when: use_ssl == True
+    become: true
 
+  # --use-existing-config has been removed in 3.10
   - name: Update oc cluster up command to use --use-existing-config
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --use-existing-config"
-    when: use_custom_config
+    when: use_custom_config and
+      ( ("v3.9" in origin_image_tag) or
+        ("v3.7" in origin_image_tag) or
+        ("v3.6" in origin_image_tag) )
 
   - debug:
       msg: "Looking at oc cluster up command:  '{{ oc_cluster_up_cmd }}'"

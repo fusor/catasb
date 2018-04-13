@@ -96,9 +96,20 @@ origin_image_tag: latest
 oc_cluster_up_retries: 0
 oc_cluster_up_base_dir: /tmp/openshift.local.clusterup
 oc_host_config_dir: "{{ oc_cluster_up_base_dir }}"
-cluster_master_config_file: "{{ oc_host_config_dir }}/master/master-config.yaml"
-cluster_auth_htpasswd_file: "{{ oc_host_config_dir }}/master/catasb_auth_htpasswd"
 persistent_vol_mount_point: "{{ oc_cluster_up_base_dir }}/openshift.local.pv"
+cluster_master_config_file: "{{ oc_host_config_dir }}/kube-apiserver/master-config.yaml"
+
+cluster_auth_htpasswd_file_name: catasb_auth_htpasswd
+cluster_auth_htpasswd_config_ref: "{{ cluster_auth_htpasswd_file_name }}"
+cluster_auth_htpasswd_dest_path: "{{ oc_host_config_dir }}/kube-apiserver/{{ cluster_auth_htpasswd_file_name }}"
+
+console_cert_file_name: console-fullchain.pem
+console_cert_config_ref: "{{ console_cert_file_name }}"
+console_cert_dest_path: "{{ oc_host_config_dir }}/kube-apiserver/{{ console_cert_file_name }}"
+
+console_key_file_name: console-privkey.pem
+console_key_config_ref: "{{ console_key_file_name }}"
+console_key_dest_path: "{{ oc_host_config_dir }}/kube-apiserver/{{ console_key_file_name }}"
 
 asb_project: ansible-service-broker
 
