@@ -1,6 +1,6 @@
-export PUBLIC_IP="192.168.37.1"
-echo "We will create a lo0 alias for ${PUBLIC_IP}"
-sudo ifconfig lo0 alias ${PUBLIC_IP}
+export PUBLIC_IP="127.0.0.1"
+#echo "We will create a lo0 alias for ${PUBLIC_IP}"
+#sudo ifconfig lo0 alias ${PUBLIC_IP}
 
 export HOSTNAME="${PUBLIC_IP}"
 export OPENSHIFT_ROUTING_SUFFIX="${PUBLIC_IP}.nip.io"
