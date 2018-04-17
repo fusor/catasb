@@ -98,7 +98,7 @@
       vpc_id:           "{{ vpc_id }}"
       region:           "{{ aws_region }}"
       rules_egress:
-        - proto:        "tcp"
+        - proto:        "all"
           from_port:    "0"
           to_port:      "65535"
           cidr_ip:      "{{ vpc_cidr_block }}"
@@ -217,7 +217,7 @@
       vpc_id:           "{{ vpc_id }}"
       region:           "{{ aws_region }}"
       rules_egress:
-        - proto:        "tcp"
+        - proto:        "all"
           from_port:    "0"
           to_port:      "65535"
           cidr_ip:      "{{ vpc_cidr_block }}"
@@ -281,7 +281,7 @@
       vpc_id:           "{{ vpc_id }}"
       region:           "{{ aws_region }}"
       rules_egress:
-        - proto:        "tcp"
+        - proto:        "all"
           from_port:    "0"
           to_port:      "65535"
           cidr_ip:      "0.0.0.0/0"
