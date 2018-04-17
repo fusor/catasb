@@ -4,4 +4,5 @@ persistent_vol_mount_point: /persistedvolumes
 
 # Temporary fix until release version of oc client works with latest images.
 openshift_client_url: https://s3.amazonaws.com/catasb/darwin/amd64/oc
-update_cgroup_driver: True
+update_cgroup_driver: False
+use_ssl: False
