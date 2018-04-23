@@ -187,22 +187,6 @@
           ("v3.9" in origin_image_tag) or
           ("v3.10" in origin_image_tag)
 
-  - stat:
-      path: "{{ oc_host_config_dir }}/master/master-config.yaml"
-    register: master_config_stat
-
-  - stat:
-      path: "{{ oc_host_config_dir }}/console-fullchain.pem"
-    register: console_ssl_stat
-
-  - name: Check to see if we need to use a custom config
-    set_fact:
-      use_custom_config: "{{ use_ssl or update_cgroup_driver }}"
-
-  - name: Check to see if we need to regenerate the custom config because something is missing
-    set_fact:
-      generate_config: "{{ use_custom_config and (not master_config_stat.stat.exists or not console_ssl_stat.stat.exists) }}"
-
   # Looks like we need to keep the directory oc uses for config files to /var/lib/origin/openshift.local.config
   # Tried to use /tmp/openshift.local.clusterup as we do for 3.10
   # Ran into issues in ec2 deployments where we use a custom httpasswd file
@@ -222,6 +206,22 @@
     - ("v3.9" in origin_image_tag) or
         ("v3.7" in origin_image_tag) or
         ("v3.6" in origin_image_tag)
+
+  - stat:
+      path: "{{ cluster_master_config_file }}"
+    register: master_config_stat
+
+  - stat:
+      path: "{{ console_cert_dest_path }}"
+    register: console_ssl_stat
+
+  - name: Check to see if we need to use a custom config
+    set_fact:
+      use_custom_config: "{{ use_ssl or update_cgroup_driver }}"
+
+  - name: Check to see if we need to regenerate the custom config because something is missing
+    set_fact:
+      generate_config: "{{ use_custom_config and (not master_config_stat.stat.exists or not console_ssl_stat.stat.exists) }}"
 
   - name: Create command line for oc cluster up execution for older oc clients, up to 3.9
     set_fact:
