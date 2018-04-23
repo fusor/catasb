@@ -102,3 +102,7 @@ ansible_broker_deployment_info:
     template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/release-1.1/templates/deploy-ansible-service-broker.template.yaml
   latest:
     template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml
+  nightly:
+    template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml
+  canary:
+    template_url: https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml
