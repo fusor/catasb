@@ -165,7 +165,7 @@
     become: 'true'
     when: ansible_os_family == "RedHat"
 
-  - name: Pulling all docker images we require
+  - name: Pull docker images for all openshift versions
     docker_image:
       name: "{{ item.img }}"
       state: present
@@ -185,6 +185,17 @@
       - "{{ docker_images_group3 }}"
     when: (origin_image_tag == "latest") or
           ("v3.9" in origin_image_tag) or
+          ("v3.10" in origin_image_tag)
+
+  - name: Pull additional docker images for 3.10+
+    docker_image:
+      name: "{{ item.img }}"
+      state: present
+      force: yes
+      tag: "{{ item.tag }}"
+    with_items:
+      - "{{ docker_images_group4 }}"
+    when: (origin_image_tag == "latest") or
           ("v3.10" in origin_image_tag)
 
   # Looks like we need to keep the directory oc uses for config files to /var/lib/origin/openshift.local.config
