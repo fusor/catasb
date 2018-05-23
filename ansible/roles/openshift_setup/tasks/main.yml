@@ -256,7 +256,7 @@
         --base-dir={{ oc_cluster_up_base_dir }}
         --tag={{ origin_image_tag }}
         --image={{ origin_image_name }}-\${component}:\${version}
-        --enable=service-catalog,template-service-broker,router,registry,web-console,persistent-volumes,sample-templates,rhel-imagestreams
+        --enable=service-catalog,template-service-broker,router,registry,web-console,persistent-volumes,sample-templates,rhel-imagestreams,automation-service-broker
     when: ("v3.10" in origin_image_tag) or
           ("latest" in origin_image_tag)
 
