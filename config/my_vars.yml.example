@@ -4,6 +4,13 @@
 # For convenience you can skip being prompted for these vars by storing them here.
 dockerhub_org: ansibleplaybookbundle
 
+################
+# Enable broker
+# If origin >= 3.10, enable|disable the broker
+################
+# enable_broker: true
+# enable_broker: false
+
 # Dockerhub username/password are now only required if you are using a private repository
 # dockerhub_user_name: example_user
 # Omit this unless you want to store your password in plain text to skip prompts.

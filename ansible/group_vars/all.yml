@@ -112,6 +112,7 @@ console_key_config_ref: "{{ console_key_file_name }}"
 console_key_dest_path: "{{ oc_host_config_dir }}/kube-apiserver/{{ console_key_file_name }}"
 
 asb_project: ansible-service-broker
+enable_broker: true
 
 
 # If you want to make changes to deploying the broker, grab a copy of the template and make local changes and update it to point to 'asb_template_url'
