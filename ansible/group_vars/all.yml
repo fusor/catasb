@@ -245,4 +245,7 @@ docker_images_group4:
   - { img: "{{ origin_image_name }}-hypershift", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-node", tag: "{{ origin_image_tag }}" }
 
+docker_images_group5:
+  - { img: "{{ origin_image_name }}-cli", tag: "{{ origin_image_tag }}" }
+
 coalmine_svc_catalog: quay.io/kubernetes-service-catalog/service-catalog:canary
