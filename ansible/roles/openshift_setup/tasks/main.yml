@@ -203,7 +203,7 @@
       - "{{ docker_images_group3 }}"
     when: (origin_image_tag == "latest") or
           ("v3.9" in origin_image_tag) or
-          ("v3.10" in origin_image_tag)
+          ("v3.10" in origin_image_tag) or
           ("v3.11" in origin_image_tag)
 
   - name: Pull additional docker images for 3.10+
@@ -215,7 +215,7 @@
     with_items:
       - "{{ docker_images_group4 }}"
     when: (origin_image_tag == "latest") or
-          ("v3.10" in origin_image_tag)
+          ("v3.10" in origin_image_tag) or
           ("v3.11" in origin_image_tag)
 
   - name: Pull additional docker images for 3.11+
