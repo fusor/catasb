@@ -42,9 +42,26 @@
   - set_fact:
       openshift_release_url: "{{openshift_client.url}}"
 
+  - uri:
+      url: https://storage.googleapis.com/kubernetes-release/release/stable.txt
+      return_content: true
+    register: kubectl_stable_version
+
+  - set_fact:
+      major: "{{ kubectl_stable_version.content.split('.')[0] }}"
+      minor: "{{ kubectl_stable_version.content.split('.')[1] }}"
+      revision: "{{ kubectl_stable_version.content.split('.')[2] | replace('\n', '') }}"
+    when: '"latest" in origin_image_tag'
+
+  - set_fact:
+      major: "{{ kubectl_stable_version.content.split('.')[0] }}"
+      minor: "{{ origin_image_tag.split('.')[1] }}"
+      revision: "{{ origin_image_tag.split('.')[2] | default('0') }}"
+    when: not("latest" in origin_image_tag)
+
   - set_fact:
       openshift_client_release_url: "{{ openshift_release_url }}/{{ openshift_client_release_file }}"
-      kube_ctl_url: "https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/{{ kube_build_type }}/amd64/kubectl"
+      kube_ctl_url: "https://storage.googleapis.com/kubernetes-release/release/{{ major }}.{{ minor }}.{{ revision }}/bin/{{ kube_build_type }}/amd64/kubectl"
 
   - package:
       name: "libselinux-python"
@@ -120,6 +137,7 @@
       url: "{{ kube_ctl_url }}"
       dest: "{{ oc_tools_dir }}/kubectl"
       mode: 0755
+      force: true
     register: get_kubernetes_client_release
 
   - name: Resetting cluster
