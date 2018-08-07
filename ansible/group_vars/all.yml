@@ -233,7 +233,6 @@ docker_images_group2:
   - { img: "{{ origin_image_name }}-haproxy-router", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-pod", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-recycler", tag: "{{ origin_image_tag }}" }
-  - { img: "{{ origin_image_name }}-sti-builder", tag: "{{ origin_image_tag }}" }
 
 docker_images_group3:
   - { img: "{{ origin_image_name }}-template-service-broker", tag: "{{ origin_image_tag }}" }
@@ -247,5 +246,8 @@ docker_images_group4:
 
 docker_images_group5:
   - { img: "{{ origin_image_name }}-cli", tag: "{{ origin_image_tag }}" }
+
+docker_images_group6:
+  - { img: "{{ origin_image_name }}-sti-builder", tag: "{{ origin_image_tag }}" }
 
 coalmine_svc_catalog: quay.io/kubernetes-service-catalog/service-catalog:canary
