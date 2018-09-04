@@ -1,5 +1,6 @@
 ---
   - include_tasks: "{{ cluster }}.yml"
-    when: ("v3.9" in origin_image_tag) or
+    when: rcm or
+          ("v3.9" in origin_image_tag) or
           ("v3.7" in origin_image_tag) or
           ("v3.6" in origin_image_tag)
