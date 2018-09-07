@@ -243,10 +243,10 @@ docker_images_group4:
   - { img: "{{ origin_image_name }}-hyperkube", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-hypershift", tag: "{{ origin_image_tag }}" }
   - { img: "{{ origin_image_name }}-node", tag: "{{ origin_image_tag }}" }
-  - { img: "{{ origin_image_name }}-service-serving-cert-signer", tag: "v3.11" }
 
 docker_images_group5:
   - { img: "{{ origin_image_name }}-cli", tag: "{{ origin_image_tag }}" }
+  - { img: "{{ origin_image_name }}-service-serving-cert-signer", tag: "v3.11" }
 
 docker_images_group6:
   - { img: "{{ origin_image_name }}-sti-builder", tag: "{{ origin_image_tag }}" }
