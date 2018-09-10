@@ -252,3 +252,5 @@ docker_images_group6:
   - { img: "{{ origin_image_name }}-sti-builder", tag: "{{ origin_image_tag }}" }
 
 coalmine_svc_catalog: quay.io/kubernetes-service-catalog/service-catalog:canary
+
+deploy_olm: true

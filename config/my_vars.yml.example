@@ -41,6 +41,9 @@ dockerhub_org: ansibleplaybookbundle
 # hostname: 172.17.0.1
 # openshift_routing_suffix: 172.17.0.1.nip.io
 
+# Deploy Operator Lifecycle Manager (OLM)
+# deploy_olm: true
+
 # Default to the "anyuid" scc for pod deployments.
 # scc_anyuid: true
 

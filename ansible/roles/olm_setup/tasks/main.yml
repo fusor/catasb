@@ -1,0 +1,8 @@
+---
+
+  - name: Deploy Operator Lifecycle Manager (OLM) from manifest for 3.11+
+    shell: "{{ oc_cmd }} create -f {{ role_path }}/files/{{ olm_version }}"
+    when: not("v3.6" in origin_image_tag) and
+          not("v3.7" in origin_image_tag) and
+          not("v3.9" in origin_image_tag) and
+          not("v3.10" in origin_image_tag)
