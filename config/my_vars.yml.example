@@ -41,7 +41,11 @@ dockerhub_org: ansibleplaybookbundle
 # hostname: 172.17.0.1
 # openshift_routing_suffix: 172.17.0.1.nip.io
 
-# Deploy Operator Lifecycle Manager (OLM) and OpenShift Admin Console (3.11+)
+#############################################################################
+# Switches for deploying OLM and the OpenShift Admin Console (3.11+)
+# Note: admin-console will run with a cluster-admin serviceaccount, so anyone
+#       with the URL can control the cluster (no password required)
+#
 # deploy_olm: false
 # deploy_admin_console: false
 # olm_version: "0.6.0"
