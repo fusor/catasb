@@ -11,12 +11,12 @@
     - "{{ cluster }}_setup"
     - { role: ansible_service_broker_setup, when: (not broker_ci) and (deploy_asb == True)}
     - { role: awsservicebroker_setup, when: (not broker_ci) and (deploy_awsservicebroker == True)}
-    - { role: olm_setup, when: deploy_olm == True}
+    - { role: olm_setup, when: (not broker_ci)}
   post_tasks:
     - set_fact:
         msg: |
             Hostname:                  {{ hostname }}
-            Web: https://{{ hostname }}:8443
+            OpenShift Web Console: https://{{ hostname }}:8443
             CLI: oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
       when: cluster == 'openshift'
     - set_fact:
@@ -26,3 +26,6 @@
       when: cluster == 'kubernetes'
     - debug:
         msg: "{{ msg.split('\n') }}"
+    - debug:
+        msg: "OpenShift Admin Console: http://{{ admin_console_url }}"
+      when: (cluster == 'openshift') and (deploy_admin_console == true)

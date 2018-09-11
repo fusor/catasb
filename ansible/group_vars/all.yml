@@ -253,4 +253,12 @@ docker_images_group6:
 
 coalmine_svc_catalog: quay.io/kubernetes-service-catalog/service-catalog:canary
 
-deploy_olm: true
+# OLM / Admin Console deploy controls
+# Note: The admin console is currently deployed without login support.
+# This means that the admin console URL will let anyone with access control the cluster
+deploy_olm: false
+deploy_admin_console: false
+olm_version: "0.6.0"
+admin_console_image: "quay.io/openshift/origin-console:latest"
+
+

@@ -41,8 +41,11 @@ dockerhub_org: ansibleplaybookbundle
 # hostname: 172.17.0.1
 # openshift_routing_suffix: 172.17.0.1.nip.io
 
-# Deploy Operator Lifecycle Manager (OLM)
-# deploy_olm: true
+# Deploy Operator Lifecycle Manager (OLM) and OpenShift Admin Console (3.11+)
+# deploy_olm: false
+# deploy_admin_console: false
+# olm_version: "0.6.0"
+# admin_console_image: "quay.io/openshift/origin-console:latest"
 
 # Default to the "anyuid" scc for pod deployments.
 # scc_anyuid: true
