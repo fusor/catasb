@@ -64,6 +64,7 @@
     - { role: env_hacks, when: cluster == 'openshift' }
     - { role: ansible_service_broker_setup, when: deploy_asb == True}
     - { role: awsservicebroker_setup, when: deploy_awsservicebroker == True}
+    - olm_setup
   post_tasks:
     - set_fact:
         msg: |
@@ -85,3 +86,7 @@
 
     - debug:
         msg: "{{ msg.split('\n') }}"
+
+    - debug:
+        msg: "OpenShift Admin Console: http://{{ admin_console_url }}"
+      when: (cluster == 'openshift') and (deploy_admin_console == true)
