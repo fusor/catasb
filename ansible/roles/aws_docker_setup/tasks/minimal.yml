@@ -54,3 +54,12 @@
       file:
         path: /var/run/docker.sock
         mode: 0666
+
+  - name: Remove /home/ec2-user/.docker directory if present
+    file:
+      state: absent
+      path: /home/ec2-user/.docker
+    become: true
+
+  - name: "Reinitialize /home/ec2-user/.docker"
+    shell: mkdir /home/ec2-user/.docker && echo "{}" > /home/ec2-user/.docker/config.json
