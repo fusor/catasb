@@ -6,9 +6,21 @@
           not("v3.10" in origin_image_tag)
     set_fact: is_311_plus=true
 
-  - name: Deploy Operator Lifecycle Manager (OLM) from manifest for 3.11+
-    shell: "{{ oc_cmd }} create -f {{ role_path }}/files/{{ olm_version }}"
+  - name: Deploy Operator Lifecycle Manager (OLM) for 3.11+
     when: deploy_olm == true and is_311_plus == true
+    block:
+    - name: "Create /tmp/olm_manifests on OpenShift host"
+      file:
+        path: /tmp/olm_manifests
+        state: directory
+
+    - name: "Sync Operator Lifecycle Manager (OLM) manifest version {{ olm_version }}"
+      synchronize:
+        src: "{{ role_path }}/files/{{ olm_version }}"
+        dest: "/tmp/olm_manifests/"
+
+    - name: Deploy Operator Lifecycle Manager (OLM)
+      shell: "{{ oc_cmd }} create -f /tmp/olm_manifests/{{ olm_version }}"
 
   - name: Deploy OpenShift Admin Console for interacting with OLM on 3.11+
     when: deploy_admin_console == true and is_311_plus == true
