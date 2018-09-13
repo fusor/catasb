@@ -299,10 +299,10 @@
         --base-dir={{ oc_cluster_up_base_dir }}
         --tag={{ origin_image_tag }}
         --image={{ origin_image_name }}-\${component}:\${version}
-        --enable=service-catalog,template-service-broker,router,registry,web-console,persistent-volumes,sample-templates,rhel-imagestreams{{ ",automation-service-broker" if enable_broker else "" }}
     when: ("v3.10" in origin_image_tag) or
           ("latest" in origin_image_tag)
 
+  #        --enable=service-catalog,template-service-broker,router,registry,web-console,persistent-volumes,sample-templates,rhel-imagestreams{{ ",automation-service-broker" if enable_broker else "" }}
   - name: Add proxy options to oc cluster up command
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --http-proxy='http://{{ proxy_private_ip }}:3128' --https-proxy='http://{{ proxy_private_ip }}:3128'"
@@ -451,6 +451,25 @@
     retries: "{{ oc_cluster_up_retries }}"
     delay: 10
     until: oc_cluster_up.rc == 0
+
+  - name: Enable cluster components for v3.10+
+    shell: "{{ oc_cmd }} cluster add {{ item }}"
+    with_items:
+      - service-catalog
+      - template-service-broker
+      - router
+      - registry
+      - web-console
+      - persistent-volumes
+      - sample-templates
+      - rhel-imagestreams
+    when: ("v3.10" in origin_image_tag) or 
+          ("latest" in origin_image_tag)
+
+  - name: Enable automation-service-broker for v3.10+
+    shell: "{{ oc_cmd }} cluster add automation-service-broker"
+    when: (enable_broker == true) and
+          (("v3.10" in origin_image_tag) or ("latest" in origin_image_tag))
   #
   # Add permissions to desired openshift user
   # Would be nice if we looked at existing users and permissions and made decisions of what to run
