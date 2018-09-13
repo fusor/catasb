@@ -453,7 +453,7 @@
     until: oc_cluster_up.rc == 0
 
   - name: Enable cluster components for v3.10+
-    shell: "{{ oc_cmd }} cluster add {{ item }}"
+    shell: "{{ oc_cmd }} cluster add {{ item }} --base-dir=/tmp/openshift.local.clusterup"
     with_items:
       - service-catalog
       - template-service-broker
@@ -463,11 +463,11 @@
       - persistent-volumes
       - sample-templates
       - rhel-imagestreams
-    when: ("v3.10" in origin_image_tag) or 
+    when: ("v3.10" in origin_image_tag) or
           ("latest" in origin_image_tag)
 
   - name: Enable automation-service-broker for v3.10+
-    shell: "{{ oc_cmd }} cluster add automation-service-broker"
+    shell: "{{ oc_cmd }} cluster add automation-service-broker --base-dir=/tmp/openshift.local.clusterup"
     when: (enable_broker == true) and
           (("v3.10" in origin_image_tag) or ("latest" in origin_image_tag))
   #
