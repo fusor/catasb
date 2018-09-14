@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: catalog-operator
-  namespace: kube-system
+  namespace: operator-lifecycle-manager
   labels:
     app: catalog-operator
 spec:
@@ -25,7 +25,7 @@ spec:
           command:
           - /bin/catalog
           - '-namespace'
-          - kube-system
+          - operator-lifecycle-manager
           - '-debug'
           image: quay.io/coreos/catalog@sha256:cc60359f7fdeaf71e4d989b470dd8c35c693756b5f24485b0f3df6612a730101
           imagePullPolicy: IfNotPresent

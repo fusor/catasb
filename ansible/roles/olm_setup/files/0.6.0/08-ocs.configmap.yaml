@@ -5,7 +5,7 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: ocs
-  namespace: kube-system
+  namespace: operator-lifecycle-manager
 
 data:
   customResourceDefinitions: |-
@@ -6584,7 +6584,7 @@ data:
                         - >
                           /bin/operator --namespace=$K8S_NAMESPACE --crd-apigroup monitoring.coreos.com
                           --labels alm-status-descriptors=prometheusoperator.0.14.0,alm-owner-prometheus=prometheusoperator
-                          --kubelet-service=kube-system/kubelet
+                          --kubelet-service=operator-lifecycle-manager/kubelet
                           --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
                       env:
                         - name: K8S_NAMESPACE
@@ -6841,7 +6841,7 @@ data:
                         - >
                           /bin/operator --namespace=$K8S_NAMESPACE --crd-apigroup monitoring.coreos.com
                           --labels alm-status-descriptors=prometheusoperator.0.15.0,alm-owner-prometheus=prometheusoperator
-                          --kubelet-service=kube-system/kubelet
+                          --kubelet-service=operator-lifecycle-manager/kubelet
                           --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
                       env:
                         - name: K8S_NAMESPACE

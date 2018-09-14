@@ -11,4 +11,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: olm-operator-serviceaccount
-  namespace: kube-system
+  namespace: operator-lifecycle-manager

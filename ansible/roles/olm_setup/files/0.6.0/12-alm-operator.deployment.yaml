@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: alm-operator
-  namespace: kube-system
+  namespace: operator-lifecycle-manager
   labels:
     app: alm-operator
 spec:
