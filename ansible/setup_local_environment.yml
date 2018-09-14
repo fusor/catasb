@@ -28,4 +28,4 @@
         msg: "{{ msg.split('\n') }}"
     - debug:
         msg: "OpenShift Admin Console: http://{{ admin_console_url }}"
-      when: (cluster == 'openshift') and (deploy_admin_console == true)
+      when: (cluster == 'openshift') and (admin_console_url is defined)

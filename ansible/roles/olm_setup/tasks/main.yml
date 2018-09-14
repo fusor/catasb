@@ -1,6 +1,6 @@
 ---
   - name: Set default for 3.11+ compatibility flag
-    set_fact: is_311_plus=false  
+    set_fact: is_311_plus=false
 
   - name: Set compatibility flag for 3.11+
     when: not("v3.6" in origin_image_tag) and
