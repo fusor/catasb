@@ -299,9 +299,9 @@
         --base-dir={{ oc_cluster_up_base_dir }}
         --tag={{ origin_image_tag }}
         --image={{ origin_image_name }}-\${component}:\${version}
-    when: ("v3.10" in origin_image_tag) or
-          ("latest" in origin_image_tag)
-
+    when: not("v3.6" in origin_image_tag) and
+          not("v3.7" in origin_image_tag) and
+          not("v3.9" in origin_image_tag)
   #        --enable=service-catalog,template-service-broker,router,registry,web-console,persistent-volumes,sample-templates,rhel-imagestreams{{ ",automation-service-broker" if enable_broker else "" }}
   - name: Add proxy options to oc cluster up command
     set_fact:
@@ -463,13 +463,16 @@
       - persistent-volumes
       - sample-templates
       - rhel-imagestreams
-    when: ("v3.10" in origin_image_tag) or
-          ("latest" in origin_image_tag)
+    when: not("v3.6" in origin_image_tag) and
+          not("v3.7" in origin_image_tag) and
+          not("v3.9" in origin_image_tag)
 
   - name: Enable automation-service-broker for v3.10+
     shell: "{{ oc_cmd }} cluster add automation-service-broker --base-dir=/tmp/openshift.local.clusterup"
     when: (enable_broker == true) and
-          (("v3.10" in origin_image_tag) or ("latest" in origin_image_tag))
+          not("v3.6" in origin_image_tag) and
+          not("v3.7" in origin_image_tag) and
+          not("v3.9" in origin_image_tag)
   #
   # Add permissions to desired openshift user
   # Would be nice if we looked at existing users and permissions and made decisions of what to run
