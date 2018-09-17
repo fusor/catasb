@@ -48,7 +48,7 @@ dockerhub_org: ansibleplaybookbundle
 #
 # deploy_olm: false
 # deploy_admin_console: false
-# olm_version: "0.6.0"
+# olm_version: "0.7.0"
 # admin_console_image: "quay.io/openshift/origin-console:latest"
 
 # Default to the "anyuid" scc for pod deployments.
