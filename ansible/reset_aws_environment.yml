@@ -53,6 +53,7 @@
     - { role: "{{ cluster }}_setup", reset_cluster: True }
     - { role: ansible_service_broker_setup, when: deploy_asb == True}
     - { role: awsservicebroker_setup, when: deploy_awsservicebroker == True}
+    - role: olm_setup
   post_tasks:
     - set_fact:
         msg: |
@@ -61,7 +62,7 @@
             SSH Key Name:              {{ ssh_key_name }}
             Region:                    {{ aws_region }}
             Next steps:
-            Web: https://{{ hostname }}:8443
+            OpenShift Web Console: https://{{ hostname }}:8443/console
             CLI: oc login --insecure-skip-tls-verify {{ hostname }}:8443 -u {{ cluster_user }} -p {{ cluster_user_password }}
       when: cluster == 'openshift'
 
@@ -76,3 +77,7 @@
 
     - debug:
         msg: "{{ msg.split('\n') }}"
+
+    - debug:
+        msg: "OpenShift Admin Console: http://{{ admin_console_url }}"
+      when: (cluster == 'openshift') and (deploy_admin_console == true)

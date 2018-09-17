@@ -41,6 +41,16 @@ dockerhub_org: ansibleplaybookbundle
 # hostname: 172.17.0.1
 # openshift_routing_suffix: 172.17.0.1.nip.io
 
+#############################################################################
+# Switches for deploying OLM and the OpenShift Admin Console (3.11+)
+# Note: admin-console will run with a cluster-admin serviceaccount, so anyone
+#       with the URL can control the cluster (no password required)
+#
+# deploy_olm: false
+# deploy_admin_console: false
+# olm_version: "0.7.0"
+# admin_console_image: "quay.io/openshift/origin-console:latest"
+
 # Default to the "anyuid" scc for pod deployments.
 # scc_anyuid: true
 
@@ -66,20 +76,19 @@ dockerhub_org: ansibleplaybookbundle
 # Select AWS region and AMI for EC2 deployments.
 # us-east-1
 # aws_region: us-east-1
-# aws_ami_id: ami-26ebbc5c
+# aws_ami_id: ami-6871a115
 # us-east-2
 # aws_region: us-east-2
-# aws_ami_id: ami-0b1e356e
+# aws_ami_id: ami-03291866 
 # us-west-1
 # aws_region: us-west-1
-# aws_ami_id: ami-77a2a317
+# aws_ami_id: ami-18726478
 # us-west-2
 # aws_region: us-west-2
-# aws_ami_id: ami-223f945a
+# aws_ami_id: ami-28e07e50
 # ca-central-1
 # aws_region: ca-central-1
-# aws_ami_id: ami-c1cb4ea5
-
+# aws_ami_id: ami-49f0762d
 
 # Enable 'ec2_use_proxy' to send cluster egress through a squid proxy. Only affects EC2 deployments.
 # ec2_use_proxy: True

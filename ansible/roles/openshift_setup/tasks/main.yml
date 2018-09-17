@@ -463,6 +463,8 @@
     retries: "{{ oc_cluster_up_retries }}"
     delay: 10
     until: oc_cluster_up.rc == 0
+
+
   #
   # Add permissions to desired openshift user
   # Would be nice if we looked at existing users and permissions and made decisions of what to run

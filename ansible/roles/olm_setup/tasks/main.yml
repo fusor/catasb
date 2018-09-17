@@ -1,0 +1,60 @@
+---
+  - name: Set default for 3.11+ compatibility flag
+    set_fact: is_311_plus=false
+
+  - name: Set compatibility flag for 3.11+
+    when: not("v3.6" in origin_image_tag) and
+          not("v3.7" in origin_image_tag) and
+          not("v3.9" in origin_image_tag) and
+          not("v3.10" in origin_image_tag)
+    set_fact: is_311_plus=true
+
+  - name: Deploy Operator Lifecycle Manager (OLM) for 3.11+
+    when: deploy_olm == true and is_311_plus == true
+    block:
+    - name: "Create /tmp/olm_manifests on OpenShift host"
+      file:
+        path: /tmp/olm_manifests
+        state: directory
+
+    - name: "Sync Operator Lifecycle Manager (OLM) manifest version {{ olm_version }}"
+      synchronize:
+        src: "{{ role_path }}/files/{{ olm_version }}"
+        dest: "/tmp/olm_manifests/"
+
+    - name: Create operator-lifecycle-manager namespace
+      shell: "{{ oc_cmd }} new-project operator-lifecycle-manager"
+
+    - name: Deploy Operator Lifecycle Manager (OLM)
+      shell: "{{ oc_cmd }} create -f /tmp/olm_manifests/{{ olm_version }}"
+
+  - name: Deploy OpenShift Admin Console for interacting with OLM on 3.11+
+    when: deploy_admin_console == true and is_311_plus == true
+    block:
+    - name: Create admin-console namespace
+      shell: "{{ oc_cmd }} new-project admin-console"
+
+    - name: Create admin-console-sa service account
+      shell: "{{ oc_cmd }} create serviceaccount admin-console-sa -n admin-console"
+
+    - name: Assign cluster-admin role to admin-console-sa
+      shell: "{{ oc_cmd }} create clusterrolebinding admin-console-sa --clusterrole=cluster-admin --serviceaccount=admin-console:admin-console-sa"
+
+    - name: Create deployment of OpenShift Admin Console from {{ admin_console_image }}
+      shell: "{{ oc_cmd }} new-app --docker-image {{ admin_console_image }} --name=origin-console -n admin-console"
+
+    - name: Patch origin-console deployment config to use admin-console-sa service account
+      shell: "{{ oc_cmd }} patch dc origin-console --patch '{\"spec\":{\"template\":{\"spec\":{\"serviceAccountName\": \"admin-console-sa\"}}}}' -n admin-console"
+
+    - name: Create admin-console service
+      shell: "{{ oc_cmd }} expose dc origin-console --port 9000 -n admin-console"
+
+    - name: Create admin-console route
+      shell: "{{ oc_cmd }} expose svc origin-console -n admin-console"
+
+    - name: Record URL endpoint for origin-console route
+      shell: "{{ oc_cmd }} get route origin-console --template=\"{{'{{'}}.spec.host{{'}}'}}\""
+      register: result
+
+    - set_fact: admin_console_url="{{ result.stdout }}"
+

@@ -1,0 +1,7 @@
+deploy_admin_console: true
+deploy_olm: true
+
+olm_version: "0.7.0"
+admin_console_image: "quay.io/openshift/origin-console:latest"
+
+
