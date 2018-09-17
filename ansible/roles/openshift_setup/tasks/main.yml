@@ -289,7 +289,7 @@
         {% if use_custom_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
         --service-catalog=true
 
-  # overwrite oc_cluster_up_cmd when using v3.10 or newer
+  # overwrite oc_cluster_up_cmd when using v3.10 or v3.11
   - name: Create command line for oc cluster up execution for newer oc clients, 3.10+
     set_fact:
       oc_cluster_up_cmd: >-
@@ -301,6 +301,18 @@
         --image={{ origin_image_name }}-\${component}:\${version}
         --enable=service-catalog,template-service-broker,router,registry,web-console,persistent-volumes,sample-templates,rhel-imagestreams{{ ",automation-service-broker" if enable_broker else "" }}
     when: ("v3.10" in origin_image_tag) or
+          ("v3.11" in origin_image_tag)
+
+  # overwrite oc_cluster_up_cmd when using v4.0 or latest
+  - name: Create command line for oc cluster up execution for newer oc clients, 3.10+
+    set_fact:
+      oc_cluster_up_cmd: >-
+        {{ oc_cmd }} cluster up
+        --public-hostname={{ hostname }}
+        --base-dir={{ oc_cluster_up_base_dir }}
+        --tag={{ origin_image_tag }}
+        --image={{ origin_image_name }}-\${component}:\${version}
+    when: ("v4.0" in origin_image_tag) or
           ("latest" in origin_image_tag)
 
   - name: Add proxy options to oc cluster up command
@@ -494,7 +506,9 @@
   - name: Fail if service-catalog project does not exit
     fail:
       msg: "Failed to get the service-catalog project"
-    when: oc_service_catalog == ""
+    when: oc_service_catalog == "" and
+          not("v4.0" in origin_image_tag) and
+          not("latest" in origin_image_tag)
 
   - name: "Restrict permissions on docker socket (needed until 'meta: reset_connection' is supported)."
     file:
