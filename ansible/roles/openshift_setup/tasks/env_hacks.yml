@@ -13,20 +13,23 @@
           ("latest" in origin_image_tag)
 
 
-  - name: Waiting 10 minutes for 'persistent-volume-setup' pod to complete to create PVs
-    action:
-      shell "{{ oc_cmd }}" get pods -n default | grep ^persistent-volume-setup | grep Completed
-    register: wait_for_pv_setup_pod
-    until: wait_for_pv_setup_pod.rc == 0
-    retries: 60
-    delay: 10
+  - when: not("v4.0" in origin_image_tag) and
+          not("latest" in origin_image_tag)
+    block:
+    - name: Waiting 10 minutes for 'persistent-volume-setup' pod to complete to create PVs
+      action:
+        shell "{{ oc_cmd }}" get pods -n default | grep ^persistent-volume-setup | grep Completed
+      register: wait_for_pv_setup_pod
+      until: wait_for_pv_setup_pod.rc == 0
+      retries: 60
+      delay: 10
 
-  - name: Adjust persistent volume permissions to be 777 to make testing easier
-    file:
-      path: "{{ persistent_vol_mount_point }}"
-      mode: 0777
-      recurse: true
-    become: true
+    - name: Adjust persistent volume permissions to be 777 to make testing easier
+      file:
+        path: "{{ persistent_vol_mount_point }}"
+        mode: 0777
+        recurse: true
+      become: true
 
   - block:
     - block:

@@ -289,7 +289,7 @@
         {% if use_custom_config %}--host-config-dir={{ oc_host_config_dir }}{% endif %}
         --service-catalog=true
 
-  # overwrite oc_cluster_up_cmd when using v3.10 or newer
+  # overwrite oc_cluster_up_cmd when using v3.10 or v3.11
   - name: Create command line for oc cluster up execution for newer oc clients, 3.10+
     set_fact:
       oc_cluster_up_cmd: >-
@@ -299,10 +299,22 @@
         --base-dir={{ oc_cluster_up_base_dir }}
         --tag={{ origin_image_tag }}
         --image={{ origin_image_name }}-\${component}:\${version}
-    when: not("v3.6" in origin_image_tag) and
-          not("v3.7" in origin_image_tag) and
-          not("v3.9" in origin_image_tag)
-  #        --enable=service-catalog,template-service-broker,router,registry,web-console,persistent-volumes,sample-templates,rhel-imagestreams{{ ",automation-service-broker" if enable_broker else "" }}
+        --enable=service-catalog,template-service-broker,router,registry,web-console,persistent-volumes,sample-templates,rhel-imagestreams{{ ",automation-service-broker" if enable_broker else "" }}
+    when: ("v3.10" in origin_image_tag) or
+          ("v3.11" in origin_image_tag)
+
+  # overwrite oc_cluster_up_cmd when using v4.0 or latest
+  - name: Create command line for oc cluster up execution for newer oc clients, 3.10+
+    set_fact:
+      oc_cluster_up_cmd: >-
+        {{ oc_cmd }} cluster up
+        --public-hostname={{ hostname }}
+        --base-dir={{ oc_cluster_up_base_dir }}
+        --tag={{ origin_image_tag }}
+        --image={{ origin_image_name }}-\${component}:\${version}
+    when: ("v4.0" in origin_image_tag) or
+          ("latest" in origin_image_tag)
+
   - name: Add proxy options to oc cluster up command
     set_fact:
       oc_cluster_up_cmd: "{{ oc_cluster_up_cmd }} --http-proxy='http://{{ proxy_private_ip }}:3128' --https-proxy='http://{{ proxy_private_ip }}:3128'"
@@ -452,27 +464,7 @@
     delay: 10
     until: oc_cluster_up.rc == 0
 
-  - name: Enable cluster components for v3.10+
-    shell: "{{ oc_cmd }} cluster add {{ item }} --base-dir=/tmp/openshift.local.clusterup"
-    with_items:
-      - service-catalog
-      - template-service-broker
-      - router
-      - registry
-      - web-console
-      - persistent-volumes
-      - sample-templates
-      - rhel-imagestreams
-    when: not("v3.6" in origin_image_tag) and
-          not("v3.7" in origin_image_tag) and
-          not("v3.9" in origin_image_tag)
 
-  - name: Enable automation-service-broker for v3.10+
-    shell: "{{ oc_cmd }} cluster add automation-service-broker --base-dir=/tmp/openshift.local.clusterup"
-    when: (enable_broker == true) and
-          not("v3.6" in origin_image_tag) and
-          not("v3.7" in origin_image_tag) and
-          not("v3.9" in origin_image_tag)
   #
   # Add permissions to desired openshift user
   # Would be nice if we looked at existing users and permissions and made decisions of what to run
@@ -516,7 +508,9 @@
   - name: Fail if service-catalog project does not exit
     fail:
       msg: "Failed to get the service-catalog project"
-    when: oc_service_catalog == ""
+    when: oc_service_catalog == "" and
+          not("v4.0" in origin_image_tag) and
+          not("latest" in origin_image_tag)
 
   - name: "Restrict permissions on docker socket (needed until 'meta: reset_connection' is supported)."
     file:
