@@ -27,7 +27,7 @@ spec:
           - '-namespace'
           - operator-lifecycle-manager
           - '-debug'
-          image: quay.io/coreos/catalog@sha256:cc60359f7fdeaf71e4d989b470dd8c35c693756b5f24485b0f3df6612a730101
+          image: quay.io/coreos/catalog:0.6.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

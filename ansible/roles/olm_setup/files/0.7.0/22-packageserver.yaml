@@ -105,7 +105,7 @@ spec:
         - /bin/package-server
         - -v=4
         - --debug
-        image: quay.io/coreos/package-server:master
+        image: quay.io/coreos/package-server:0.7.0
         imagePullPolicy: Always
         ports:
         - containerPort: 443

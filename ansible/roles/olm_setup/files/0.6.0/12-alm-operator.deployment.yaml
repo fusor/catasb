@@ -24,7 +24,7 @@ spec:
         - name: alm-operator
           command:
           - /bin/olm
-          image: quay.io/coreos/olm@sha256:d2e51372b3251321c38d2159e8060fe0bf2f3eeb60a4a3cd53fbee3e1cdd5756
+          image: quay.io/coreos/olm:0.6.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
