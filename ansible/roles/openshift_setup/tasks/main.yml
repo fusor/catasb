@@ -229,17 +229,18 @@
     when: (origin_image_tag == "latest") or
           ("v3.11" in origin_image_tag)
 
-  - name: Pull images for all versions except v3.10+ rcm
+  - name: Pull images for all versions except v3.11+ and rcm
     docker_image:
       name: "{{ item.img }}"
       state: present
       force: yes
       tag: "{{ item.tag }}"
     with_items:
-      - "{{ docker_images_group5 }}"
-    when: (not(rcm)) or
-          ("v3.7" in origin_image_tag) or
-          ("v3.9" in origin_image_tag)
+      - "{{ docker_images_group6 }}"
+    when: not(rcm) and 
+          (("v3.7" in origin_image_tag) or
+          ("v3.9" in origin_image_tag) or
+          ("v3.10" in origin_image_tag))
 
   # Looks like we need to keep the directory oc uses for config files to /var/lib/origin/openshift.local.config
   # Tried to use /tmp/openshift.local.clusterup as we do for 3.10
