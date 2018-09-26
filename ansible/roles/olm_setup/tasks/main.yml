@@ -18,6 +18,26 @@
   - name: Deploy Operator Lifecycle Manager (OLM)
     shell: "{{ oc_cmd }} create -f {{ olm_repo_dest }}/deploy/{{olm_manifest_type}}/manifests/{{ olm_version }}"
 
+  - name: Enable OSB catalog
+    when: olm_enable_osb_catalog
+    block:
+      - name: Create tmp directory for OSB catalog templates
+        tempfile:
+          state: directory
+        register: _osb_cat_tmp
+      - debug:
+          msg: "{{ _osb_cat_tmp }}"
+      - name: Render OSB catalog templates
+        template:
+          src: "{{ item }}"
+          dest: "{{ _osb_cat_tmp.path }}/{{ item }}"
+        with_items:
+          - osb-operators.catalogsource.yaml
+          - "osb-operators.configmap.{{ olm_asb_branding }}.yaml"
+      - name: Install OSB catalog
+        shell: "{{ oc_cmd }} create -f {{ _osb_cat_tmp.path }}"
+
+
   - name: Deploy OpenShift Admin Console for interacting with OLM on 3.11+
     when: deploy_admin_console == true and is_311_plus == true
     block:
@@ -47,4 +67,3 @@
       register: result
 
     - set_fact: admin_console_url="{{ result.stdout }}"
-

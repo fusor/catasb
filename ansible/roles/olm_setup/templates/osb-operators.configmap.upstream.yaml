@@ -1,0 +1,204 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: "{{ olm_osb_catalog_name }}"
+  namespace: operator-lifecycle-manager
+data:
+  customResourceDefinitions: |-
+    - apiVersion: apiextensions.k8s.io/v1beta1
+      kind: CustomResourceDefinition
+      metadata:
+        name: templateservicebrokers.osb.openshift.io
+      spec:
+        group: osb.openshift.io
+        names:
+          kind: TemplateServiceBroker
+          listKind: TemplateServiceBrokerList
+          plural: templateservicebrokers
+          singular: templateservicebroker
+        scope: Namespaced
+        version: v1alpha1
+    - apiVersion: apiextensions.k8s.io/v1beta1
+      kind: CustomResourceDefinition
+      metadata:
+        name: automationbrokers.automationbroker.io
+      spec:
+        group: automationbroker.io
+        names:
+          kind: AutomationBroker
+          listKind: AutomationBrokerList
+          plural: automationbrokers
+          singular: automationbroker
+        scope: Namespaced
+        version: v1alpha1
+  clusterServiceVersions: |-
+    - apiVersion: operators.coreos.com/v1alpha1
+      kind: ClusterServiceVersion
+      metadata:
+        name: templateservicebrokeroperator.v0.1.0
+        namespace: placeholder
+      spec:
+        displayName: Template Service Broker Operator
+        description: Template Service Broker Operator
+        keywords: ['template', 'broker', 'open service broker']
+        version: 0.1.0
+        maturity: alpha
+        maintainers:
+        - name: Red Hat, Inc.
+          email: ansible-service-broker@redhat.com
+        provider:
+          name: Red Hat, Inc.
+        labels:
+          alm-status-descriptors: templateservicebrokeroperator.v0.1.0
+          operated-by: templateservicebrokeroperator
+        selector:
+          matchLabels:
+            operated-by: templateservicebrokeroperator
+        install:
+          strategy: deployment
+          spec:
+            permissions:
+            - serviceAccountName: template-service-broker-operator
+              rules:
+              - apiGroups:
+                - osb.openshift.io
+                resources:
+                - "*"
+                verbs:
+                - "*"
+              - apiGroups:
+                - ""
+                resources:
+                - pods
+                - services
+                - endpoints
+                - persistentvolumeclaims
+                - events
+                - configmaps
+                - secrets
+                verbs:
+                - "*"
+              - apiGroups:
+                - apps
+                resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+                verbs:
+                - "*"
+            deployments:
+            - name: template-service-broker-operator
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    name: template-service-broker-operator-alm-owned
+                template:
+                  metadata:
+                    name: template-service-broker-operator-alm-owned
+                    labels:
+                      name: template-service-broker-operator-alm-owned
+                  spec:
+                    serviceAccountName: template-service-broker-operator
+                    containers:
+                    - name: template-service-broker-operator
+                      image: "{{ olm_tsb_full_image }}"
+                      imagePullPolicy: IfNotPresent
+        customresourcedefinitions:
+          owned:
+          - name: templateservicebrokers.osb.openshift.io
+            version: v1alpha1
+            kind: TemplateServiceBroker
+            displayName: Template Service Broker
+            description: An Open Service Broker supporting management of OpenShift templates.
+    - apiVersion: operators.coreos.com/v1alpha1
+      kind: ClusterServiceVersion
+      metadata:
+        name: automationbrokeroperator.v0.1.0
+        namespace: placeholder
+      spec:
+        displayName: Automation Broker Operator
+        description: Automation Broker Operator
+        keywords: ['ansible', 'automation', 'broker', 'open service broker']
+        version: 0.1.0
+        maturity: alpha
+        maintainers:
+        - name: Red Hat, Inc.
+          email: ansible-service-broker@redhat.com
+        provider:
+          name: Red Hat, Inc.
+        labels:
+          alm-status-descriptors: automationbrokeroperator.v0.1.0
+          operated-by: automationbrokeroperator
+        selector:
+          matchLabels:
+            operated-by: automationbrokeroperator
+        install:
+          strategy: deployment
+          spec:
+            permissions:
+            - serviceAccountName: automation-broker-operator
+              rules:
+              - apiGroups:
+                - automationbroker.io
+                resources:
+                - "*"
+                verbs:
+                - "*"
+              - apiGroups:
+                - ""
+                resources:
+                - pods
+                - services
+                - endpoints
+                - persistentvolumeclaims
+                - events
+                - configmaps
+                - secrets
+                verbs:
+                - "*"
+              - apiGroups:
+                - apps
+                resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+                verbs:
+                - "*"
+            deployments:
+            - name: automation-broker-operator
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    name: automation-broker-operator-alm-owned
+                template:
+                  metadata:
+                    name: automation-broker-operator-alm-owned
+                    labels:
+                      name: automation-broker-operator-alm-owned
+                  spec:
+                    serviceAccountName: automation-broker-operator
+                    containers:
+                    - name: automation-broker-operator
+                      image: "{{ olm_asb_full_image }}"
+                      imagePullPolicy: IfNotPresent
+        customresourcedefinitions:
+          owned:
+          - name: automationbrokers.automationbroker.io
+            version: v1alpha1
+            kind: AutomationBroker
+            displayName: Automation Broker
+            description: An Open Service Broker supporting management of Automation Bundles
+  packages: |-
+    - packageName: templateservicebroker
+      channels:
+      - name: alpha
+        currentCSV: templateservicebrokeroperator.v0.1.0
+    - packageName: automationbroker
+      channels:
+      - name: alpha
+        currentCSV: automationbrokeroperator.v0.1.0

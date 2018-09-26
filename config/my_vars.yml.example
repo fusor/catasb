@@ -5,11 +5,10 @@
 dockerhub_org: ansibleplaybookbundle
 
 ################
-# Enable broker
-# If origin >= 3.10, enable|disable the broker
+# Switches to enable brokers with origin >= 3.10. Defaults to true.
 ################
-# enable_broker: true
-# enable_broker: false
+# enable_ansible_broker: false
+# enable_template_broker: false
 
 # Dockerhub username/password are now only required if you are using a private repository
 # dockerhub_user_name: example_user
