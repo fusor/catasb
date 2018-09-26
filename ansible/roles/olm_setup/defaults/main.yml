@@ -2,6 +2,8 @@ deploy_admin_console: true
 deploy_olm: true
 
 olm_version: "0.7.1"
+# Override OLM image tag found in manifests Ex: "master-05a83874"
+olm_image_tag_override: ""
 admin_console_image: "quay.io/openshift/origin-console:latest"
 
 # The upstream OLM repo that will be cloned and used for deployment

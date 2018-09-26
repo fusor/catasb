@@ -15,28 +15,55 @@
       repo: "{{ olm_repo }}"
       dest: "{{ olm_repo_dest }}"
 
+  - name: Create OLM working tmp dir
+    tempfile:
+      state: directory
+    register: _olm_tmp_dir
+
+  - set_fact:
+      _olm_manifests: "{{ _olm_tmp_dir.path }}/olm"
+
+  - set_fact:
+      _osb_cat_manifests: "{{ _olm_tmp_dir.path }}/osb"
+
+  - file:
+      path: "{{ _olm_manifests }}"
+      state: directory
+
+  - file:
+      path: "{{ _osb_cat_manifests }}"
+      state: directory
+
+  - copy:
+      src: "{{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/"
+      dest: "{{ _olm_manifests }}"
+
+  - name: "Override OLM images"
+    when: olm_image_tag_override != ""
+    replace:
+      path: "{{ _olm_manifests }}/{{ item }}"
+      regexp: "@sha.*$"
+      replace: ":{{ olm_image_tag_override }}"
+    with_items:
+      - 30_10-olm-operator.deployment.yaml
+      - 30_11-catalog-operator.deployment.yaml
+      - 30_13-packageserver.yaml
+
   - name: Deploy Operator Lifecycle Manager (OLM)
-    shell: "{{ oc_cmd }} create -f {{ olm_repo_dest }}/deploy/{{olm_manifest_type}}/manifests/{{ olm_version }}"
+    shell: "{{ oc_cmd }} create -f {{ _olm_manifests }}"
 
   - name: Enable OSB catalog
     when: olm_enable_osb_catalog
     block:
-      - name: Create tmp directory for OSB catalog templates
-        tempfile:
-          state: directory
-        register: _osb_cat_tmp
-      - debug:
-          msg: "{{ _osb_cat_tmp }}"
       - name: Render OSB catalog templates
         template:
           src: "{{ item }}"
-          dest: "{{ _osb_cat_tmp.path }}/{{ item }}"
+          dest: "{{ _osb_cat_manifests }}/{{ item }}"
         with_items:
           - osb-operators.catalogsource.yaml
           - "osb-operators.configmap.{{ olm_asb_branding }}.yaml"
       - name: Install OSB catalog
-        shell: "{{ oc_cmd }} create -f {{ _osb_cat_tmp.path }}"
-
+        shell: "{{ oc_cmd }} create -f {{ _osb_cat_manifests }}"
 
   - name: Deploy OpenShift Admin Console for interacting with OLM on 3.11+
     when: deploy_admin_console == true and is_311_plus == true
