@@ -1,14 +1,17 @@
 ---
-  - name: Set default for 3.11+ compatibility flag
-    set_fact: is_311_plus=false
+- name: Set default for 3.11+ compatibility flag
+  set_fact: is_311_plus=false
 
-  - name: Set compatibility flag for 3.11+
-    when: not("v3.6" in origin_image_tag) and
-          not("v3.7" in origin_image_tag) and
-          not("v3.9" in origin_image_tag) and
-          not("v3.10" in origin_image_tag)
-    set_fact: is_311_plus=true
+- name: Set compatibility flag for 3.11+
+  when: not("v3.6" in origin_image_tag) and
+        not("v3.7" in origin_image_tag) and
+        not("v3.9" in origin_image_tag) and
+        not("v3.10" in origin_image_tag)
+  set_fact: is_311_plus=true
 
+- name: Run OLM tasks
+  when: is_311_plus
+  block:
   - name: "Clone Operator Lifecycle Manager (OLM) project"
     git:
       depth: 1
@@ -38,6 +41,23 @@
       src: "{{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/"
       dest: "{{ _olm_manifests }}"
 
+  - name: "TODO - Temp force OLM namespace until web console is fixed"
+    when: olm_namespace_hack
+    block:
+    - shell: "grep 'openshift-operator-lifecycle-manager' -lr {{ _olm_manifests}}"
+      register: files_to_patch
+    - shell: "sed -i 's|openshift-operator-lifecycle-manager|operator-lifecycle-manager|' {{ item }}"
+      with_items: "{{ files_to_patch.stdout_lines }}"
+
+  - when: olm_namespace == ""
+    block:
+    - name: Get OLM namespace
+      shell: "perl -ne '/name: (.*)$/ && print $1' {{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/30_00-namespace.yaml"
+      register: namespace_cmd
+    - name: Set OLM namespace
+      set_fact:
+        olm_namespace: "{{ namespace_cmd.stdout }}"
+
   - name: "Override OLM images"
     when: olm_image_tag_override != ""
     replace:
@@ -66,7 +86,7 @@
         shell: "{{ oc_cmd }} create -f {{ _osb_cat_manifests }}"
 
   - name: Deploy OpenShift Admin Console for interacting with OLM on 3.11+
-    when: deploy_admin_console == true and is_311_plus == true
+    when: deploy_admin_console == true
     block:
     - name: Create admin-console namespace
       shell: "{{ oc_cmd }} new-project admin-console"

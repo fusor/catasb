@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: "{{ olm_osb_catalog_name }}"
-  namespace: operator-lifecycle-manager
+  namespace: "{{ olm_namespace }}"
 spec:
   configMap: "{{ olm_osb_catalog_name }}"
   displayName: Open Service Brokers

@@ -11,7 +11,7 @@
     - "{{ cluster }}_setup"
     - { role: ansible_service_broker_setup, when: (not broker_ci) and (deploy_asb == True)}
     - { role: awsservicebroker_setup, when: (not broker_ci) and (deploy_awsservicebroker == True)}
-    - { role: olm_setup, when: (not broker_ci)}
+    - { role: olm_setup, when: (not broker_ci) and (deploy_olm == True)}
   post_tasks:
     - set_fact:
         msg: |

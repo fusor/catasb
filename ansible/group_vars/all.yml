@@ -219,6 +219,8 @@ rcm: false
 # newer builds default to https
 asb_scheme: https
 
+deploy_olm: false
+
 # These docker images we want to remove and fetch on each setup
 docker_images_group1:
   - { img: "{{ broker_image_name }}", tag: "{{ broker_tag }}" }
