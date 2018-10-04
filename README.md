@@ -7,7 +7,7 @@ For an overview of Ansible Service Broker and Ansible Playbook Bundles click [he
 
 ### Overview
 These playbooks will:
-  * Setup an OpenShift or Kubernete cluster
+  * Setup an OpenShift or Kubernetes cluster
   * Install [Service Catalog](https://github.com/kubernetes-incubator/service-catalog) on Origin
   * Install [Ansible Service Broker](https://github.com/openshift/ansible-service-broker) on Origin
 
