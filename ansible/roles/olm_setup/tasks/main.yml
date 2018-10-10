@@ -18,6 +18,7 @@
       force: true
       repo: "{{ olm_repo }}"
       dest: "{{ olm_repo_dest }}"
+      version: "{{ olm_repo_version }}"
 
   - name: Create OLM working tmp dir
     tempfile:
@@ -42,14 +43,6 @@
       src: "{{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/"
       dest: "{{ _olm_manifests }}"
 
-  - name: "TODO - Temp force OLM namespace until web console is fixed"
-    when: olm_namespace_hack
-    block:
-    - shell: "grep 'openshift-operator-lifecycle-manager' -lr {{ _olm_manifests}}"
-      register: files_to_patch
-    - shell: "sed -i 's|openshift-operator-lifecycle-manager|operator-lifecycle-manager|' {{ item }}"
-      with_items: "{{ files_to_patch.stdout_lines }}"
-
   - when: olm_namespace == ""
     block:
     - name: Get OLM namespace
@@ -69,23 +62,6 @@
       - 30_10-olm-operator.deployment.yaml
       - 30_11-catalog-operator.deployment.yaml
       - 30_13-packageserver.yaml
-
-################################################################################
-# HACK: Apparently they added duplciate files for some reason to the manifest dir.
-# Remove old ones
-  - name: Glob dupe manifest files
-    find:
-      paths: "{{ _olm_manifests }}"
-      patterns: "30_*"
-    register: dupe_file_glob
-
-  - name: Cleanup dupe manifest files
-    file:
-      path: "{{ item.path }}"
-      state: absent
-    with_items:
-      - "{{ dupe_file_glob.files }}"
-################################################################################
 
   - name: Deploy Operator Lifecycle Manager (OLM)
     shell: "{{ oc_cmd }} create -f {{ _olm_manifests }}"

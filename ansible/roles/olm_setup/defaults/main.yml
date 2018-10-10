@@ -6,14 +6,14 @@ olm_image_tag_override: ""
 admin_console_image: "quay.io/openshift/origin-console:latest"
 
 # The upstream OLM repo that will be cloned and used for deployment
-olm_repo: "https://github.com/operator-framework/operator-lifecycle-manager.git"
+#olm_repo: "https://github.com/operator-framework/operator-lifecycle-manager.git"
+# Using a fork so we can more easily patch in our requirements
+olm_repo: "https://github.com/fusor/operator-lifecycle-manager.git"
+# Could be a branch, sha, or tag
+olm_repo_version: catasb
 olm_repo_dest: /tmp/olm
 olm_manifest_type: okd
 
-# Hack here will force deployment to old operator-lifecycle-manager namespace,
-# which is what the admin console is hardcoded to.
-# # TODO: Remove this once the admin console is fixed!!
-olm_namespace_hack: false
 # If "", will be dynamically set based on OLM manifest. Recommended to remain ""
 # unless you are sure about overriding this value.
 olm_namespace: "{{ 'operator-lifecycle-manager' if olm_namespace_hack else '' }}"
