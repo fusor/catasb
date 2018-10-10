@@ -46,7 +46,7 @@
   - when: olm_namespace == ""
     block:
     - name: Get OLM namespace
-      shell: "perl -ne '/name: (.*)$/ && print $1' {{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/30_00-namespace.yaml"
+      shell: "perl -ne '/name: (.*)$/ && print $1' {{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/0000_30_00-namespace.yaml"
       register: namespace_cmd
     - name: Set OLM namespace
       set_fact:
@@ -59,9 +59,9 @@
       regexp: "@sha.*$"
       replace: ":{{ olm_image_tag_override }}"
     with_items:
-      - 30_10-olm-operator.deployment.yaml
-      - 30_11-catalog-operator.deployment.yaml
-      - 30_13-packageserver.yaml
+      - 0000_30_10-olm-operator.deployment.yaml
+      - 0000_30_11-catalog-operator.deployment.yaml
+      - 0000_30_13-packageserver.yaml
 
   - name: Deploy Operator Lifecycle Manager (OLM)
     shell: "{{ oc_cmd }} create -f {{ _olm_manifests }}"

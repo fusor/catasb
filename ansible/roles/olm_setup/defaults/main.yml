@@ -16,7 +16,7 @@ olm_manifest_type: okd
 
 # If "", will be dynamically set based on OLM manifest. Recommended to remain ""
 # unless you are sure about overriding this value.
-olm_namespace: "{{ 'operator-lifecycle-manager' if olm_namespace_hack else '' }}"
+olm_namespace: ""
 
 # Template Broker and Ansible Brokers can be made available via the OLM
 # catalog, creating an aditional catalog source and related OLM resources
