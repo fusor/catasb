@@ -1,23 +1,26 @@
 reset_cluster: False
 
 openshift_clients:
-  '3.6':
+  'v3.6':
     url: https://github.com/openshift/origin/releases/download/v3.6.0
     release_ver: openshift-origin-client-tools-v3.6.0-c4dd4cf
-  '3.7':
+  'v3.7':
     url: https://github.com/openshift/origin/releases/download/v3.7.0
     release_ver: openshift-origin-client-tools-v3.7.0-7ed6862
-  '3.9':
+  'v3.9':
     url: https://github.com/openshift/origin/releases/download/v3.9.0
     release_ver: openshift-origin-client-tools-v3.9.0-191fece
-  '3.10':
+  'v3.10':
     url: https://github.com/openshift/origin/releases/download/v3.10.0
     release_ver: openshift-origin-client-tools-v3.10.0-dd10d17
-  latest:
+  'v3.11':
+    url: https://apb-oc.s3.amazonaws.com/apb-oc
+    release_ver: oc
+  'latest':
     url: https://apb-oc.s3.amazonaws.com/apb-oc
     release_ver: oc
 
-openshift_client_version: 'latest'
+openshift_client_version: "{{ origin_image_tag }}"
 oc_tools_dir: /usr/local/bin
 
 # Temporary fix until release version of oc client works with latest images.
