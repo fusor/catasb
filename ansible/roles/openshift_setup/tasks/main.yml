@@ -226,8 +226,10 @@
       tag: "{{ item.tag }}"
     with_items:
       - "{{ docker_images_group5 }}"
-    when: (origin_image_tag == "latest") or
-          ("v3.11" in origin_image_tag)
+    when:
+    - not("v3.7" in origin_image_tag)
+    - not("v3.9" in origin_image_tag)
+    - not("v3.10" in origin_image_tag)
 
   - name: Pull images for all versions except v3.11+ and rcm
     docker_image:
