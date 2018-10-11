@@ -31,7 +31,7 @@ dockerhub_org: ansibleplaybookbundle
 # broker_version: "v3.10"
 
 # Example using 3.9 images
-# openshift_client_version: '3.9'
+# openshift_client_version: 'v3.9'
 # origin_image_tag: v3.9
 # broker_tag: v3.9
 #

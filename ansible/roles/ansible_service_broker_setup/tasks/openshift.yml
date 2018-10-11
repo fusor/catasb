@@ -42,7 +42,7 @@
 
   - debug:
       msg: "Service Broker must have a CA Bundle set for the Ansible Service Broker and Service Catalog to be able to communicate"
-    when: cluster_ca_cert.stdout == "" and openshift_client_version != "3.6"
+    when: cluster_ca_cert.stdout == "" and openshift_client_version != "v3.6"
 
   - name: Create a new project for the {{ asb_project }}
     shell: "{{ oc_cmd }} new-project {{ asb_project }}"
@@ -52,7 +52,7 @@
   - name: Update Broker Kind and Auth when using coalmine
     set_fact:
       broker_enable_basic_auth: true
-    when: openshift_client_version == '3.6'
+    when: openshift_client_version == 'v3.6'
 
   #################################################################
   # 'rcm' builds usually use an older branch of the broker
@@ -120,7 +120,7 @@
         {{ cmd_process_asb_template }}
         -p BROKER_KIND='Broker'
         -p BROKER_AUTH='{ "basicAuthSecret": { "namespace": "ansible-service-broker", "name": "asb-auth-secret" }}'
-    when: (coalmine is undefined or not coalmine) and (openshift_client_version == '3.6')
+    when: (coalmine is undefined or not coalmine) and (openshift_client_version == 'v3.6')
 
   - name: Process template "{{ local_target_asb_template }}"
     shell: >

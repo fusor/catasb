@@ -46,7 +46,7 @@
 
           - name: Use canary controller-manager
             shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/controller-manager -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"controller-manager\",\"image\":\"{{ coalmine_svc_catalog }}\", \"command\": [\"/opt/services/service-catalog\"], \"args\": {{ arglist.stdout }} }]}}}}'"
-        when: openshift_client_version == '3.6'
+        when: openshift_client_version == 'v3.6'
 
       - name: Update service-catalog (OpenShift 3.7)
         block:
@@ -58,6 +58,6 @@
 
         - name: Use canary controller-manager
           shell: "{{ oc_cmd }} patch -n {{ oc_service_catalog }} deployment/controller-manager -p '{\"spec\":{\"template\": {\"spec\": {\"containers\": [{\"name\":\"controller-manager\",\"image\":\"{{ coalmine_svc_catalog }}\", \"command\": [\"/opt/services/service-catalog\"]}]}}}}'"
-        when: openshift_client_version == '3.7' or openshift_client_version == 'latest'
+        when: openshift_client_version == 'v3.7' or openshift_client_version == 'latest'
       when: coalmine
     when: coalmine is defined
