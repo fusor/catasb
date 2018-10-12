@@ -79,6 +79,27 @@
       - name: Install OSB catalog
         shell: "{{ oc_cmd }} create -f {{ _osb_cat_manifests }}"
 
+  #############################################################################
+  # The broker's SA requires the admin ClusterRole binding; simply
+  # granting exactly the *rules* that it uses from this ClusterRole is NOT
+  # sufficient. The reason is that in order for the broker to be able to bind
+  # the generic "edit" or "admin" role to the APB's sandbox, the broker's SA
+  # also requires ALL of the rules that either of these roles are able to grant.
+  # Otherwise, the broker would effectively be granting rules to the sandbox
+  # that itself does not have, which is obviously forbidden.
+  #
+  # TODO: In the future, when OLM supports "Operator Bundles", or arbitrary
+  # objects in addition to what's expressed in the CSV, we can apply this
+  # bundle this binding object. Feature ticket: https://jira.coreos.com/browse/ALM-667
+  #
+  # HACK: We'll use catasb instead to create the binding, with the constraint
+  # that the broker MUST be created in the prepped namespace; here we'll
+  # use "automation-broker".
+  #
+  - name: "Bind automation-broker:automation-broker admin ClusterRole"
+    shell: "{{ oc_cmd }} create clusterrolebinding automation-broker-admin --clusterrole=admin --serviceaccount=automation-broker:automation-broker"
+  ##############################################################################
+
   - name: Deploy OpenShift Admin Console for interacting with OLM on 3.11+
     when: deploy_admin_console == true
     block:
