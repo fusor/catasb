@@ -38,7 +38,7 @@ data:
         name: bundles.automationbroker.io
       spec:
         group: automationbroker.io
-        version: v1beta1
+        version: v1alpha1
         scope: Namespaced
         names:
           plural: bundles
@@ -50,7 +50,7 @@ data:
         name: bundlebindings.automationbroker.io
       spec:
         group: automationbroker.io
-        version: v1beta1
+        version: v1alpha1
         scope: Namespaced
         names:
           plural: bundlebindings
@@ -62,7 +62,7 @@ data:
         name: bundleinstances.automationbroker.io
       spec:
         group: automationbroker.io
-        version: v1beta1
+        version: v1alpha1
         scope: Namespaced
         names:
           plural: bundleinstances
@@ -180,6 +180,12 @@ data:
               - apiGroups:
                 - ""
                 resources:
+                - namespaces
+                verbs:
+                - get
+              - apiGroups:
+                - ""
+                resources:
                 - configmaps
                 - secrets
                 - serviceaccounts
@@ -187,15 +193,21 @@ data:
                 verbs:
                 - "*"
               - apiGroups:
-                - ""
-                resources:
-                - namespaces
-                verbs:
-                - get
-              - apiGroups:
                 - apps
                 resources:
                 - deployments
+                verbs:
+                - "*"
+              - apiGroups:
+                - route.openshift.io
+                resources:
+                - routes
+                verbs:
+                - "*"
+              - apiGroups:
+                - apps.openshift.io
+                resources:
+                - deploymentconfigs
                 verbs:
                 - "*"
             - serviceAccountName: automation-broker
@@ -215,6 +227,14 @@ data:
                 - create
                 - delete
                 - get
+              - apiGroups:
+                - automationbroker.io
+                resources:
+                - bundles
+                - bundleinstances
+                - bundlebindings
+                verbs:
+                - "*"
             clusterPermissions:
             - serviceAccountName: automation-broker-operator
               rules:
@@ -231,7 +251,7 @@ data:
               - apiGroups:
                 - automationbroker.io
                 resources:
-                - automationbrokers
+                - "*"
                 verbs:
                 - "*"
               ################################################################################
@@ -244,6 +264,7 @@ data:
                 - clusterroles
                 verbs:
                 - create
+                - patch
               ################################################################################
               #
               ################################################################################
@@ -274,14 +295,6 @@ data:
               #  - update
             - serviceAccountName: automation-broker
               rules:
-              - apiGroups:
-                - automationbroker.io
-                resources:
-                - bundles
-                - bundleinstances
-                - bundlebindings
-                verbs:
-                - "*"
               - apiGroups:
                 - ""
                 resources:
@@ -399,17 +412,17 @@ data:
             displayName: Automation Broker
             description: An Open Service Broker supporting management of application bundles
           - name: bundles.automationbroker.io
-            version: v1beta1
+            version: v1alpha1
             kind: Bundle
             displayName: Automation Broker Bundle
             description: An application bundle available for deployment via Automation Broker
           - name: bundlebindings.automationbroker.io
-            version: v1beta1
+            version: v1alpha1
             kind: BundleBinding
             displayName: Automation Broker Bundle Binding
             description: An application bundle binding
           - name: bundleinstances.automationbroker.io
-            version: v1beta1
+            version: v1alpha1
             kind: BundleInstance
             displayName: Automation Broker Bundle Instance
             description: An instance of an application bundle
