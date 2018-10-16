@@ -186,6 +186,7 @@ data:
               - apiGroups:
                 - ""
                 resources:
+                - pods
                 - configmaps
                 - secrets
                 - serviceaccounts

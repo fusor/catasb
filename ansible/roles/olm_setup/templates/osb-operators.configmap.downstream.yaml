@@ -1,3 +1,5 @@
+# TODO: Don't use this file! It's fallen well behind upstream, and this needs
+# to get updated to reflect the latest permissions
 ---
 kind: ConfigMap
 apiVersion: v1
