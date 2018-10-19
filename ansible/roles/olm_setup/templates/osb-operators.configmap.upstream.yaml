@@ -113,11 +113,16 @@ data:
                 verbs:
                 - "*"
             clusterPermissions:
+            - serviceAccountName: template-service-broker-operator
+              rules:
+              - apiGroups:
+                - osb.openshift.io
+                resources:
+                - templateservicebrokers
+                verbs:
+                - "*"
             - serviceAccountName: template-service-broker-client
               rules:
-              #################################################################
-              # start system:openshift:templateservicebroker-client
-              #################################################################
               - nonResourceURLs:
                 - /brokers/template.openshift.io/*
                 verbs:
@@ -125,26 +130,8 @@ data:
                 - get
                 - put
                 - update
-              #################################################################
-              # end system:openshift:templateservicebroker-client
-              #################################################################
-            # The SA that the broker itself will run as
-            # TODO: Need to refactor the APB with olm_managed and rename the
-            # application's SA from 'apiserver' to something more appropriate
             - serviceAccountName: apiserver
               rules:
-              #################################################################
-              # Both openshift-ansible, and oc cluster up clusters seem to launch
-              # with a clusterrole that's baked into the binary called:
-              # `system:openshift:controller:template-service-broker`
-              # regardless of whether or not the TSB is actually getting installed
-              # into that cluster. If it *does* get installed into the cluster,
-              # the TSB has an rbac-template.yaml file that contains bindings
-              # that apply this to the TSB's SA as a clusterrolebinding, see:
-              # https://github.com/openshift/openshift-ansible/blob/master/roles/template_service_broker/files/rbac-template.yaml
-              #################################################################
-              # start system:openshift:controller:template-service-broker clusterrole
-              #################################################################
               - apiGroups:
                 - authorization.k8s.io
                 resources:
@@ -230,9 +217,6 @@ data:
                 - create
                 - patch
                 - update
-              #################################################################
-              # end system:openshift:controller:template-service-broker clusterrole
-              #################################################################
             deployments:
             - name: template-service-broker-operator
               spec:
