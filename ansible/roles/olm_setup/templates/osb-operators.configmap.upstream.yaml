@@ -112,6 +112,12 @@ data:
                 - deployments
                 verbs:
                 - "*"
+              - apiGroups:
+                - apps.openshift.io
+                resources:
+                - deploymentconfigs
+                verbs:
+                - "*"
             clusterPermissions:
             - serviceAccountName: template-service-broker-operator
               rules:
@@ -119,6 +125,13 @@ data:
                 - osb.openshift.io
                 resources:
                 - templateservicebrokers
+                verbs:
+                - "*"
+              - apiGroups:
+                - servicecatalog.k8s.io
+                resources:
+                - clusterservicebrokers
+                - servicebrokers
                 verbs:
                 - "*"
             - serviceAccountName: template-service-broker-client
