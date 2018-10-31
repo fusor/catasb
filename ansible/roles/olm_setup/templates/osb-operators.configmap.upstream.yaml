@@ -74,9 +74,46 @@ data:
       metadata:
         name: templateservicebrokeroperator.v0.1.0
         namespace: placeholder
+        annotations:
+          alm-examples: '[{"apiVersion":"osb.openshift.io/v1alpha1","kind":"TemplateServiceBroker","metadata":{"name":"template-service-broker","namespace":"openshift-template-service-broker"},"spec":{"size":3,"version":"3.2.13"}}]'
       spec:
         displayName: Template Service Broker Operator
-        description: Template Service Broker Operator
+        description: |
+          The Template service broker implements the [Open Service Broker
+          API](https://github.com/openservicebrokerapi/servicebroker/blob/master/spec.md)
+          endpoints:
+
+          - *Catalog*: returns a list of available templates as OSB API
+            *Service* objects (the templates are read from one or more
+            namespaces configured in the master config).
+
+          - *Provision*: provision a given template (referred by its UID) into a
+            namespace.  Under the covers, this creates a non-namespaced
+            **BrokerTemplateInstance** object for the template service broker to
+            store state associated with the the instantiation, as well as the
+            **Secret** and **TemplateInstance** objects which are picked up by
+            the **TemplateInstance** controller.  *Provision* is an asynchronous
+            operation: it may return before provisioning is completed, and the
+            provision status can (must) be recovered via the *Last Operation*
+            endpoint (see below).
+
+          - *Bind*: for a given template, return "credentials" exposed in any
+            created ConfigMap, Secret, Service or Route object (see
+            ExposeAnnotationPrefix and Base64ExposeAnnotationPrefix
+            documentation).  The *Bind* call records the fact that it took
+            place in the appropriate **BrokerTemplateInstance** object.
+
+          - *Unbind*: this simply removes the metadata previously placed in the
+            **BrokerTemplateInstance** object by a *Bind* call.
+
+          - *Deprovision*: removes the objects created by the *Provision* call.
+            The garbage collector removes all additional objects created by the
+            **TemplateInstance** controller, hopefully transitively, as
+            documented above.
+
+          - *Last Operation*: returns the status of the previously run
+            asynchronous operation.  In the template service broker, *Provision*
+            is the only asynchronous operation.
         keywords: ['template', 'broker', 'open service broker']
         version: 0.1.0
         maturity: alpha
@@ -91,6 +128,11 @@ data:
         selector:
           matchLabels:
             operated-by: templateservicebrokeroperator
+        links:
+          - name: Documentation
+            url: https://docs.okd.io/latest/architecture/service_catalog/template_service_broker.html
+          - name: Source Code
+            url: https://github.com/openshift/origin/tree/master/pkg/templateservicebroker
         install:
           strategy: deployment
           spec:
@@ -260,9 +302,18 @@ data:
       metadata:
         name: automationbrokeroperator.v0.1.0
         namespace: placeholder
+        annotations:
+          alm-examples: '[{"apiVersion":"automationbroker.io/v1alpha1","kind":"AutomationBroker","metadata":{"name":"automation-broker","namespace":"automation-broker"},"spec":{"createBrokerNamespace":"false","waitForBroker":"false"}}]'
       spec:
         displayName: Automation Broker Operator
-        description: Automation Broker Operator
+        description: |
+          Ansible Service Broker is an implementation of the [Open Service Broker API](https://github.com/openservicebrokerapi/servicebroker)
+          that manages applications defined in [Ansible Playbook Bundles](https://github.com/ansibleplaybookbundle/ansible-playbook-bundle).
+          Ansible Playbook Bundles (APB) are a method of defining applications via a collection of Ansible Playbooks built into a container
+          with an Ansible runtime with the playbooks corresponding to a type of request specified in the
+          [Open Service Broker API Specification](https://github.com/openservicebrokerapi/servicebroker/blob/master/spec.md#api-overview).
+
+          Check out the [Keynote Demo from Red Hat Summit 2017](https://youtu.be/8MCbJmZQM9c?list=PLEGSLwUsxfEh4TE2GDU4oygCB-tmShkSn&t=4732)
         keywords: ['ansible', 'automation', 'broker', 'open service broker']
         version: 0.1.0
         maturity: alpha
@@ -277,6 +328,14 @@ data:
         selector:
           matchLabels:
             operated-by: automationbrokeroperator
+        links:
+          - name: Blog
+            url: http://automationbroker.io/
+          - name: Source Code
+            url: https://github.com/openshift/ansible-service-broker/
+        icon:
+          - base64data: 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
+            mediatype: image/png
         install:
           strategy: deployment
           spec:
