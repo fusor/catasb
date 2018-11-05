@@ -290,6 +290,11 @@ data:
                     - name: template-service-broker-operator
                       image: "{{ olm_tsb_full_image }}"
                       imagePullPolicy: IfNotPresent
+                      env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.namespace
         customresourcedefinitions:
           owned:
           - name: templateservicebrokers.osb.openshift.io
@@ -572,6 +577,11 @@ data:
                     - name: automation-broker-operator
                       image: "{{ olm_asb_full_image }}"
                       imagePullPolicy: IfNotPresent
+                      env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.namespace
         customresourcedefinitions:
           owned:
           - name: automationbrokers.automationbroker.io
