@@ -18,6 +18,7 @@
       force: true
       repo: "{{ olm_repo }}"
       dest: "{{ olm_repo_dest }}"
+      version: "{{ olm_repo_version }}"
 
   - name: Create OLM working tmp dir
     tempfile:
@@ -42,23 +43,6 @@
       src: "{{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/"
       dest: "{{ _olm_manifests }}"
 
-  - name: "TODO - Temp force OLM namespace until web console is fixed"
-    when: olm_namespace_hack
-    block:
-    - shell: "grep 'openshift-operator-lifecycle-manager' -lr {{ _olm_manifests}}"
-      register: files_to_patch
-    - shell: "sed -i 's|openshift-operator-lifecycle-manager|operator-lifecycle-manager|' {{ item }}"
-      with_items: "{{ files_to_patch.stdout_lines }}"
-
-  - when: olm_namespace == ""
-    block:
-    - name: Get OLM namespace
-      shell: "perl -ne '/name: (.*)$/ && print $1' {{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/30_00-namespace.yaml"
-      register: namespace_cmd
-    - name: Set OLM namespace
-      set_fact:
-        olm_namespace: "{{ namespace_cmd.stdout }}"
-
   - name: "Override OLM images"
     when: olm_image_tag_override != ""
     replace:
@@ -66,42 +50,40 @@
       regexp: "@sha.*$"
       replace: ":{{ olm_image_tag_override }}"
     with_items:
-      - 30_10-olm-operator.deployment.yaml
-      - 30_11-catalog-operator.deployment.yaml
-      - 30_13-packageserver.yaml
-
-################################################################################
-# HACK: Apparently they added duplciate files for some reason to the manifest dir.
-# Remove old ones
-  - name: Glob dupe manifest files
-    find:
-      paths: "{{ _olm_manifests }}"
-      patterns: "30_*"
-    register: dupe_file_glob
-
-  - name: Cleanup dupe manifest files
-    file:
-      path: "{{ item.path }}"
-      state: absent
-    with_items:
-      - "{{ dupe_file_glob.files }}"
-################################################################################
+      - 0000_30_10-olm-operator.deployment.yaml
+      - 0000_30_11-catalog-operator.deployment.yaml
+      - 0000_30_13-packageserver.yaml
 
   - name: Deploy Operator Lifecycle Manager (OLM)
     shell: "{{ oc_cmd }} create -f {{ _olm_manifests }}"
 
-  - name: Enable OSB catalog
+  - name: Install OSB catalog
     when: olm_enable_osb_catalog
-    block:
-      - name: Render OSB catalog templates
-        template:
-          src: "{{ item }}"
-          dest: "{{ _osb_cat_manifests }}/{{ item }}"
-        with_items:
-          - osb-operators.catalogsource.yaml
-          - "osb-operators.configmap.{{ olm_asb_branding }}.yaml"
-      - name: Install OSB catalog
-        shell: "{{ oc_cmd }} create -f {{ _osb_cat_manifests }}"
+    shell: "{{ oc_cmd }} create -f {{ role_path }}/files/{{ item }}"
+    with_items:
+      - osb-operators.catalogsource.yaml
+      - osb-operators.configmap.upstream.yaml
+
+  #############################################################################
+  # The broker's SA requires the admin ClusterRole binding; simply
+  # granting exactly the *rules* that it uses from this ClusterRole is NOT
+  # sufficient. The reason is that in order for the broker to be able to bind
+  # the generic "edit" or "admin" role to the APB's sandbox, the broker's SA
+  # also requires ALL of the rules that either of these roles are able to grant.
+  # Otherwise, the broker would effectively be granting rules to the sandbox
+  # that itself does not have, which is obviously forbidden.
+  #
+  # TODO: In the future, when OLM supports "Operator Bundles", or arbitrary
+  # objects in addition to what's expressed in the CSV, we can apply this
+  # bundle this binding object. Feature ticket: https://jira.coreos.com/browse/ALM-667
+  #
+  # HACK: We'll use catasb instead to create the binding, with the constraint
+  # that the broker MUST be created in the prepped namespace; here we'll
+  # use "automation-broker".
+  #
+  - name: "Bind automation-broker:automation-broker admin ClusterRole"
+    shell: "{{ oc_cmd }} create clusterrolebinding automation-broker-admin --clusterrole=admin --serviceaccount=automation-broker:automation-broker"
+  ##############################################################################
 
   - name: Deploy OpenShift Admin Console for interacting with OLM on 3.11+
     when: deploy_admin_console == true
