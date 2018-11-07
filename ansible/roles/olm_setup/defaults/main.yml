@@ -12,27 +12,7 @@ olm_repo: "https://github.com/fusor/operator-lifecycle-manager.git"
 # Could be a branch, sha, or tag
 olm_repo_version: catasb
 olm_repo_dest: /tmp/olm
-olm_manifest_type: okd
-
-# If "", will be dynamically set based on OLM manifest. Recommended to remain ""
-# unless you are sure about overriding this value.
-olm_namespace: ""
 
 # Template Broker and Ansible Brokers can be made available via the OLM
 # catalog, creating an aditional catalog source and related OLM resources
 olm_enable_osb_catalog: true
-olm_osb_catalog_name: osb-operators
-
-olm_osb_image_registry: docker.io
-olm_osb_image_repo: automationbroker
-
-olm_tsb_image_name: template-service-broker-operator
-olm_tsb_image_tag: latest
-olm_tsb_full_image: "{{ olm_osb_image_registry }}/{{ olm_osb_image_repo }}/{{ olm_tsb_image_name }}:{{ olm_tsb_image_tag }}"
-
-olm_asb_image_name: automation-broker-operator
-olm_asb_image_tag: latest
-olm_asb_full_image: "{{ olm_osb_image_registry }}/{{ olm_osb_image_repo }}/{{ olm_asb_image_name }}:{{ olm_asb_image_tag }}"
-
-# upstream: "Automation Broker", downstream: "Ansible Service Broker"
-olm_asb_branding: upstream

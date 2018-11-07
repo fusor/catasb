@@ -1,10 +1,10 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: "{{ olm_osb_catalog_name }}"
-  namespace: "{{ olm_namespace }}"
+  name: osb-operators
+  namespace: openshift-operator-lifecycle-manager
 spec:
-  configMap: "{{ olm_osb_catalog_name }}"
+  configMap: osb-operators
   displayName: Open Service Brokers
   publisher: Red Hat
   sourceType: internal

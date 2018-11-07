@@ -43,15 +43,6 @@
       src: "{{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/"
       dest: "{{ _olm_manifests }}"
 
-  - when: olm_namespace == ""
-    block:
-    - name: Get OLM namespace
-      shell: "perl -ne '/name: (.*)$/ && print $1' {{ olm_repo_dest }}/deploy/okd/manifests/{{ olm_version }}/0000_30_00-namespace.yaml"
-      register: namespace_cmd
-    - name: Set OLM namespace
-      set_fact:
-        olm_namespace: "{{ namespace_cmd.stdout }}"
-
   - name: "Override OLM images"
     when: olm_image_tag_override != ""
     replace:
@@ -66,18 +57,12 @@
   - name: Deploy Operator Lifecycle Manager (OLM)
     shell: "{{ oc_cmd }} create -f {{ _olm_manifests }}"
 
-  - name: Enable OSB catalog
+  - name: Install OSB catalog
     when: olm_enable_osb_catalog
-    block:
-      - name: Render OSB catalog templates
-        template:
-          src: "{{ item }}"
-          dest: "{{ _osb_cat_manifests }}/{{ item }}"
-        with_items:
-          - osb-operators.catalogsource.yaml
-          - "osb-operators.configmap.{{ olm_asb_branding }}.yaml"
-      - name: Install OSB catalog
-        shell: "{{ oc_cmd }} create -f {{ _osb_cat_manifests }}"
+    shell: "{{ oc_cmd }} create -f {{ role_path }}/files/{{ item }}"
+    with_items:
+      - osb-operators.catalogsource.yaml
+      - osb-operators.configmap.upstream.yaml
 
   #############################################################################
   # The broker's SA requires the admin ClusterRole binding; simply
