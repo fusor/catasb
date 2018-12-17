@@ -291,6 +291,8 @@ data:
                       image: docker.io/automationbroker/template-service-broker-operator:latest
                       imagePullPolicy: IfNotPresent
                       env:
+                      - name: IMAGE
+                        value: docker.io/openshift/origin-template-service-broker:latest
                       - name: WATCH_NAMESPACE
                         valueFrom:
                           fieldRef:
@@ -578,6 +580,8 @@ data:
                       image: docker.io/automationbroker/automation-broker-operator:latest
                       imagePullPolicy: IfNotPresent
                       env:
+                      - name: IMAGE
+                        value: docker.io/ansibleplaybookbundle/origin-ansible-service-broker:latest
                       - name: WATCH_NAMESPACE
                         valueFrom:
                           fieldRef:
